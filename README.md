@@ -18,8 +18,12 @@ I'm not sure how hard this will be to compile on your systems, but here's how I 
 2. Install [LLVM 4](https://llvm.org/)
   * Method 1: Install directly using your package manager
   * Method 2: Install [Nix](https://nixos.org/nix/)
-     Install Nix with your package manager or from the site, then when you use a stack command like 'stack build' or 'stack exec', instead use 'stack build --nix' or 'stack exec --nix'
+
+     Install Nix with your package manager or from the site, then when you use a stack command like `stack build` or `stack exec`, instead use `stack build --nix` or `stack exec --nix`
 3. In this directory, run:
+
+   ```
    stack --install-ghc
    stack build
    stack exec -- plt
+   ```
