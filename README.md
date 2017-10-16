@@ -15,14 +15,14 @@ Tutorial and examples on Alex/Happy: https://leanpub.com/alexandhappy/read
 I'm not sure how hard this will be to compile on your systems, but here's how I think you should try:
 
 1. Install [stack](https://docs.haskellstack.org/en/stable/README/)
-   MacOs
+   * MacOs
    ```
     brew install haskell-stack
    ```
 2. Install [LLVM 4](https://llvm.org/)
   * Method 1: Install directly using your package manager
   * Method 2: Install [Nix](https://nixos.org/nix/)
-  MacOs
+  * MacOs
   ```
   brew install --with-toolchain llvm
   ```
