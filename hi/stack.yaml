@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-9.4
+resolver: lts-9.9
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -64,7 +64,3 @@ extra-package-dbs: []
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
-
-
-nix:
-  packages: [llvm_4, binutils, ncurses]
