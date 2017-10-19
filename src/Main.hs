@@ -1,5 +1,7 @@
-module Main where
+module Main (main) where
 
-main :: IO ()
+import Lexer
+
 main = do
-  putStrLn "hello world"
+  s <- getContents
+  mapM_ print (alexScanTokens s)
