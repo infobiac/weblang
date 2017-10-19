@@ -1,3 +1,0 @@
-  @quote_indards = \" ( [^"\\] | \\. )* \"
-  @quote_indards                                    { \s -> Quote (tail . init $ s) }
-  @unescaped_quote $with_newline* @unescaped_quote  { \s -> Quote (drop 2 . init $ s) }

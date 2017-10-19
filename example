@@ -8,7 +8,7 @@ is
 multiline and indented"
   some indented text
     some deeper indented text
-  .1023
+  -0.1023
  0.1241
 10
--10.
+-10.0

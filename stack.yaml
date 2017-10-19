@@ -67,4 +67,4 @@ extra-package-dbs: []
 
 
 nix:
-  packages: [llvm_4, binutils, ncurses]
+  packages: [llvm_4, binutils, gcc, ncurses]
