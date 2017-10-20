@@ -1,6 +1,6 @@
 {
 module Lexer (
-    alexScanTokens
+    tokenize
   , LexToken (..)
   ) where
 
@@ -14,15 +14,33 @@ $digit = 0-9
 $alpha = [a-zA-Z]
 $newline = [\n\r\f]
 $space = [\ ]
+@empty_lines = ($newline ($space* $newline)*)+
 
 tokens :-
-  \" ( \n | [^\"\\] | \\. )* \"                     { \s -> Quote (parseQuoted s) }
-  "/*" [\n .]* "*/"                                 ;
-  ^$space+                                          { \s -> Indent (length s) }
-  $newline $space*                                  { \s -> Indent (length s - 1) }
-  $white+                                           ;
-  "//".*                                            ;
-  \-? $digit+ (\. $digit+)?                         { \s -> Number (read s) }
-  \=                                                { \s -> Equals }
-  [\+\-\*\/\(\)]+                                   { \s -> Operator s }
-  $alpha [$alpha $digit \_ \']*                     { \s -> Var s }
+  \" ( \n | [^\"\\] | \\. )* \"                                { \s -> QuoteToken (parseQuoted s) }
+  "/*" ( $newline | [^\*] | \*+ ($newline | [^\/]) )* "*/"     ;
+  ^$space+                                                     { \s -> IndentToken (length s) }
+  @empty_lines $space+                                         { \s -> IndentToken (length s - 1) }
+  @empty_lines                                                 { \s -> NewlineToken }
+  $white+                                                      ;
+  "//".*                                                       ;
+  \-? $digit+ (\. $digit+)?                                    { \s -> NumberToken (read s) }
+  "null"                                                       { \s -> NullToken }
+  \[                                                           { \s -> LeftSquareBracketToken }
+  \]                                                           { \s -> RightSquareBracketToken }
+  \(                                                           { \s -> LeftParenToken }
+  \)                                                           { \s -> RightParenToken }
+  \{                                                           { \s -> LeftCurlyBracketToken }
+  \}                                                           { \s -> RightCurlyBracketToken }
+  \,                                                           { \s -> CommaToken }
+  \=                                                           { \s -> EqualsToken }
+  \:                                                           { \s -> ColonToken }
+  "->"                                                         { \s -> ArrowToken }
+  [\+\-\*\/]+                                                  { \s -> OperatorToken s }
+  $alpha [$alpha $digit \_ \']*                                { \s -> VarToken s }
+
+{
+tokenize :: String -> [LexToken]
+tokenize = normalizeNewlines . alexScanTokens
+-- "/*" ($newline | [^\*] | \* + ($newline | [^/]))* "*/"  ;
+}
