@@ -35,5 +35,5 @@ I'm not sure how hard this will be to compile on your systems, but here's how I 
    ```
    stack --install-ghc
    stack build
-   stack exec -- plt
+   stack exec weblang
    ```
