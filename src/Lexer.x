@@ -25,6 +25,12 @@ tokens :-
   $white+                                                      ;
   "//".*                                                       ;
   \-? $digit+ (\. $digit+)?                                    { \s -> NumberToken (read s) }
+  "if"                                                         { \s -> IfToken }
+  "then"                                                       { \s -> ThenToken }
+  "else"                                                       { \s -> ElseToken }
+  "foreach"                                                    { \s -> ForeachToken }
+  "type"                                                       { \s -> TypeToken }
+  "helper"                                                     { \s -> HelperToken }
   "null"                                                       { \s -> NullToken }
   \[                                                           { \s -> LeftSquareBracketToken }
   \]                                                           { \s -> RightSquareBracketToken }

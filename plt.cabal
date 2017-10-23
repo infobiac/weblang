@@ -12,6 +12,8 @@ category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
+                   , src/Parser.y
+                   , src/Lexer.x
 
 executable plt
   hs-source-dirs:      src

@@ -30,6 +30,7 @@ import AST
     line		  { NewlineToken }
     indent	  { IndentToken $$ }
     num		    { NumberToken $$ }
+    helper    { HelperToken }
     null		  { NullToken }
 
 %%
@@ -37,7 +38,8 @@ import AST
 Program : line FunctionDeclaration Program     { Program [$2] <> $3 }
         | line FunctionDeclaration             { Program [$2] }
 
-FunctionDeclaration : var var ':' var arrow var Expressions    { ($1, Function $4 $6 $2 $7) }
+FunctionDeclaration : var var ':' var arrow var Expressions    { ($1, Function $4 $6 $2 $7 False) }
+                    | helper var var ':' var arrow var Expressions    { ($2, Function $5 $7 $3 $8 True) }
 
 Expressions : indent Expression Expressions { ($1, $2) : $3 }
             | indent Expression             { [($1, $2)] }

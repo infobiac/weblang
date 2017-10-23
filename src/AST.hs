@@ -3,13 +3,30 @@ module AST where
 import qualified Data.Map as Map
 import Data.Map (Map)
 
+type ValName = String
+type FnName = String
+type TypeName = String
+
 data Program = Program {
-  fnDeclarations :: [(Name, Function)]
+  fnDeclarations :: [(FnName, Function)]
   } deriving Show
 
-instance Monoid Program where
-  mempty = Program []
-  mappend (Program afs) (Program bfs) = Program (afs ++ bfs)
+data Function = Function {
+    inputType :: TypeName
+  , outputType :: TypeName
+  , arg :: ValName
+  , body :: [(Int, Expression)]
+  , helper :: Bool
+  } deriving Show
+
+data Expression = Assignment ValName Term
+                | Unassigned Term
+                deriving Show
+
+data Term = Variable ValName
+          | FunctionCall FnName Term
+          | Literal PrimValue
+          deriving Show
 
 data PrimValue = StrVal String
                | NumVal Double
@@ -18,21 +35,6 @@ data PrimValue = StrVal String
                | NullVal
                deriving Show
 
-type Name = String
-type TypeName = String
-
-data Term = Variable Name
-          | FunctionCall Name Term
-          | Literal PrimValue
-          deriving Show
-
-data Expression = Assignment Name Term
-                | Unassigned Term
-                deriving Show
-
-data Function = Function {
-    inputType :: TypeName
-  , outputType :: TypeName
-  , arg :: Name
-  , body :: [(Int, Expression)]
-  } deriving Show
+instance Monoid Program where
+  mempty = Program []
+  mappend (Program afs) (Program bfs) = Program (afs ++ bfs)

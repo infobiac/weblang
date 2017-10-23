@@ -1,21 +1,35 @@
 module Lexer.Types where
 
 data LexToken =
-    QuoteToken String
+  -- basic components
+    VarToken String
+  | NewlineToken
+  | IndentToken Int
   | OperatorToken String
+
+  | IfToken
+  | ThenToken
+  | ElseToken
+
+  | ForeachToken
+
+  | TypeToken
+  | HelperToken
+
+  -- syntax symbols
   | EqualsToken
   | ColonToken
   | ArrowToken
+  | LeftParenToken
+  | RightParenToken
+
+  -- primitives
+  | NumberToken Double
+  | NullToken
+  | QuoteToken String
+  | CommaToken
   | LeftSquareBracketToken
   | RightSquareBracketToken
   | LeftCurlyBracketToken
   | RightCurlyBracketToken
-  | LeftParenToken
-  | RightParenToken
-  | CommaToken
-  | NullToken
-  | VarToken String
-  | NewlineToken
-  | IndentToken Int
-  | NumberToken Double
   deriving (Eq,Show)
