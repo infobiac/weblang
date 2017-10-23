@@ -3,6 +3,7 @@ module Main (main) where
 import Lexer (tokenize)
 import Parser (parse)
 import AST
+import Text.PrettyPrint.GenericPretty
 
 main :: IO ()
 main = do
@@ -13,7 +14,8 @@ main = do
   putStrLn ""
   let parsed = parse tokens
   putStrLn $ "AST:"
-  putStrLn $ "  " ++ show parsed
+  pp parsed
+  --putStrLn $ "  " ++ show parsed
   putStrLn ""
   putStrLn $ "Hello world interpreter:"
   putStrLn ""

@@ -15,7 +15,7 @@ extra-source-files:  README.md
                    , src/Parser.y
                    , src/Lexer.x
 
-executable plt
+executable weblang
   hs-source-dirs:      src
   main-is:             Main.hs
   other-modules:       Lexer
@@ -29,5 +29,6 @@ executable plt
                      , array
                      , MissingH
                      , containers
+                     , GenericPretty
                      , llvm-hs
                      , llvm-hs-pure
