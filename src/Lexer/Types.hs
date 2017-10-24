@@ -12,6 +12,8 @@ data LexToken =
   | ElseToken
 
   | ForeachToken
+  | InToken
+  | DoToken
 
   | TypeToken
   | HelperToken

@@ -11,16 +11,31 @@ import Text.PrettyPrint.GenericPretty
 type ValName = String
 type FnName = String
 type TypeName = String
+type OperatorName = String
+type ExpressionBlock = [(Int, Expression)]
 
 data Program = Program {
-  fnDeclarations :: [(FnName, Function)]
+    customTypes :: [(TypeName, NewType)]
+  , constants :: [(ValName, Term)]
+  , fnDeclarations :: [(FnName, Function)]
+  } deriving (Show, Generic, Out)
+
+data Type = Type {
+    parentType :: TypeName
+  , predicate :: Maybe Term
+  } deriving (Show, Generic, Out)
+
+data NewType = NewType {
+    shortType :: Type
+  , inhabitant :: ValName
+  , longPredicate :: ExpressionBlock
   } deriving (Show, Generic, Out)
 
 data Function = Function {
-    inputType :: TypeName
-  , outputType :: TypeName
+    inputType :: Type
+  , outputType :: Type
   , arg :: ValName
-  , body :: [(Int, Expression)]
+  , body :: ExpressionBlock
   , helper :: Bool
   } deriving (Show, Generic, Out)
 
@@ -30,7 +45,14 @@ data Expression = Assignment ValName Term
 
 data Term = Variable ValName
           | FunctionCall FnName Term
+          | Operator OperatorName Term Term
           | Literal PrimValue
+          | If Term
+          | Else
+          | IfThenElse Term Term Term
+          | ForeachInDo ValName Term Term
+          | ForeachIn ValName Term
+          | Do
           deriving (Show, Generic, Out)
 
 data PrimValue = StrVal String
@@ -41,8 +63,8 @@ data PrimValue = StrVal String
                deriving (Show, Generic, Out)
 
 instance Monoid Program where
-  mempty = Program []
-  mappend (Program afs) (Program bfs) = Program (afs ++ bfs)
+  mempty = Program [] [] []
+  mappend (Program ats acs afs) (Program bts bcs bfs) = Program (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
 
 -- for pretty printing maps
 instance (Out a, Out b) => Out (Map a b) where

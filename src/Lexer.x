@@ -29,6 +29,7 @@ tokens :-
   "then"                                                       { \s -> ThenToken }
   "else"                                                       { \s -> ElseToken }
   "foreach"                                                    { \s -> ForeachToken }
+  "in"                                                         { \s -> ForeachToken }
   "type"                                                       { \s -> TypeToken }
   "helper"                                                     { \s -> HelperToken }
   "null"                                                       { \s -> NullToken }

@@ -22,7 +22,7 @@ main = do
   simpleRunProgram parsed
 
 simpleRunProgram :: Program -> IO ()
-simpleRunProgram (Program fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
+simpleRunProgram (Program _ _ fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
 
 simpleRunExpression :: (Int, Expression) -> IO ()
 simpleRunExpression (2, Unassigned term) = simpleRunTerm term
