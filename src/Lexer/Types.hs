@@ -4,7 +4,10 @@ data Pos a = Pos {
     line :: Int
   , col :: Int
   , unPos :: a
-  } deriving Show
+  }
+
+instance (Show a) => Show (Pos a) where
+  show (Pos line col a) = show line ++ ":" ++ show col ++ " " ++ show a
 
 data LexToken =
   -- basic components
