@@ -10,7 +10,7 @@ Article about building a compiler in Haskell with Alex/Happy and LLVM: https://b
 
 Tutorial and examples on Alex/Happy: https://leanpub.com/alexandhappy/read
 
-Nice article with introduction to LLVM, LLVM haskell bindings, and an example of building up LLVM code from an AST
+Nice article with introduction to LLVM, LLVM haskell bindings, and an example of building up LLVM code from an AST: http://www.stephendiehl.com/llvm/#haskell-llvm-bindings
 
 ### Compiling
 
