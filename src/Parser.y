@@ -10,35 +10,35 @@ import AST
 }
 
 %name parse
-%tokentype  { LexToken }
+%tokentype  { Pos LexToken }
 %error      { happyError }
 
 %token
-  quoted    { QuoteToken $$ }
-  oper      { OperatorToken $$ }
-  '['		    { LeftSquareBracketToken }
-  ']'		    { RightSquareBracketToken }
-  '{'		    { LeftCurlyBracketToken }
-  '}'		    { RightCurlyBracketToken }
-  '('		    { LeftParenToken }
-  ')'		    { RightParenToken }
-  ','		    { CommaToken }
-  '='		    { EqualsToken }
-  ':'		    { ColonToken }
-  arrow	    { ArrowToken }
-  var		    { VarToken $$ }
-  line		  { NewlineToken }
-  indent	  { IndentToken $$ }
-  num		    { NumberToken $$ }
-  helper    { HelperToken }
-  null		  { NullToken }
-  if        { IfToken }
-  then      { ThenToken }
-  else      { ElseToken }
-  foreach   { ForeachToken }
-  in        { InToken }
-  do        { DoToken }
-  type      { TypeToken }
+  quoted    { Pos _ _ (QuoteToken $$) }
+  oper      { Pos _ _ (OperatorToken $$) }
+  '['		    { Pos _ _ (LeftSquareBracketToken) }
+  ']'		    { Pos _ _ (RightSquareBracketToken) }
+  '{'		    { Pos _ _ (LeftCurlyBracketToken) }
+  '}'		    { Pos _ _ (RightCurlyBracketToken) }
+  '('		    { Pos _ _ (LeftParenToken) }
+  ')'		    { Pos _ _ (RightParenToken) }
+  ','		    { Pos _ _ (CommaToken) }
+  '='		    { Pos _ _ (EqualsToken) }
+  ':'		    { Pos _ _ (ColonToken) }
+  arrow	    { Pos _ _ (ArrowToken) }
+  var		    { Pos _ _ (VarToken $$) }
+  line		  { Pos _ _ (NewlineToken) }
+  indent	  { Pos _ _ (IndentToken $$) }
+  num		    { Pos _ _ (NumberToken $$) }
+  helper    { Pos _ _ (HelperToken) }
+  null		  { Pos _ _ (NullToken) }
+  if        { Pos _ _ (IfToken) }
+  then      { Pos _ _ (ThenToken) }
+  else      { Pos _ _ (ElseToken) }
+  foreach   { Pos _ _ (ForeachToken) }
+  in        { Pos _ _ (InToken) }
+  do        { Pos _ _ (DoToken) }
+  type      { Pos _ _ (TypeToken) }
 
 %%
 
@@ -100,30 +100,31 @@ ForeachInDo
   : foreach var in Term0 do Term1  { ForeachInDo $2 $4 $6 }
 
 Literal
-  : quoted                    { (StrVal $1) }
-  | num                       { (NumVal $1) }
-  | '[' ']'                   { ArrVal [] }
-  | '[' indent ']'            { ArrVal [] }
-  | '[' ArrayTerms indent ']' { ArrVal $2 }
-  | '[' ArrayTerms ']'        { ArrVal $2 }
-  | '{' '}'                   { ObjVal Map.empty }
-  | '{' ObjectTerms indent '}' { (ObjVal $2) }
-  | '{' ObjectTerms '}'       { (ObjVal $2) }
-  | null                      { NullVal }
+  : quoted                            { (StrVal $1) }
+  | num                               { (NumVal $1) }
+  | '[' ']'                           { ArrVal [] }
+  | '[' indent ']'                    { ArrVal [] }
+  | '[' ArrayTerms indent ']'         { ArrVal $2 }
+  | '[' indent ArrayTerms ']'         { ArrVal $3 }
+  | '[' indent ArrayTerms indent ']'  { ArrVal $3 }
+  | '[' ArrayTerms ']'                { ArrVal $2 }
+  | '{' '}'                           { ObjVal Map.empty }
+  | '{' indent '}'                    { ObjVal Map.empty }
+  | '{' ObjectTerms indent '}'        { (ObjVal $2) }
+  | '{' indent ObjectTerms '}'        { (ObjVal $3) }
+  | '{' indent ObjectTerms indent '}' { (ObjVal $3) }
+  | '{' ObjectTerms '}'               { (ObjVal $2) }
+  | null                              { NullVal }
 
 ArrayTerms
   : Term ',' ArrayTerms           { $1 : $3 }
-  | indent Term ',' ArrayTerms    { $2 : $4 }
-  | indent Term                   { [ $2 ] }
   | Term                          { [ $1 ] }
 
 ObjectTerms
   : var ':' Term ',' ObjectTerms  { Map.insert $1 $3 $5 }
-  | indent var ':' Term ',' ObjectTerms  { Map.insert $2 $4 $6 }
-  | indent var ':' Term                  { Map.singleton $2 $4 }
   | var ':' Term                  { Map.singleton $1 $3 }
 
 {
-happyError :: [LexToken] -> a
-happyError ts = error $ "Parse error. Remaining tokens: " ++ show ts ++ "\n"
+happyError :: [Pos LexToken] -> a
+happyError (Pos line col t:ts) = error $ "Parse error on token at line " ++ show line ++ " col " ++ show col ++ ". Token:\n    " ++ show t ++ "\n"
 }

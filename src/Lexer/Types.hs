@@ -1,5 +1,11 @@
 module Lexer.Types where
 
+data Pos a = Pos {
+    line :: Int
+  , col :: Int
+  , unPos :: a
+  } deriving Show
+
 data LexToken =
   -- basic components
     VarToken String
@@ -34,4 +40,4 @@ data LexToken =
   | RightSquareBracketToken
   | LeftCurlyBracketToken
   | RightCurlyBracketToken
-  deriving (Eq,Show)
+  deriving (Eq,Ord,Show)

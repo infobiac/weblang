@@ -8,7 +8,7 @@ import Lexer.Types
 import Lexer.Utils
 }
 
-%wrapper "basic"
+%wrapper "posn"
 
 $digit = 0-9
 $alpha = [a-zA-Z]
@@ -17,37 +17,39 @@ $space = [\ ]
 @empty_lines = ($newline ($space* $newline)*)+
 
 tokens :-
-  \" ( \n | [^\"\\] | \\. )* \"                                { \s -> QuoteToken (parseQuoted s) }
+  \" ( \n | [^\"\\] | \\. )* \"                                { \pos s -> withPos pos $ QuoteToken (parseQuoted s) }
   "/*" ( $newline | [^\*] | \*+ ($newline | [^\/]) )* "*/"     ;
-  ^$space+                                                     { \s -> IndentToken (length s) }
-  @empty_lines $space+                                         { \s -> IndentToken (length s - 1) }
-  @empty_lines                                                 { \s -> NewlineToken }
+  ^$space+                                                     { \pos s -> withPos pos $ IndentToken (length s) }
+  @empty_lines $space+                                         { \pos s -> withPos pos $ IndentToken (length s - 1) }
+  @empty_lines                                                 { \pos s -> withPos pos $ NewlineToken }
   $white+                                                      ;
   "//".*                                                       ;
-  \-? $digit+ (\. $digit+)?                                    { \s -> NumberToken (read s) }
-  "if"                                                         { \s -> IfToken }
-  "then"                                                       { \s -> ThenToken }
-  "else"                                                       { \s -> ElseToken }
-  "foreach"                                                    { \s -> ForeachToken }
-  "in"                                                         { \s -> ForeachToken }
-  "type"                                                       { \s -> TypeToken }
-  "helper"                                                     { \s -> HelperToken }
-  "null"                                                       { \s -> NullToken }
-  \[                                                           { \s -> LeftSquareBracketToken }
-  \]                                                           { \s -> RightSquareBracketToken }
-  \(                                                           { \s -> LeftParenToken }
-  \)                                                           { \s -> RightParenToken }
-  \{                                                           { \s -> LeftCurlyBracketToken }
-  \}                                                           { \s -> RightCurlyBracketToken }
-  \,                                                           { \s -> CommaToken }
-  \=                                                           { \s -> EqualsToken }
-  \:                                                           { \s -> ColonToken }
-  "->"                                                         { \s -> ArrowToken }
-  [\+\-\*\/]+                                                  { \s -> OperatorToken s }
-  $alpha [$alpha $digit \_ \']*                                { \s -> VarToken s }
+  \-? $digit+ (\. $digit+)?                                    { \pos s -> withPos pos $ NumberToken (read s) }
+  "if"                                                         { \pos s -> withPos pos $ IfToken }
+  "then"                                                       { \pos s -> withPos pos $ ThenToken }
+  "else"                                                       { \pos s -> withPos pos $ ElseToken }
+  "foreach"                                                    { \pos s -> withPos pos $ ForeachToken }
+  "in"                                                         { \pos s -> withPos pos $ ForeachToken }
+  "type"                                                       { \pos s -> withPos pos $ TypeToken }
+  "helper"                                                     { \pos s -> withPos pos $ HelperToken }
+  "null"                                                       { \pos s -> withPos pos $ NullToken }
+  \[                                                           { \pos s -> withPos pos $ LeftSquareBracketToken }
+  \]                                                           { \pos s -> withPos pos $ RightSquareBracketToken }
+  \(                                                           { \pos s -> withPos pos $ LeftParenToken }
+  \)                                                           { \pos s -> withPos pos $ RightParenToken }
+  \{                                                           { \pos s -> withPos pos $ LeftCurlyBracketToken }
+  \}                                                           { \pos s -> withPos pos $ RightCurlyBracketToken }
+  \,                                                           { \pos s -> withPos pos $ CommaToken }
+  \=                                                           { \pos s -> withPos pos $ EqualsToken }
+  \:                                                           { \pos s -> withPos pos $ ColonToken }
+  "->"                                                         { \pos s -> withPos pos $ ArrowToken }
+  [\+\-\*\/]+                                                  { \pos s -> withPos pos $ OperatorToken s }
+  $alpha [$alpha $digit \_ \']*                                { \pos s -> withPos pos $ VarToken s }
 
 {
-tokenize :: String -> [LexToken]
+tokenize :: String -> [Pos LexToken]
 tokenize = normalizeNewlines . alexScanTokens
--- "/*" ($newline | [^\*] | \* + ($newline | [^/]))* "*/"  ;
+
+withPos :: AlexPosn -> a -> Pos a
+withPos (AlexPn _ line col) a = Pos line col a
 }
