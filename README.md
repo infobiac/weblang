@@ -39,7 +39,7 @@ I'm not sure how hard this will be to compile on your systems, but here's how I 
    ```
 
 
-###Spinning up server to call Weblang helloworld endpoint
+### Spinning up server to call Weblang helloworld endpoint
 1. 'stack build --nix'
 2. './runWeblangServer 8000'
 3. make post request to http://35.194.4.65:8000/helloworld with a payload of key being 'arg' and value being anything. eg {'arg'='testArg'}
