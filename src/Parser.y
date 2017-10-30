@@ -39,6 +39,7 @@ import AST
   in        { Pos _ _ (InToken) }
   do        { Pos _ _ (DoToken) }
   type      { Pos _ _ (TypeToken) }
+  includes  { Pos _ _ (IncludesToken) }
 
 %%
 
@@ -47,9 +48,13 @@ Program
   | line TopLevel               { $2 }
 
 TopLevel
-  : FunctionDeclaration        { Program [] [] [$1] }
-  | Constant                   { Program [] [$1] [] }
-  | CustomType                 { Program [$1] [] [] }
+  : FunctionDeclaration        { Program [] [] [] [$1] }
+  | Constant                   { Program [] [] [$1] [] }
+  | CustomType                 { Program [] [$1] [] [] }
+  | Includes                   { Program [$1] [] [] [] }
+
+Includes
+  : includes quoted            { Includes $2 }
 
 Constant
   : var '=' Term               { ($1, $3) }

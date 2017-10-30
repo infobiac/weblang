@@ -32,6 +32,7 @@ tokens :-
   "in"                                                         { \pos s -> withPos pos $ ForeachToken }
   "type"                                                       { \pos s -> withPos pos $ TypeToken }
   "helper"                                                     { \pos s -> withPos pos $ HelperToken }
+  "includes"                                                   { \pos s -> withPos pos $ IncludesToken }
   "null"                                                       { \pos s -> withPos pos $ NullToken }
   \[                                                           { \pos s -> withPos pos $ LeftSquareBracketToken }
   \]                                                           { \pos s -> withPos pos $ RightSquareBracketToken }
@@ -43,8 +44,8 @@ tokens :-
   \=                                                           { \pos s -> withPos pos $ EqualsToken }
   \:                                                           { \pos s -> withPos pos $ ColonToken }
   "->"                                                         { \pos s -> withPos pos $ ArrowToken }
-  [\+\-\*\/]+                                                  { \pos s -> withPos pos $ OperatorToken s }
   $alpha [$alpha $digit \_ \']*                                { \pos s -> withPos pos $ VarToken s }
+  [\+\-\*\/\>\<\=\|]+                                          { \pos s -> withPos pos $ OperatorToken s }
 
 {
 tokenize :: String -> [Pos LexToken]

@@ -27,6 +27,8 @@ data LexToken =
   | TypeToken
   | HelperToken
 
+  | IncludesToken
+
   -- syntax symbols
   | EqualsToken
   | ColonToken

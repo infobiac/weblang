@@ -15,14 +15,13 @@ main = do
   let parsed = parse tokens
   putStrLn $ "AST:"
   pp parsed
-  --putStrLn $ "  " ++ show parsed
   putStrLn ""
   putStrLn $ "Hello world interpreter:"
   putStrLn ""
   simpleRunProgram parsed
 
 simpleRunProgram :: Program -> IO ()
-simpleRunProgram (Program _ _ fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
+simpleRunProgram (Program _ _ _ fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
 
 simpleRunExpression :: (Int, Expression) -> IO ()
 simpleRunExpression (2, Unassigned term) = simpleRunTerm term

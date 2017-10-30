@@ -15,9 +15,14 @@ type OperatorName = String
 type ExpressionBlock = [(Int, Expression)]
 
 data Program = Program {
-    customTypes :: [(TypeName, NewType)]
+    includes :: [Includes]
+  , customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
+  } deriving (Show, Generic, Out)
+
+data Includes = Includes {
+    sourceAddress :: String
   } deriving (Show, Generic, Out)
 
 data Type = Type {
@@ -63,8 +68,9 @@ data PrimValue = StrVal String
                deriving (Show, Generic, Out)
 
 instance Monoid Program where
-  mempty = Program [] [] []
-  mappend (Program ats acs afs) (Program bts bcs bfs) = Program (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
+  mempty = Program [] [] [] []
+  mappend (Program ais ats acs afs) (Program bis bts bcs bfs) =
+    Program (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
 
 -- for pretty printing maps
 instance (Out a, Out b) => Out (Map a b) where
