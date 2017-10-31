@@ -41,6 +41,7 @@ I'm not sure how hard this will be to compile on your systems, but here's how I 
 
 ### Spinning up server to call Weblang helloworld endpoint
 1. 'stack build --nix'
-2. './runWeblangServer 8000'
-3. make post request to http://35.194.4.65:8000/helloworld with a payload of key being 'arg' and value being anything. eg {'arg'='testArg'}
-4. response is output of running Ryan's hello world example in examples/parsing-hello-world-example.wl
+2. './makeServer.sh' to make server
+3. './runWeblangServer 8000'
+4. make post request to http://35.194.4.65:8000/helloworld with a payload of key being 'arg' and value being anything. eg {'arg'='testArg'}
+5. response is output of running Ryan's hello world example in examples/parsing-hello-world-example.wl
