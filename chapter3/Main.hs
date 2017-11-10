@@ -44,15 +44,15 @@ repl = runInputT defaultSettings (loop initModule)
 
 assemblyFile = File "test-llvm-assembly.ll"
 
-writeAssembly :: AST.Module -> IO ()
-writeAssembly m =
+writeAssembly :: FilePath -> AST.Module -> IO ()
+writeAssembly fp m =
   withContext (\context ->
                   withModuleFromAST context m (\m' ->
-                                                  writeLLVMAssemblyToFile assemblyFile m'))
+                                                  writeLLVMAssemblyToFile (File fp) m'))
 
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     []      -> repl
-    [fname] -> processFile fname >>= mapM_ writeAssembly
+    [fname, llname] -> processFile fname >>= mapM_ (writeAssembly llname)
