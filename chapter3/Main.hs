@@ -10,6 +10,8 @@ import System.IO
 import System.Environment
 import System.Console.Haskeline
 
+import LLVM.Module
+import LLVM.Internal.Context
 import qualified LLVM.AST as AST
 
 initModule :: AST.Module
@@ -40,9 +42,17 @@ repl = runInputT defaultSettings (loop initModule)
           Just modn -> loop modn
           Nothing -> loop mod
 
+assemblyFile = File "test-llvm-assembly.ll"
+
+writeAssembly :: AST.Module -> IO ()
+writeAssembly m =
+  withContext (\context ->
+                  withModuleFromAST context m (\m' ->
+                                                  writeLLVMAssemblyToFile assemblyFile m'))
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     []      -> repl
-    [fname] -> processFile fname >> return ()
+    [fname] -> processFile fname >>= mapM_ writeAssembly
