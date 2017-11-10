@@ -32,3 +32,25 @@ executable weblang
                      , GenericPretty
                      , llvm-hs
                      , llvm-hs-pure
+
+executable chapter3
+  default-language:    Haskell2010
+  main-is:             Main.hs
+  other-modules:
+    Codegen
+    Emit
+    Lexer
+    Parser
+    Syntax
+
+  build-depends:
+      base                 >= 4.7 && <5
+    , haskeline            >= 0.7.1.2
+    , llvm-hs              >= 4.0.0.0
+    , llvm-hs-pure         >= 4.0.0.0
+    , parsec               >= 3.1
+    , mtl                  >= 2.1.3
+    , transformers         >= 0.3.0.0 && < 0.6
+    , containers           >= 0.4
+  hs-source-dirs:      chapter3
+
