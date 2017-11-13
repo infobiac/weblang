@@ -63,13 +63,22 @@ simpleLLVMFunctionCall _ _ = Nothing
 
 llvmLog :: String -> Codegen AST.Operand
 llvmLog s = do
+  op <- llvmAllocValue (StrVal s)
+  call (externf (AST.Name (fromString "puts"))) [op]
+
+llvmAllocValue :: PrimValue
+               -> Codegen AST.Operand -- pointer to allocated memory
+llvmAllocValue (StrVal s) = do
   let ptr = AST.Alloca (llvmCharArrayType (length s + 1)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 [] 
   op <- instr $ ptr
   let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
   let arrStr = stringToLLVMString s
   _ <- instr $ AST.Store False op (cons arrStr) Nothing 0 []
   op2 <- instr $ ref
-  call (externf (AST.Name (fromString "puts"))) [op2]
+  return op2
+llvmAllocValue (NumVal s) = undefined -- do nothing?
+llvmAllocValue (ArrVal s) = undefined -- do nothing?
+-- etc, for all primative types
 
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
