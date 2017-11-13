@@ -29,6 +29,8 @@
 #include <time.h>
 #include <microhttpd.h>
 #include <stdlib.h>
+#include <wordexp.h>
+
 
 
 /**
@@ -462,9 +464,21 @@ create_response (void *cls,
                 /* Run weblang command */
 
 		char *buffer;
-		if(strcmp(url, "/helloworld") == 0) {
-			char* HW = "stack exec --nix weblang < /home/jordanvega/plt/examples/parsing-hello-world-example.wl > test.txt";
-			FILE *file = popen(HW, "r");
+		char urlFile[100]; 
+		strcpy(urlFile, "~/plt");
+	        strcat(urlFile, url);
+
+		wordexp_t exp_result;
+		wordexp(urlFile, &exp_result, 0);
+		strcpy(urlFile, exp_result.we_wordv[0]);
+		wordfree(&exp_result);
+
+
+		if(access(urlFile, F_OK) != -1) {
+			char cmd[256];
+			strcpy(cmd, urlFile);
+		        strcat(cmd, " > test.txt");
+			FILE *file = popen(cmd, "r");
 			fclose(file);
 			
 			FILE *fp;

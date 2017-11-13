@@ -3,7 +3,10 @@ module Main (main) where
 import Lexer (tokenize)
 import Parser (parse)
 import AST
+import LLVM
 import Text.PrettyPrint.GenericPretty
+import System.Environment
+import Control.Monad
 
 main :: IO ()
 main = do
@@ -19,6 +22,12 @@ main = do
   putStrLn $ "Hello world interpreter:"
   putStrLn ""
   simpleRunProgram parsed
+
+  args <- getArgs
+  case args of
+    [] -> putStrLn $ "No output file given, not writing compiling"
+    [outFile] -> do putStrLn $ "Writing LLVM assembly to " ++ outFile
+                    writeModule outFile . buildLLVM $ parsed
 
 simpleRunProgram :: Program -> IO ()
 simpleRunProgram (Program _ _ _ fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
