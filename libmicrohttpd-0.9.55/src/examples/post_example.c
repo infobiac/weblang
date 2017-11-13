@@ -462,8 +462,8 @@ create_response (void *cls,
                 /* Run weblang command */
 
 		char *buffer;
-		if(strcmp(url, "/helloworld") == 0) {
-			char* HW = "stack exec --nix weblang < /home/jordanvega/plt/examples/parsing-hello-world-example.wl > test.txt";
+		if(strcmp(url, "/hello-world") == 0) {
+			char* HW = "~/plt/hello-world > test.txt";
 			FILE *file = popen(HW, "r");
 			fclose(file);
 			
