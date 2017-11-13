@@ -7,8 +7,11 @@ hello-world.o: hello-world.s
 hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
-hello-world.ll: examples/crazy-hello-world.wl .stack-work/install/x86_64-linux-nix/lts-9.12/8.0.2/bin/weblang
-	stack build && stack exec weblang hello-world.ll < examples/crazy-hello-world.wl
+hello-world.ll: examples/crazy-hello-world.wl Build
+	stack exec weblang hello-world.ll < examples/crazy-hello-world.wl
+
+Build: 
+	stack build
 
 
 chapter3-bin: chapter3/chapter3.o
@@ -23,5 +26,5 @@ chapter3/chapter3.o: chapter3/chapter3.s
 chapter3/chapter3.s: chapter3/chapter3.ll
 	nix-shell -p llvm --command "llc chapter3/chapter3.ll"
 
-chapter3/chapter3.ll: chapter3/chapter3.k chapter3/Main.hs
-	stack build && stack exec chapter3 chapter3/chapter3.k chapter3/chapter3.ll
+chapter3/chapter3.ll: Build chapter3/chapter3.k chapter3/Main.hs
+	stack exec chapter3 chapter3/chapter3.k chapter3/chapter3.ll

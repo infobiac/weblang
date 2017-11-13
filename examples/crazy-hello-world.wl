@@ -10,8 +10,8 @@ type Natural x : Integral
 x = ["first", 2, [3.0], {four: 4}]
 
 main arg : inType -> outType
-  log "Hello,"
-  log "world!"
+  log "hello world"
+  [log "hello world", {hi: log "hello world"}]
 
 otherFunction arg : someType -> someOtherType
   a = "a string with \"quotes\""
