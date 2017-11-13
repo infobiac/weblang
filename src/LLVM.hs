@@ -20,12 +20,8 @@ writeModule fp m =
   where write context m' = Module.writeLLVMAssemblyToFile (Module.File fp) m'
 
 baseMod = runLLVM (emptyModule "WebLang") $ do
-  external (AST.IntegerType 32) "puts" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
+  external (AST.IntegerType 32) "printf" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
                                         , AST.Name (fromString "s"))]
-  stringConstant "hw" "hello world"
-
-stringConstant :: String -> String -> LLVM ()
-stringConstant label s = globalVar (llvmCharArrayType (length s)) label (stringToLLVMString s)
 
 buildLLVM :: Program -> AST.Module
 buildLLVM p = runLLVM baseMod (simpleLLVM p)
@@ -67,19 +63,22 @@ simpleLLVMFunctionCall _ _ = Nothing
 
 llvmLog :: String -> Codegen AST.Operand
 llvmLog s = do
-  let hw = cons $ AST.GlobalReference (llvmCharArrayType 11) (AST.Name (fromString "hw"))
-  let ref = AST.GetElementPtr True hw [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-  op <- instr $ ref
-  call (externf (AST.Name (fromString "puts"))) [op]
+  let ptr = AST.Alloca (llvmCharArrayType (length s + 1)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 [] 
+  op <- instr $ ptr
+  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
+  let arrStr = stringToLLVMString s
+  _ <- instr $ AST.Store False op (cons arrStr) Nothing 0 []
+  op2 <- instr $ ref
+  call (externf (AST.Name (fromString "puts"))) [op2]
 
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
 
-llvmCharArrayType :: Int -> AST.Type
+llvmCharArrayType :: Int -> AST.Type 
 llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) (AST.IntegerType 8)
 
 stringToLLVMString :: String -> AST.Constant
-stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s)
+stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s ++ [AST.Int 8 0]) 
 
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
