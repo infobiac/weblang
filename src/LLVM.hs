@@ -20,7 +20,7 @@ writeModule fp m =
   where write context m' = Module.writeLLVMAssemblyToFile (Module.File fp) m'
 
 baseMod = runLLVM (emptyModule "WebLang") $ do
-  external (AST.IntegerType 32) "printf" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
+  external (AST.IntegerType 32) "puts" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
                                         , AST.Name (fromString "s"))]
 
 buildLLVM :: Program -> AST.Module
