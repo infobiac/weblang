@@ -42,8 +42,6 @@ repl = runInputT defaultSettings (loop initModule)
           Just modn -> loop modn
           Nothing -> loop mod
 
-assemblyFile = File "test-llvm-assembly.ll"
-
 writeAssembly :: FilePath -> AST.Module -> IO ()
 writeAssembly fp m =
   withContext (\context ->

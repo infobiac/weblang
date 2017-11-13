@@ -23,6 +23,8 @@ executable weblang
                      , Lexer.Utils
                      , Parser
                      , AST
+                     , LLVM
+                     , Codegen
   default-language:    Haskell2010
   build-tools:         alex, happy
   build-depends:       base >= 4.7 && < 5
@@ -32,6 +34,7 @@ executable weblang
                      , GenericPretty
                      , llvm-hs
                      , llvm-hs-pure
+                     , mtl
 
 executable chapter3
   default-language:    Haskell2010
