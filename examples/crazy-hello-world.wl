@@ -11,6 +11,7 @@ x = ["first", 2, [3.0], {four: 4}]
 
 main arg : inType -> outType
   log "Hello,"
+  log ["hi", "more"]
   log "world!"
 
 otherFunction arg : someType -> someOtherType

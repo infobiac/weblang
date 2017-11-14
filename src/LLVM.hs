@@ -58,13 +58,18 @@ simpleLLVMTerm (Literal (ObjVal ts)) = concatMaybeCodegen last simpleLLVMTerm $ 
 simpleLLVMTerm _ = Nothing
 
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
-simpleLLVMFunctionCall "log" (Literal (StrVal str)) = Just $ llvmLog str
+simpleLLVMFunctionCall "log" (Literal val) = Just $ llvmLog val
 simpleLLVMFunctionCall _ _ = Nothing
 
-llvmLog :: String -> Codegen AST.Operand
-llvmLog s = do
+llvmLog :: PrimValue -> Codegen AST.Operand
+llvmLog (StrVal s) = do
   op <- llvmAllocValue (StrVal s)
   call (externf (AST.Name (fromString "puts"))) [op]
+
+llvmLog (ArrVal arr) = do 
+  let codeGens = llvmAllocValues (ArrVal arr)
+  ops <- codeGens!!0
+  call (externf (AST.Name (fromString "puts"))) [ops]
 
 llvmAllocValue :: PrimValue
                -> Codegen AST.Operand -- pointer to allocated memory
@@ -72,12 +77,25 @@ llvmAllocValue (StrVal s) = do
   let ptr = AST.Alloca (llvmCharArrayType (length s + 1)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 [] 
   op <- instr $ ptr
   let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-  let arrStr = stringToLLVMString s
-  _ <- instr $ AST.Store False op (cons arrStr) Nothing 0 []
+  let arrayS = stringToLLVMString s
+  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
   op2 <- instr $ ref
   return op2
-llvmAllocValue (NumVal s) = undefined -- do nothing?
-llvmAllocValue (ArrVal s) = undefined -- do nothing?
+
+llvmAllocValue (NumVal num) = undefined--do
+   --let ptr = AST.Alloca double Nothing 0 []
+   --op <- instr $ ptr
+   --let a = 19.2
+   --_ <- instr $ AST.Store False op (AST.LocalReference (AST.Name a)) Nothing 0 []
+   --return op
+
+llvmAllocValues :: PrimValue -> [Codegen AST.Operand]
+llvmAllocValues (ArrVal arr) = do
+  let matchHelp x = case x of 
+                (Literal x) -> llvmAllocValue x
+
+  let ptrs = map matchHelp arr
+  ptrs
 -- etc, for all primative types
 
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
@@ -91,3 +109,4 @@ stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s ++ [AS
 
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
+
