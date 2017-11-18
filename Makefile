@@ -8,10 +8,10 @@ hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
 hello-world.ll: examples/crazy-hello-world.wl Build
-	stack exec weblang hello-world.ll < examples/crazy-hello-world.wl
+	stack --nix exec weblang hello-world.ll < examples/crazy-hello-world.wl
 
 Build: 
-	stack build
+	stack --nix build
 
 
 chapter3-bin: chapter3/chapter3.o
@@ -28,3 +28,7 @@ chapter3/chapter3.s: chapter3/chapter3.ll
 
 chapter3/chapter3.ll: Build chapter3/chapter3.k chapter3/Main.hs
 	stack exec chapter3 chapter3/chapter3.k chapter3/chapter3.ll
+
+.PHONY : clean
+clean:
+	rm *.o *.s *.ll hello-world 
