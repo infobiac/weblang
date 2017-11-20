@@ -27,7 +27,7 @@ main = do
   case args of
     [] -> putStrLn $ "No output file given, not writing compiling"
     [outFile] -> do putStrLn $ "Writing LLVM assembly to " ++ outFile
-                    writeModule outFile . buildLLVM $ parsed
+                    writeModule outFile . buildModule $ parsed
 
 simpleRunProgram :: Program -> IO ()
 simpleRunProgram (Program _ _ _ fns) = mapM_ (mapM_ simpleRunExpression . body) (lookup "main" fns)
