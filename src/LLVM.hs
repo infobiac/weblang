@@ -23,7 +23,7 @@ baseMod = runLLVM (emptyModule "WebLang") $ do {
   external (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0)) "json" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "puts" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
                                         , AST.Name (fromString "s"))];
-  --external (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)) "jgets" [( AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0), AST.Name (fromString "s")), (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
+  external (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)) "jgets" [( AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0), AST.Name (fromString "s")), (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "test" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
 }
 
@@ -65,6 +65,7 @@ simpleLLVMTerm _ = Nothing
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
 simpleLLVMFunctionCall "log" (Literal val) = Just $ llvmLog val
 simpleLLVMFunctionCall "jn" (Literal val) = Just $ llvmJson val
+simpleLLVMFunctionCall "gets" (Literal val) = Just $ llvmJgets val
 simpleLLVMFunctionCall _ _ = Nothing
 
 llvmLog :: PrimValue -> Codegen AST.Operand
@@ -72,10 +73,15 @@ llvmLog (StrVal s) = do
   op <- llvmAllocValue (StrVal s)
   call (externf (AST.Name (fromString "puts"))) [op]
 
-llvmLog (ArrVal arr) = do 
-  let codeGens = llvmAllocValues (ArrVal arr)
-  ops <- codeGens!!0
-  call (externf (AST.Name (fromString "puts"))) [ops]
+llvmLog (ArrVal arr) = if checkNumArgs(2, ArrVal arr) 
+  then do
+    let codeGens = llvmAllocValues (ArrVal arr)
+    ops1 <- codeGens!!0
+    ops2 <- codeGens!!1
+    call (externf (AST.Name (fromString "puts"))) [ops1]
+    call (externf (AST.Name (fromString "puts"))) [ops2]
+  else
+    error "arrays for log can only have 2 elements"
 
 llvmAllocValue :: PrimValue
                -> Codegen AST.Operand -- pointer to allocated memory
@@ -99,7 +105,7 @@ llvmAllocValues :: PrimValue -> [Codegen AST.Operand]
 llvmAllocValues (ArrVal arr) = do
   let matchHelp x = case x of 
                 (Literal x) -> llvmAllocValue x
-
+                _ -> x
   let ptrs = map matchHelp arr
   ptrs
 -- etc, for all primative types
@@ -120,3 +126,17 @@ llvmJson :: PrimValue -> Codegen AST.Operand
 llvmJson (StrVal s) = do
   op <- llvmAllocValue (StrVal s)
   call (externf (AST.Name (fromString "json"))) [op]
+
+llvmJgets :: PrimValue -> Codegen AST.Operand
+llvmJgets (ArrVal arr) = do
+  let codeGens = llvmAllocValues (ArrVal arr)
+  ops1 <- codeGens!!0
+  ops2 <- codeGens!!1
+  call (externf (AST.Name (fromString "puts"))) [ops1, ops2]
+
+
+checkNumArgs :: (Int, PrimValue) -> Bool
+checkNumArgs (numOk, ArrVal args) = 
+  if numOk == length args
+    then True
+  else False
