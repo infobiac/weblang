@@ -9,4 +9,4 @@ x = ["first", 2, [3.0], {four: 4}]
 
 main arg : inType -> outType
   testjson = jn "{\"test\":\"hey\"}"
-  log "did it work?"
+  log [gets [jn "{\"test\":\"hey\"}", "test"], ""]

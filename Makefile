@@ -26,7 +26,7 @@ json-example.s: json-example.ll
 json-example.ll: examples/json-example.wl Build
 	stack --nix exec weblang json-example.ll < examples/json-example.wl
 
-jsonlib/jslonlib.o: jsonlib.cpp
+jsonlib/jsoonlib.o: jsonlib/jsonlib.cpp
 	nix-shell -p gcc --command "g++ jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
 
 

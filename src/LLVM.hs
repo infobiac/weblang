@@ -132,7 +132,7 @@ llvmJgets (ArrVal arr) = do
   let codeGens = llvmAllocValues (ArrVal arr)
   ops1 <- codeGens!!0
   ops2 <- codeGens!!1
-  call (externf (AST.Name (fromString "puts"))) [ops1, ops2]
+  call (externf (AST.Name (fromString "jgets"))) [ops1, ops2]
 
 
 checkNumArgs :: (Int, PrimValue) -> Bool

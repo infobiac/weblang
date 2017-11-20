@@ -28,7 +28,7 @@ Value& getp(int* intdoc, const char* key){
 	return (*d)[key];
 }
 
-std::string gets(int* intdoc, const char* key){
+const char* jgets(int* intdoc, const char* key){
 	Document* d = (Document*) intdoc;
 	if((*d).HasMember(key)){
 		std::cout << "we got it" << std::endl;
