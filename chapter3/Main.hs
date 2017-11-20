@@ -54,3 +54,4 @@ main = do
   case args of
     []      -> repl
     [fname, llname] -> processFile fname >>= mapM_ (writeAssembly llname)
+    _ -> repl

@@ -59,6 +59,7 @@ simpleLLVMTerm _ = Nothing
 
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
 simpleLLVMFunctionCall "log" (Literal val) = Just $ llvmLog val
+simpleLLVMFunctionCall "json" (Literal val) = Just $ llvmJson val
 simpleLLVMFunctionCall _ _ = Nothing
 
 llvmLog :: PrimValue -> Codegen AST.Operand
@@ -110,3 +111,7 @@ stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s ++ [AS
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
 
+llvmJson :: PrimValue -> Codegen AST.Operand
+llvmJson (StrVal s) = do
+  op <- llvmAllocValue (StrVal s)
+  call (externf (AST.Name (fromString "json"))) [op]
