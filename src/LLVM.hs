@@ -19,9 +19,14 @@ writeModule fp m =
   Context.withContext (\context -> Module.withModuleFromAST context m (\m' -> write context m'))
   where write context m' = Module.writeLLVMAssemblyToFile (Module.File fp) m'
 
-baseMod = runLLVM (emptyModule "WebLang") $ do
+baseMod = runLLVM (emptyModule "WebLang") $ do {
+  external (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0)) "json" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "puts" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
-                                        , AST.Name (fromString "s"))]
+                                        , AST.Name (fromString "s"))];
+  external (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)) "jgets" [( AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0), AST.Name (fromString "s")), (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
+}
+  --external (AST.IntegerType 32) "test" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
+
 
 buildLLVM :: Program -> AST.Module
 buildLLVM p = runLLVM baseMod (simpleLLVM p)
@@ -31,7 +36,7 @@ simpleLLVM (Program _ _ _ fns) = mapM_ simpleLLVMFunction fns
 
 simpleLLVMFunction :: (FnName, Function) -> LLVM ()
 simpleLLVMFunction ("main", (Function {..})) = define llvmRetType "main" [] llvmBody
-  where llvmRetType = AST.IntegerType 32
+  where llvmRetType = AST.IntegerType 32 
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
@@ -59,7 +64,7 @@ simpleLLVMTerm _ = Nothing
 
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
 simpleLLVMFunctionCall "log" (Literal val) = Just $ llvmLog val
-simpleLLVMFunctionCall "json" (Literal val) = Just $ llvmJson val
+simpleLLVMFunctionCall "jn" (Literal val) = Just $ llvmJson val
 simpleLLVMFunctionCall _ _ = Nothing
 
 llvmLog :: PrimValue -> Codegen AST.Operand

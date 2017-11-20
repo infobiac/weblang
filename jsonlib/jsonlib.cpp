@@ -3,33 +3,45 @@
 #include "rapidjson/include/rapidjson/stringbuffer.h"
 #include <iostream>
 using namespace rapidjson;
+extern "C"{
 
-Document* json(const char*s){
+int* json(const char*s){
+	std::cout << "Storing: " << s << std::endl;
 	Document* d = new Document();
 	(*d).Parse(s);
-	return d;
+	return (int*)d;
 }
-
-Document* json(){
+/*
+int* json(){
 	Document* d = new Document();
 	(*d).Parse("");
-	return d;
+	return (int*)d;
+}*/
+
+double test(double s){
+	std::cout << "HI" << std::endl;
+	return 3;
 }
 
-Value& getp(Document* d, const char* key){
+Value& getp(int* intdoc, const char* key){
+	Document* d = (Document*)intdoc;
 	return (*d)[key];
 }
 
-std::string gets(Document *d, const char* key){
+std::string gets(int* intdoc, const char* key){
+	Document* d = (Document*) intdoc;
 	if((*d).HasMember(key)){
-		return getp(d, key).GetString();
+		std::cout << "we got it" << std::endl;
+		return getp((int*)d, key).GetString();
 	}
 	else{
+		std::cout << "not here" << std::endl;
 		return "";
 	}
 }
 
-std::string adds(Document *d, const char* key, const char* value){
+std::string adds(int *intdoc, const char* key, const char* value){
+	Document* d = (Document*)intdoc;
 	if ((*d).HasMember(key)){
 		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
 		return key;
@@ -44,7 +56,8 @@ std::string adds(Document *d, const char* key, const char* value){
 	}
 }
 
-std::string tostring(Document *d){
+std::string tostring(int *tempdoc){
+	Document* d = (Document *)tempdoc;
 	StringBuffer buff;
 	buff.Clear();
 	Writer<StringBuffer> writer(buff);
@@ -52,16 +65,16 @@ std::string tostring(Document *d){
 	return std::string(buff.GetString());
 }
 /*
- * Test function
+ // Test function
 int main(){
 	const char* test = "{\"test\":\"christophe\"}";
-
-	Document* j = json(test);
+	std::cout << sizeof(int) <<std::endl;
+	int* j = json(test);
 	adds(j, "boop", "is");
 	adds(j, "test", "w");
 	std::cout << tostring(j) << std::endl;
-	std::cout << (*j)["test"].GetString() << std::endl;
+	std::cout << (*((Document*)j))["test"].GetString() << std::endl;
 	return 0;
 }
 */
-
+}
