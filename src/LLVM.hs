@@ -36,7 +36,7 @@ simpleLLVM (Program _ _ _ fns) = mapM_ simpleLLVMFunction fns
 
 simpleLLVMFunction :: (FnName, Function) -> LLVM ()
 simpleLLVMFunction ("main", (Function {..})) = define llvmRetType "main" [] llvmBody
-  where llvmRetType = (AST.IntegerType 32)  
+  where llvmRetType = (AST.IntegerType 32)
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
@@ -60,6 +60,7 @@ simpleLLVMTerm :: Term -> Maybe (Codegen AST.Operand)
 simpleLLVMTerm (FunctionCall fname arg) = simpleLLVMFunctionCall fname arg
 simpleLLVMTerm (Literal (ArrVal ts)) = concatMaybeCodegen last simpleLLVMTerm ts
 simpleLLVMTerm (Literal (ObjVal ts)) = concatMaybeCodegen last simpleLLVMTerm $ Map.elems ts
+simpleLLVMTerm (Literal (StrVal s)) = Just $ llvmAllocValue (StrVal s)
 simpleLLVMTerm _ = Nothing
 
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
@@ -86,7 +87,7 @@ llvmLog (ArrVal arr) = if checkNumArgs(2, ArrVal arr)
 llvmAllocValue :: PrimValue
                -> Codegen AST.Operand -- pointer to allocated memory
 llvmAllocValue (StrVal s) = do
-  let ptr = AST.Alloca (llvmCharArrayType (length s + 1)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 [] 
+  let ptr = AST.Alloca (llvmCharArrayType (length s + 1)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
   op <- instr $ ptr
   let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
   let arrayS = stringToLLVMString s
@@ -103,10 +104,9 @@ llvmAllocValue (NumVal num) = undefined--do
 
 llvmAllocValues :: PrimValue -> [Codegen AST.Operand]
 llvmAllocValues (ArrVal arr) = do
-  let matchHelp x = case x of 
-                (Literal x) -> llvmAllocValue x
-                _ -> x
-  let ptrs = map matchHelp arr
+  --let matchHelp x = case x of
+                --(Literal x) -> llvmAllocValue x
+  let ptrs = map (fromJust . simpleLLVMTerm) arr
   ptrs
 -- etc, for all primative types
 
