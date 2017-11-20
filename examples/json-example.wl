@@ -8,6 +8,5 @@ type Natural x : Integral
 x = ["first", 2, [3.0], {four: 4}]
 
 main arg : inType -> outType
-  js ["{test:hey}"]
-  jgets [j, "test"]
-  log "hey"
+  testjson = jn "{\"test\":\"hey\"}"
+  log "did it work?"

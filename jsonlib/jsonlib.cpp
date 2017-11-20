@@ -18,7 +18,7 @@ int* json(){
 	return (int*)d;
 }*/
 
-double test(double s){
+int test(const char* s){
 	std::cout << "HI" << std::endl;
 	return 3;
 }

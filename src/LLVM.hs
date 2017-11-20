@@ -23,9 +23,9 @@ baseMod = runLLVM (emptyModule "WebLang") $ do {
   external (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0)) "json" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "puts" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)
                                         , AST.Name (fromString "s"))];
-  external (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)) "jgets" [( AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0), AST.Name (fromString "s")), (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
+  --external (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0)) "jgets" [( AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0), AST.Name (fromString "s")), (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))];
+  external (AST.IntegerType 32) "test" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
 }
-  --external (AST.IntegerType 32) "test" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
 
 
 buildLLVM :: Program -> AST.Module
@@ -36,7 +36,7 @@ simpleLLVM (Program _ _ _ fns) = mapM_ simpleLLVMFunction fns
 
 simpleLLVMFunction :: (FnName, Function) -> LLVM ()
 simpleLLVMFunction ("main", (Function {..})) = define llvmRetType "main" [] llvmBody
-  where llvmRetType = AST.IntegerType 32 
+  where llvmRetType = (AST.IntegerType 32)  
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
