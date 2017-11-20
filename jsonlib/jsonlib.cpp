@@ -51,7 +51,8 @@ std::string tostring(Document *d){
 	(*d).Accept(writer);
 	return std::string(buff.GetString());
 }
-
+/*
+ * Test function
 int main(){
 	const char* test = "{\"test\":\"christophe\"}";
 
@@ -62,4 +63,5 @@ int main(){
 	std::cout << (*j)["test"].GetString() << std::endl;
 	return 0;
 }
+*/
 

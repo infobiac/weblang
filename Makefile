@@ -27,7 +27,7 @@ chapter3/chapter3.s: chapter3/chapter3.ll
 	nix-shell -p llvm --command "llc chapter3/chapter3.ll"
 
 chapter3/chapter3.ll: Build chapter3/chapter3.k chapter3/Main.hs
-	stack exec --nix chapter3 chapter3/chapter3.ll < chapter3/chapter3.k
+	stack exec --nix chapter3 chapter3/chapter3.k chapter3/chapter3.ll
 
 .PHONY : clean
 clean:
