@@ -7,11 +7,11 @@ hello-world.o: hello-world.s
 hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
-hello-world.ll: examples/crazy-hello-world.wl Build
-	stack --nix exec weblang hello-world.ll < examples/crazy-hello-world.wl
+hello-world.ll: examples/crazy-hello-world.wl Build-weblang
+	stack exec weblang hello-world.ll < examples/crazy-hello-world.wl
 
-Build: 
-	stack --nix build
+Build-weblang: 
+	stack build :weblang
 
 
 json: json-example.o jsonlib/jsonlib.o
@@ -23,11 +23,12 @@ json-example.o: json-example.s
 json-example.s: json-example.ll
 	nix-shell -p llvm --command "llc json-example.ll"
 
-json-example.ll: examples/json-example.wl Build
+json-example.ll: examples/json-example.wl Build-weblang
 	stack --nix exec weblang json-example.ll < examples/json-example.wl
 
-jsonlib/jsoonlib.o: jsonlib/jsonlib.cpp
-	nix-shell -p gcc --command "g++ jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
+jsonlib/jsonlib.o: jsonlib/jsonlib.cpp
+	nix-shell -p rapidjson gcc --command "g++ $$NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
+
 
 
 
@@ -43,9 +44,11 @@ chapter3/chapter3.o: chapter3/chapter3.s
 chapter3/chapter3.s: chapter3/chapter3.ll
 	nix-shell -p llvm --command "llc chapter3/chapter3.ll"
 
-chapter3/chapter3.ll: Build chapter3/chapter3.k chapter3/Main.hs
+chapter3/chapter3.ll: Build-chapter3 chapter3/chapter3.k chapter3/Main.hs
 	stack exec --nix chapter3 chapter3/chapter3.k chapter3/chapter3.ll
 
+Build-chapter3:
+	stack build :chapter3
 
 
 

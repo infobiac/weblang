@@ -68,4 +68,5 @@ extra-package-dbs: []
 
 
 nix:
+  enable: true
   packages: [llvm_4, gmp, binutils, gcc, ncurses]

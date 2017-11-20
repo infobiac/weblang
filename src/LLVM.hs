@@ -27,7 +27,6 @@ baseMod = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [( AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0), AST.Name (fromString "s"))]
 }
 
-
 buildLLVM :: Program -> AST.Module
 buildLLVM p = runLLVM baseMod (simpleLLVM p)
 
@@ -54,6 +53,8 @@ simpleLLVMExpressions exprs = concatMaybeCodegen last simpleLLVMExpression exprs
 simpleLLVMExpression :: (Int, Expression) -> Maybe (Codegen AST.Operand)
 simpleLLVMExpression (2, Unassigned term) = simpleLLVMTerm term
 simpleLLVMExpression (2, Assignment _ term) = simpleLLVMTerm term
+  --val <- simpleLLVMTerm term
+  --store valName val
 simpleLLVMExpression _ = Nothing
 
 simpleLLVMTerm :: Term -> Maybe (Codegen AST.Operand)
@@ -61,6 +62,7 @@ simpleLLVMTerm (FunctionCall fname arg) = simpleLLVMFunctionCall fname arg
 simpleLLVMTerm (Literal (ArrVal ts)) = concatMaybeCodegen last simpleLLVMTerm ts
 simpleLLVMTerm (Literal (ObjVal ts)) = concatMaybeCodegen last simpleLLVMTerm $ Map.elems ts
 simpleLLVMTerm (Literal (StrVal s)) = Just $ llvmAllocValue (StrVal s)
+--simpleLLVMTerm (Variable varName) = Just $ recall varName
 simpleLLVMTerm _ = Nothing
 
 simpleLLVMFunctionCall :: String -> Term -> Maybe (Codegen AST.Operand)
@@ -73,7 +75,6 @@ llvmLog :: PrimValue -> Codegen AST.Operand
 llvmLog (StrVal s) = do
   op <- llvmAllocValue (StrVal s)
   call (externf (AST.Name (fromString "puts"))) [op]
-
 llvmLog (ArrVal arr) = if checkNumArgs(2, ArrVal arr) 
   then do
     let codeGens = llvmAllocValues (ArrVal arr)
