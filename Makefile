@@ -7,8 +7,8 @@ hello-world.o: hello-world.s
 hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
-hello-world.ll: examples/crazy-hello-world.wl Build-weblang
-	stack exec weblang hello-world.ll < examples/crazy-hello-world.wl
+hello-world.ll: examples/hello-world.wl Build-weblang
+	stack exec weblang hello-world.ll < examples/hello-world.wl
 
 Build-weblang: 
 	stack build :weblang
