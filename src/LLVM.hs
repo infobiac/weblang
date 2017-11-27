@@ -31,8 +31,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmStringPointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmStringPointer, AST.Name (fromString "s"))];
-  external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))]
-  external llvmI32Pointer "getJSON" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
 }
 
 buildLLVM :: Program -> LLVM ()
@@ -53,6 +53,7 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 expressionLLVM :: (Int, Expression) -> Codegen AST.Operand
 expressionLLVM (2, Unassigned term) = termLLVM term
 expressionLLVM (2, Assignment _ term) = termLLVM term
+expressionLLVM (3, Unassigned term) = termLLVM term
   --val <- simpleLLVMTerm term
   --store valName val
 expressionLLVM e = error $ "unimplemented expression " ++ show e
@@ -62,7 +63,6 @@ termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
 termLLVM (Literal prim) = primLLVM prim
---simpleLLVMTerm (Variable varName) = Just $ recall varName
 termLLVM t = error $ "unimplemented term " ++ show t
 
 primLLVM :: PrimValue -> Codegen AST.Operand
@@ -88,7 +88,7 @@ llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "jsonArr"))
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
 functionCallLLVM "log" arg = llvmCallLog arg
 functionCallLLVM "jn" arg = llvmCallJson arg
-functionCallLLVM "clientGet" arg = llvmGet arg
+functionCallLLVM "clientPost" arg = llvmCallPost arg
 --functionCallLLVM "gets" arg = llvmJgets arg
 functionCallLLVM fnName _ = error $ "unimplemented function call " ++ fnName
 
@@ -98,10 +98,8 @@ llvmCallJson op = call (externf (AST.Name (fromString "json"))) [op]
 llvmCallLog :: AST.Operand -> Codegen AST.Operand
 llvmCallLog op = call (externf (AST.Name (fromString "puts"))) [op]
 
-llvmGet :: PrimValue -> Codegen AST.Operand
-llvmGet (StrVal s) = do 
-  op <- llvmAllocValue (StrVal s)
-  call (externf (AST.Name (fromString "getJSON"))) [op]
+llvmCallPost :: AST.Operand -> Codegen AST.Operand
+llvmCallPost op = call (externf (AST.Name (fromString "post"))) [op]
 
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]

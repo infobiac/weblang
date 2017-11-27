@@ -442,14 +442,12 @@ create_response (void *cls,
         session->start = time (NULL);
         if (0 == strcmp (method, MHD_HTTP_METHOD_POST))
         {
-                printf("%s at %s\n", "GOT POST", url);
                 /* evaluate POST data */
                 MHD_post_process (request->pp,
                                   upload_data,
                                   *upload_data_size);
                 if (0 != *upload_data_size)
                 {
-                    printf("%s\n", "0");
                         *upload_data_size = 0;
                         return MHD_YES;
                 }
@@ -463,6 +461,8 @@ create_response (void *cls,
                 
                 /* Run weblang command */
 
+                printf("%s at %s\n", "body", session->value_1);
+		printf("%s at %s\n", "url", url);
 		char *buffer;
 		char urlFile[100]; 
 		strcpy(urlFile, "~/plt");
@@ -504,7 +504,11 @@ create_response (void *cls,
 			free(buffer);
 
 
-		}	
+		}
+	       else if(strcmp(url, "/echo") == 0) {
+			ret = create_json(session->value_1, "application/json", session, connection);
+			printf("in\n");
+	       }	       
 		else
 			ret = create_json("No function found in weblang that matches endpoint", "application/json", session, connection);
 		/* do your work here, buffer is a string contains the whole text */

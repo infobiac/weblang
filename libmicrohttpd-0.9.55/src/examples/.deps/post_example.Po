@@ -47,7 +47,7 @@ post_example.o: post_example.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/asm/socket.h \
  /usr/include/asm-generic/socket.h \
  /usr/include/x86_64-linux-gnu/asm/sockios.h \
- /usr/include/asm-generic/sockios.h
+ /usr/include/asm-generic/sockios.h /usr/include/wordexp.h
 
 /usr/include/stdc-predef.h:
 
@@ -178,3 +178,5 @@ post_example.o: post_example.c /usr/include/stdc-predef.h \
 /usr/include/x86_64-linux-gnu/asm/sockios.h:
 
 /usr/include/asm-generic/sockios.h:
+
+/usr/include/wordexp.h:

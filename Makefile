@@ -29,6 +29,8 @@ json-example.ll: examples/json-example.wl Build-weblang
 jsonlib/jsonlib.o: jsonlib/jsonlib.cpp
 	nix-shell -p rapidjson gcc --command "g++ $$NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
 
+
+
 chapter3-bin: chapter3/chapter3.o jsonlib/jsonlib.o
 	nix-shell -p gcc --command "g++ chapter3/chapter3.o jsonlib/jsonlib.o -o chapter3-bin"
 
@@ -47,16 +49,28 @@ chapter3/chapter3.ll: Build-chapter3 chapter3/chapter3.k chapter3/Main.hs
 Build-chapter3:
 	stack build :chapter3
 
-
-
 chapter3-test: chapter3/chapter3.o chapter3/test.o
 	nix-shell -p gcc --command "g++ chapter3/chapter3.o chapter3/test.o -o chapter3-test"
 
 chapter3/test.o: chapter3/test.cpp
 	nix-shell -p gcc --command "g++ -c chapter3/test.cpp -o chapter3/test.o"
 
-client/client.o: client/client.c
-	gcc -Wall -c client/client.c -L./client -lrequests -L/usr/bin -lcurl -o client/client.o	
+
+
+echo-server: echo.o client/client.o
+	nix-shell -p curl gcc --command "g++ echo.o client/client.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
+
+echo.o: echo.s
+	nix-shell -p gcc --command "gcc -c echo.s -o echo.o"
+
+echo.s: echo.ll
+	nix-shell -p llvm --command "llc echo.ll"
+
+echo.ll: examples/echo-example.wl Build-weblang
+	stack --nix exec weblang echo.ll < examples/echo-example.wl
+
+client/client.o: client/client.cpp
+	nix-shell -p rapidjson gcc --command "gcc -Wall $$NIX_CFLAGS_COMPILE -c client/client.cpp -I/home/jordanvega/plt/client/cpr-example/opt/cpr/include -Iclient/cpr-example/opt/json/src -Lclient/cpr-example/build/lib -lcpr -lcurl  -o client/client.o"
 
 .PHONY : clean
 clean:
