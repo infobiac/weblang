@@ -88,7 +88,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have a functional curl library. */
-/* #undef HAVE_LIBCURL */
+#define HAVE_LIBCURL 1
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
@@ -311,67 +311,67 @@
 #define INLINE_FUNC 1
 
 /* Defined if libcurl supports AsynchDNS */
-/* #undef LIBCURL_FEATURE_ASYNCHDNS */
+#define LIBCURL_FEATURE_ASYNCHDNS 1
 
 /* Defined if libcurl supports IDN */
-/* #undef LIBCURL_FEATURE_IDN */
+#define LIBCURL_FEATURE_IDN 1
 
 /* Defined if libcurl supports IPv6 */
-/* #undef LIBCURL_FEATURE_IPV6 */
+#define LIBCURL_FEATURE_IPV6 1
 
 /* Defined if libcurl supports KRB4 */
 /* #undef LIBCURL_FEATURE_KRB4 */
 
 /* Defined if libcurl supports libz */
-/* #undef LIBCURL_FEATURE_LIBZ */
+#define LIBCURL_FEATURE_LIBZ 1
 
 /* Defined if libcurl supports NTLM */
-/* #undef LIBCURL_FEATURE_NTLM */
+#define LIBCURL_FEATURE_NTLM 1
 
 /* Defined if libcurl supports SSL */
-/* #undef LIBCURL_FEATURE_SSL */
+#define LIBCURL_FEATURE_SSL 1
 
 /* Defined if libcurl supports SSPI */
 /* #undef LIBCURL_FEATURE_SSPI */
 
 /* Defined if libcurl supports DICT */
-/* #undef LIBCURL_PROTOCOL_DICT */
+#define LIBCURL_PROTOCOL_DICT 1
 
 /* Defined if libcurl supports FILE */
-/* #undef LIBCURL_PROTOCOL_FILE */
+#define LIBCURL_PROTOCOL_FILE 1
 
 /* Defined if libcurl supports FTP */
-/* #undef LIBCURL_PROTOCOL_FTP */
+#define LIBCURL_PROTOCOL_FTP 1
 
 /* Defined if libcurl supports FTPS */
-/* #undef LIBCURL_PROTOCOL_FTPS */
+#define LIBCURL_PROTOCOL_FTPS 1
 
 /* Defined if libcurl supports HTTP */
-/* #undef LIBCURL_PROTOCOL_HTTP */
+#define LIBCURL_PROTOCOL_HTTP 1
 
 /* Defined if libcurl supports HTTPS */
-/* #undef LIBCURL_PROTOCOL_HTTPS */
+#define LIBCURL_PROTOCOL_HTTPS 1
 
 /* Defined if libcurl supports IMAP */
-/* #undef LIBCURL_PROTOCOL_IMAP */
+#define LIBCURL_PROTOCOL_IMAP 1
 
 /* Defined if libcurl supports LDAP */
-/* #undef LIBCURL_PROTOCOL_LDAP */
+#define LIBCURL_PROTOCOL_LDAP 1
 
 /* Defined if libcurl supports POP3 */
-/* #undef LIBCURL_PROTOCOL_POP3 */
+#define LIBCURL_PROTOCOL_POP3 1
 
 /* Defined if libcurl supports RTSP */
-/* #undef LIBCURL_PROTOCOL_RTSP */
+#define LIBCURL_PROTOCOL_RTSP 1
 
 /* Defined if libcurl supports SMTP */
-/* #undef LIBCURL_PROTOCOL_SMTP */
+#define LIBCURL_PROTOCOL_SMTP 1
 
 /* Defined if libcurl supports TELNET */
-/* #undef LIBCURL_PROTOCOL_TELNET */
+#define LIBCURL_PROTOCOL_TELNET 1
 
 /* Defined if libcurl supports TFTP */
-/* #undef LIBCURL_PROTOCOL_TFTP */
+#define LIBCURL_PROTOCOL_TFTP 1
 
 /* This is a Linux kernel */
 #define LINUX 1
@@ -383,16 +383,16 @@
 /* #undef MHD_NO_THREAD_NAMES */
 
 /* gnuTLS lib version - used in conjunction with cURL */
-/* #undef MHD_REQ_CURL_GNUTLS_VERSION */
+#define MHD_REQ_CURL_GNUTLS_VERSION "2.8.6"
 
 /* NSS lib version - used in conjunction with cURL */
-/* #undef MHD_REQ_CURL_NSS_VERSION */
+#define MHD_REQ_CURL_NSS_VERSION "3.12.0"
 
 /* required cURL SSL version to run tests */
-/* #undef MHD_REQ_CURL_OPENSSL_VERSION */
+#define MHD_REQ_CURL_OPENSSL_VERSION "0.9.8"
 
 /* required cURL version to run tests */
-/* #undef MHD_REQ_CURL_VERSION */
+#define MHD_REQ_CURL_VERSION "7.16.4"
 
 /* define to use pthreads */
 #define MHD_USE_POSIX_THREADS 1
