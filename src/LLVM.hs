@@ -7,6 +7,8 @@ import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
 import qualified LLVM.AST.Constant as AST hiding (GetElementPtr)
+import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
+import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
 import Data.Maybe
@@ -62,6 +64,49 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
+
+termLLVM (IfThenElse bool tr fal) = do
+  iff <- addBlock "iff"
+  ielse <- addBlock "ielse"
+  iexit <- addBlock "iexit"
+  bool <- termLLVM bool
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+  cbr branchval iff ielse
+
+  setBlock iff
+  tval <- termLLVM tr
+  br iexit
+  iff <- getBlock
+
+  setBlock ielse
+  fval <- termLLVM fal
+  br iexit
+  ielse <- getBlock
+
+  setBlock iexit
+  phi int [(tval, iff), (fval, ielse)]
+
+--termLLVM (If bool tr fal) = do
+--  iff <- addBlock "iff"
+--  ielse <- addBlock "ielse"
+--  iexit <- addBlock "iexit"
+--  bool <- termLLVM bool
+--  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+--  cbr branchval iff ielse
+
+--  setBlock iff
+--  tval <- termLLVM tr
+--  br iexit
+--  iff <- getBlock
+
+--  setBlock ielse
+--  fval <- termLLVM fal
+--  br iexit
+--  ielse <- getBlock
+
+--  setBlock iexit
+--  phi int [(tval, iff), (fval, ielse)]
+
 termLLVM (Literal prim) = primLLVM prim
 termLLVM t = error $ "unimplemented term " ++ show t
 
@@ -71,6 +116,7 @@ primLLVM (ArrVal arr) = do
   ptrArray <- buildPtrArray elemPtrs
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
+primLLVM (NumVal num) = return $ cons $ AST.Float (Fl.Double num)
 primLLVM (StrVal s) = do
   let ptr =
         AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []

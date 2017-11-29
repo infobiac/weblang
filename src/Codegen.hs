@@ -21,6 +21,7 @@ import qualified LLVM.AST.Constant as C
 import qualified LLVM.AST.Attribute as A
 import qualified LLVM.AST.CallingConvention as CC
 import qualified LLVM.AST.FloatingPointPredicate as FP
+import qualified LLVM.AST.IntegerPredicate as Intypoo
 
 -------------------------------------------------------------------------------
 -- Module Level
@@ -77,6 +78,8 @@ double :: Type
 double = FloatingPointType DoubleFP
 --double = FloatingPointType 64 IEEE
 
+int :: Type
+int = IntegerType 32
 -------------------------------------------------------------------------------
 -- Names
 -------------------------------------------------------------------------------
@@ -251,6 +254,9 @@ fdiv a b = instr $ FDiv NoFastMathFlags a b []
 fcmp :: FP.FloatingPointPredicate -> Operand -> Operand -> Codegen Operand
 fcmp cond a b = instr $ FCmp cond a b []
 
+icmp :: Intypoo.IntegerPredicate -> Operand -> Operand -> Codegen Operand
+icmp cond a b = instr $ ICmp cond a b []
+
 cons :: C.Constant -> Operand
 cons = ConstantOperand
 
@@ -282,3 +288,6 @@ cbr cond tr fl = terminator $ Do $ CondBr cond tr fl []
 
 ret :: Maybe Operand -> Codegen (Named Terminator)
 ret val = terminator $ Do $ Ret val []
+
+phi :: Type -> [(Operand, Name)] -> Codegen Operand
+phi typ res = instr $ Phi typ res []
