@@ -35,6 +35,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
                                      , (llvmStringPointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
 }
 
 buildLLVM :: Program -> LLVM ()
@@ -135,7 +136,7 @@ functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
 functionCallLLVM "log" arg = llvmCallLog arg
 functionCallLLVM "jn" arg = llvmCallJson arg
 functionCallLLVM "clientPost" arg = llvmCallPost arg
---functionCallLLVM "gets" arg = llvmJgets arg
+functionCallLLVM "clientGet" arg = llvmCallGet arg
 functionCallLLVM fnName _ = error $ "unimplemented function call " ++ fnName
 
 llvmCallJson :: AST.Operand -> Codegen AST.Operand
@@ -146,6 +147,9 @@ llvmCallLog op = call (externf (AST.Name (fromString "puts"))) [op]
 
 llvmCallPost :: AST.Operand -> Codegen AST.Operand
 llvmCallPost op = call (externf (AST.Name (fromString "post"))) [op]
+
+llvmCallGet :: AST.Operand -> Codegen AST.Operand
+llvmCallGet op = call (externf (AST.Name (fromString "get"))) [op]
 
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]

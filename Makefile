@@ -8,10 +8,10 @@ hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
 hello-world.ll: examples/hello-world.wl Build-weblang
-	stack exec weblang hello-world.ll < examples/hello-world.wl
+	stack exec --nix weblang hello-world.ll < examples/hello-world.wl
 
 Build-weblang: 
-	stack build :weblang
+	stack build --nix :weblang
 
 
 json: json-example.o jsonlib/jsonlib.o

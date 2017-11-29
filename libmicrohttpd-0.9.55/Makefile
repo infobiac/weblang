@@ -250,21 +250,21 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoconf
-AUTOHEADER = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoheader
-AUTOMAKE = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing automake-1.15
+AUTOCONF = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoconf
+AUTOHEADER = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoheader
+AUTOMAKE = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing automake-1.15
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -fno-strict-aliasing
 CPP = gcc -E
 CPPFLAGS = 
-CPU_COUNT = 1
+CPU_COUNT = 2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -295,7 +295,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
-LIBCURL = 
+LIBCURL = -lcurl
 LIBCURL_CPPFLAGS = 
 LIBGCRYPT_CFLAGS = 
 LIBGCRYPT_CONFIG = no
@@ -310,7 +310,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing makeinfo
+MAKEINFO = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing makeinfo
 MANIFEST_TOOL = :
 MHD_LIBDEPS =  
 MHD_LIBDEPS_PKGCFG =  
@@ -352,10 +352,10 @@ SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.9.55
 _libcurl_config = 
-abs_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55
-abs_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55
-abs_top_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55
-abs_top_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55
+abs_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55
+abs_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55
+abs_top_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55
+abs_top_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55
 ac_configure_args = 
 ac_ct_AR = ar
 ac_ct_CC = gcc
@@ -388,7 +388,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/install-sh
+install_sh = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -1020,8 +1020,8 @@ renew-po-configure.ac:
 
 $(srcdir_po)/configure: $(srcdir_po)/configure.ac
 	@$(am__cd) $(srcdir_po) && echo "Creating po/configure..." && \
-	  echo "${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing aclocal-1.15" && ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing aclocal-1.15 && \
-	  echo "${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoconf" && ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoconf
+	  echo "${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing aclocal-1.15" && ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing aclocal-1.15 && \
+	  echo "${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoconf" && ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoconf
 
 # Generate po/POTFILES.in if po/POTFILES.in is missing
 $(srcdir_po)/POTFILES.in:
