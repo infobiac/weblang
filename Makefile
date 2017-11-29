@@ -43,6 +43,19 @@ conditional-example.ll: examples/conditional-example.wl Build-weblang
 	stack --nix exec weblang conditional-example.ll < examples/conditional-example.wl
 
 
+binop: binop-example.o
+	nix-shell -p gcc --command "gcc binop-example.o -o binop-example"
+
+binop-example.o: binop-example.s
+	nix-shell -p gcc --command "gcc -c binop-example.s -o binop-example.o" 
+
+binop-example.s: binop-example.ll
+	nix-shell -p llvm --command "llc binop-example.ll"
+
+binop-example.ll: examples/binop-example.wl Build-weblang
+	stack --nix exec weblang binop-example.ll < examples/binop-example.wl
+
+
 chapter3-bin: chapter3/chapter3.o jsonlib/jsonlib.o
 	nix-shell -p gcc --command "g++ chapter3/chapter3.o jsonlib/jsonlib.o -o chapter3-bin"
 

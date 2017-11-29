@@ -38,6 +38,13 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
 }
 
+opops = Map.fromList [
+      ("+", fadd), 
+      ("-", fsub),
+      ("*", fmul),
+      ("/", fdiv)
+  ]
+
 buildLLVM :: Program -> LLVM ()
 buildLLVM (Program _ _ _ fns) = mapM_ functionLLVM fns
 
@@ -66,6 +73,14 @@ termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
 
+termLLVM (Operator opp t1 t2) = do
+  case Map.lookup opp opops of
+    Just ap -> do
+      evalt1 <- termLLVM t1
+      evalt2 <- termLLVM t2
+      ap evalt1 evalt2
+    Nothing -> error $ "unimplemented operator " ++ show opp
+
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"
   ielse <- addBlock "ielse"
@@ -87,13 +102,13 @@ termLLVM (IfThenElse bool tr fal) = do
   setBlock iexit
   phi int [(tval, iff), (fval, ielse)]
 
+--JUST DO WHAT FOR DOES HERE!
 --termLLVM (If bool tr fal) = do
 --  iff <- addBlock "iff"
---  ielse <- addBlock "ielse"
 --  iexit <- addBlock "iexit"
 --  bool <- termLLVM bool
 --  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
---  cbr branchval iff ielse
+--  cbr branchval iff iexit
 
 --  setBlock iff
 --  tval <- termLLVM tr
