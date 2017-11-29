@@ -90,45 +90,45 @@ POST_UNINSTALL = :
 build_triplet = x86_64-pc-linux-gnu
 host_triplet = x86_64-pc-linux-gnu
 #am__append_1 = https
-#check_PROGRAMS = test_start_stop$(EXEEXT) \
-#	test_get$(EXEEXT) test_get_sendfile$(EXEEXT) \
-#	test_urlparse$(EXEEXT) test_delete$(EXEEXT) \
-#	test_put$(EXEEXT) \
-#	test_process_headers$(EXEEXT) \
-#	test_process_arguments$(EXEEXT) \
-#	test_parse_cookies$(EXEEXT) \
-#	test_large_put$(EXEEXT) test_get11$(EXEEXT) \
-#	test_get_sendfile11$(EXEEXT) \
-#	test_put11$(EXEEXT) test_large_put11$(EXEEXT) \
-#	test_large_put_inc11$(EXEEXT) \
-#	test_long_header$(EXEEXT) \
-#	test_long_header11$(EXEEXT) \
-#	test_get_chunked$(EXEEXT) \
-#	test_put_chunked$(EXEEXT) \
-#	test_iplimit11$(EXEEXT) \
-#	test_termination$(EXEEXT) \
-#	test_timeout$(EXEEXT) test_callback$(EXEEXT) \
-#	perf_get$(EXEEXT) $(am__EXEEXT_1) \
-#	$(am__EXEEXT_2) $(am__EXEEXT_3) \
-#	$(am__EXEEXT_4) $(am__EXEEXT_5)
-#am__append_2 = test_get_response_cleanup
-#am__append_3 = \
-#  test_quiesce \
-#  test_concurrent_stop \
-#  perf_get_concurrent
+check_PROGRAMS = test_start_stop$(EXEEXT) \
+	test_get$(EXEEXT) test_get_sendfile$(EXEEXT) \
+	test_urlparse$(EXEEXT) test_delete$(EXEEXT) \
+	test_put$(EXEEXT) \
+	test_process_headers$(EXEEXT) \
+	test_process_arguments$(EXEEXT) \
+	test_parse_cookies$(EXEEXT) \
+	test_large_put$(EXEEXT) test_get11$(EXEEXT) \
+	test_get_sendfile11$(EXEEXT) \
+	test_put11$(EXEEXT) test_large_put11$(EXEEXT) \
+	test_large_put_inc11$(EXEEXT) \
+	test_long_header$(EXEEXT) \
+	test_long_header11$(EXEEXT) \
+	test_get_chunked$(EXEEXT) \
+	test_put_chunked$(EXEEXT) \
+	test_iplimit11$(EXEEXT) \
+	test_termination$(EXEEXT) \
+	test_timeout$(EXEEXT) test_callback$(EXEEXT) \
+	perf_get$(EXEEXT) $(am__EXEEXT_1) \
+	$(am__EXEEXT_2) $(am__EXEEXT_3) \
+	$(am__EXEEXT_4) $(am__EXEEXT_5)
+am__append_2 = test_get_response_cleanup
+am__append_3 = \
+  test_quiesce \
+  test_concurrent_stop \
+  perf_get_concurrent
 
-#am__append_4 = test_quiesce_stream
-#am__append_5 = \
-#  test_post \
-#  test_postform \
-#  test_post_loop \
-#  test_post11 \
-#  test_postform11 \
-#  test_post_loop11
+am__append_4 = test_quiesce_stream
+am__append_5 = \
+  test_post \
+  test_postform \
+  test_post_loop \
+  test_post11 \
+  test_postform11 \
+  test_post_loop11
 
-#noinst_PROGRAMS = test_options$(EXEEXT)
-#am__append_6 = \
-#	test_digestauth test_digestauth_with_arguments
+noinst_PROGRAMS = test_options$(EXEEXT)
+am__append_6 = \
+	test_digestauth test_digestauth_with_arguments
 
 subdir = src/testcurl
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -166,21 +166,21 @@ libcurl_version_check_a_LIBADD =
 am_libcurl_version_check_a_OBJECTS = curl_version_check.$(OBJEXT)
 libcurl_version_check_a_OBJECTS =  \
 	$(am_libcurl_version_check_a_OBJECTS)
-#am__EXEEXT_1 = test_get_response_cleanup$(EXEEXT)
-#am__EXEEXT_2 = test_quiesce$(EXEEXT) \
-#	test_concurrent_stop$(EXEEXT) \
-#	perf_get_concurrent$(EXEEXT)
-#am__EXEEXT_3 = test_quiesce_stream$(EXEEXT)
-#am__EXEEXT_4 =  \
-#	test_post$(EXEEXT) \
-#	test_postform$(EXEEXT) \
-#	test_post_loop$(EXEEXT) \
-#	test_post11$(EXEEXT) \
-#	test_postform11$(EXEEXT) \
-#	test_post_loop11$(EXEEXT)
-#am__EXEEXT_5 =  \
-#	test_digestauth$(EXEEXT) \
-#	test_digestauth_with_arguments$(EXEEXT)
+am__EXEEXT_1 = test_get_response_cleanup$(EXEEXT)
+am__EXEEXT_2 = test_quiesce$(EXEEXT) \
+	test_concurrent_stop$(EXEEXT) \
+	perf_get_concurrent$(EXEEXT)
+am__EXEEXT_3 = test_quiesce_stream$(EXEEXT)
+am__EXEEXT_4 =  \
+	test_post$(EXEEXT) \
+	test_postform$(EXEEXT) \
+	test_post_loop$(EXEEXT) \
+	test_post11$(EXEEXT) \
+	test_postform11$(EXEEXT) \
+	test_post_loop11$(EXEEXT)
+am__EXEEXT_5 =  \
+	test_digestauth$(EXEEXT) \
+	test_digestauth_with_arguments$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am_perf_get_OBJECTS = perf_get.$(OBJEXT)
 perf_get_OBJECTS = $(am_perf_get_OBJECTS)
@@ -713,21 +713,21 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoconf
-AUTOHEADER = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoheader
-AUTOMAKE = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing automake-1.15
+AUTOCONF = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoconf
+AUTOHEADER = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoheader
+AUTOMAKE = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing automake-1.15
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -fno-strict-aliasing
 CPP = gcc -E
 CPPFLAGS = 
-CPU_COUNT = 1
+CPU_COUNT = 2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -758,7 +758,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
-LIBCURL = 
+LIBCURL = -lcurl
 LIBCURL_CPPFLAGS = 
 LIBGCRYPT_CFLAGS = 
 LIBGCRYPT_CONFIG = no
@@ -773,7 +773,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing makeinfo
+MAKEINFO = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing makeinfo
 MANIFEST_TOOL = :
 MHD_LIBDEPS =  
 MHD_LIBDEPS_PKGCFG =  
@@ -815,10 +815,10 @@ SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.9.55
 _libcurl_config = 
-abs_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55/src/testcurl
-abs_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55/src/testcurl
-abs_top_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55
-abs_top_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55
+abs_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55/src/testcurl
+abs_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55/src/testcurl
+abs_top_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55
+abs_top_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55
 ac_configure_args = 
 ac_ct_AR = ar
 ac_ct_CC = gcc
@@ -851,7 +851,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/install-sh
+install_sh = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -884,8 +884,8 @@ AM_CPPFLAGS = \
 -I$(top_srcdir)/src/include \
 $(LIBCURL_CPPFLAGS)
 
-#TESTS = $(check_PROGRAMS)
-#noinst_LIBRARIES = libcurl_version_check.a
+TESTS = $(check_PROGRAMS)
+noinst_LIBRARIES = libcurl_version_check.a
 libcurl_version_check_a_SOURCES = \
   curl_version_check.c
 
@@ -903,7 +903,7 @@ test_concurrent_stop_CFLAGS = \
 
 test_concurrent_stop_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) 
+  $(PTHREAD_LIBS) -lcurl
 
 test_options_SOURCES = \
   test_options.c
@@ -916,7 +916,7 @@ test_get_SOURCES = \
 
 test_get_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_quiesce_SOURCES = \
   test_quiesce.c
@@ -926,7 +926,7 @@ test_quiesce_CFLAGS = \
 
 test_quiesce_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) 
+  $(PTHREAD_LIBS) -lcurl
 
 test_quiesce_stream_SOURCES = \
   test_quiesce_stream.c
@@ -936,14 +936,14 @@ test_quiesce_stream_CFLAGS = \
 
 test_quiesce_stream_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) 
+  $(PTHREAD_LIBS) -lcurl
 
 test_callback_SOURCES = \
   test_callback.c
 
 test_callback_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 perf_get_SOURCES = \
   perf_get.c \
@@ -951,7 +951,7 @@ perf_get_SOURCES = \
 
 perf_get_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 perf_get_concurrent_SOURCES = \
   perf_get_concurrent.c \
@@ -962,35 +962,35 @@ perf_get_concurrent_CFLAGS = \
 
 perf_get_concurrent_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) 
+  $(PTHREAD_LIBS) -lcurl
 
 test_digestauth_SOURCES = \
   test_digestauth.c
 
 test_digestauth_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-   
+   -lcurl
 
 test_digestauth_with_arguments_SOURCES = \
   test_digestauth_with_arguments.c
 
 test_digestauth_with_arguments_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-   
+   -lcurl
 
 test_get_sendfile_SOURCES = \
   test_get_sendfile.c
 
 test_get_sendfile_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_urlparse_SOURCES = \
   test_urlparse.c
 
 test_urlparse_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_get_response_cleanup_SOURCES = \
   test_get_response_cleanup.c
@@ -1003,168 +1003,168 @@ test_get_chunked_SOURCES = \
 
 test_get_chunked_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_post_SOURCES = \
   test_post.c
 
 test_post_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_process_headers_SOURCES = \
   test_process_headers.c
 
 test_process_headers_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_parse_cookies_SOURCES = \
   test_parse_cookies.c
 
 test_parse_cookies_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_process_arguments_SOURCES = \
   test_process_arguments.c
 
 test_process_arguments_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_postform_SOURCES = \
   test_postform.c
 
 test_postform_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-   
+   -lcurl
 
 test_post_loop_SOURCES = \
   test_post_loop.c
 
 test_post_loop_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_delete_SOURCES = \
   test_delete.c
 
 test_delete_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_put_SOURCES = \
   test_put.c
 
 test_put_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_put_chunked_SOURCES = \
   test_put_chunked.c
 
 test_put_chunked_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_get11_SOURCES = \
   test_get.c
 
 test_get11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_get_sendfile11_SOURCES = \
   test_get_sendfile.c
 
 test_get_sendfile11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_post11_SOURCES = \
   test_post.c
 
 test_post11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_postform11_SOURCES = \
   test_postform.c
 
 test_postform11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-   
+   -lcurl
 
 test_post_loop11_SOURCES = \
   test_post_loop.c
 
 test_post_loop11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_put11_SOURCES = \
   test_put.c
 
 test_put11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_large_put_SOURCES = \
   test_large_put.c
 
 test_large_put_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_large_put11_SOURCES = \
   test_large_put.c
 
 test_large_put11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_large_put_inc11_SOURCES = \
   test_large_put.c
 
 test_large_put_inc11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_long_header_SOURCES = \
   test_long_header.c
 
 test_long_header_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_long_header11_SOURCES = \
   test_long_header.c
 
 test_long_header11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_iplimit11_SOURCES = \
   test_iplimit.c
 
 test_iplimit11_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_termination_SOURCES = \
   test_termination.c
 
 test_termination_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 test_timeout_SOURCES = \
   test_timeout.c
 
 test_timeout_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  
+  -lcurl
 
 all: all-recursive
 
