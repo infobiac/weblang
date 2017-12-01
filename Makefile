@@ -83,7 +83,19 @@ functions.s: functions.ll
 functions.ll: examples/functions-example.wl Build-weblang
 	stack --nix exec weblang functions.ll < examples/functions-example.wl
 
+functions-crazy: functions-crazy.o
+	nix-shell -p curl gcc --command "gcc functions-crazy.o -o functions-crazy" 
+
+functions-crazy.o: functions-crazy.s
+	nix-shell -p gcc --command "gcc -c functions-crazy.s -o functions-crazy.o"
+
+functions-crazy.s: functions-crazy.ll
+	nix-shell -p llvm --command "llc functions-crazy.ll"
+
+functions-crazy.ll: examples/functions-crazy-example.wl Build-weblang
+	stack --nix exec weblang functions-crazy.ll < examples/functions-crazy-example.wl
+
 .PHONY : clean
 clean:
-	rm -f a.out chapter3-test *.o *.s *.ll hello-world jsonlib/*.o jsonlib/a.out chapter3/*.o chapter3/*.s chapter3/*.ll json-example chapter3-bin client/client.o
+	rm -f a.out chapter3-test *.o *.s *.ll hello-world jsonlib/*.o jsonlib/a.out chapter3/*.o chapter3/*.s chapter3/*.ll json-example chapter3-bin client/client.o functions functions-crazy
 

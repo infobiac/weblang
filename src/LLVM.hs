@@ -113,7 +113,6 @@ llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
 
 
-
 llvmCharArrayType :: Int -> AST.Type
 llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) (AST.IntegerType 8)
 
