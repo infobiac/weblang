@@ -550,21 +550,21 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoconf
-AUTOHEADER = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing autoheader
-AUTOMAKE = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing automake-1.15
+AUTOCONF = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoconf
+AUTOHEADER = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing autoheader
+AUTOMAKE = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing automake-1.15
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -fno-strict-aliasing
 CPP = gcc -E
 CPPFLAGS = 
-CPU_COUNT = 1
+CPU_COUNT = 2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -595,7 +595,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
-LIBCURL = 
+LIBCURL = -lcurl
 LIBCURL_CPPFLAGS = 
 LIBGCRYPT_CFLAGS = 
 LIBGCRYPT_CONFIG = no
@@ -610,7 +610,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/missing makeinfo
+MAKEINFO = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/missing makeinfo
 MANIFEST_TOOL = :
 MHD_LIBDEPS =  
 MHD_LIBDEPS_PKGCFG =  
@@ -652,10 +652,10 @@ SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.9.55
 _libcurl_config = 
-abs_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55/src/testcurl/https
-abs_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55/src/testcurl/https
-abs_top_builddir = /home/jordanvega/plt/libmicrohttpd-0.9.55
-abs_top_srcdir = /home/jordanvega/plt/libmicrohttpd-0.9.55
+abs_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55/src/testcurl/https
+abs_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55/src/testcurl/https
+abs_top_builddir = /home/jserra17/plt/libmicrohttpd-0.9.55
+abs_top_srcdir = /home/jserra17/plt/libmicrohttpd-0.9.55
 ac_configure_args = 
 ac_ct_AR = ar
 ac_ct_CC = gcc
@@ -688,7 +688,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/jordanvega/plt/libmicrohttpd-0.9.55/install-sh
+install_sh = ${SHELL} /home/jserra17/plt/libmicrohttpd-0.9.55/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -735,7 +735,7 @@ test_https_time_out_SOURCES = \
 test_https_time_out_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_tls_options_SOURCES = \
   test_tls_options.c \
@@ -744,7 +744,7 @@ test_tls_options_SOURCES = \
 test_tls_options_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_get_parallel_SOURCES = \
   test_https_get_parallel.c \
@@ -759,7 +759,7 @@ test_https_get_parallel_CFLAGS = \
 test_https_get_parallel_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(PTHREAD_LIBS) $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_empty_response_SOURCES = \
   test_empty_response.c \
@@ -768,7 +768,7 @@ test_empty_response_SOURCES = \
 test_empty_response_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_get_parallel_threads_SOURCES = \
   test_https_get_parallel_threads.c \
@@ -783,7 +783,7 @@ test_https_get_parallel_threads_CFLAGS = \
 test_https_get_parallel_threads_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS) $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(PTHREAD_LIBS) $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_tls_authentication_SOURCES = \
   test_tls_authentication.c \
@@ -792,7 +792,7 @@ test_tls_authentication_SOURCES = \
 test_tls_authentication_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_session_info_SOURCES = \
   test_https_session_info.c \
@@ -801,7 +801,7 @@ test_https_session_info_SOURCES = \
 test_https_session_info_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_multi_daemon_SOURCES = \
   test_https_multi_daemon.c \
@@ -810,7 +810,7 @@ test_https_multi_daemon_SOURCES = \
 test_https_multi_daemon_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_get_SOURCES = \
   test_https_get.c \
@@ -819,7 +819,7 @@ test_https_get_SOURCES = \
 test_https_get_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 #test_https_sni_SOURCES = \
 #  test_https_sni.c \
@@ -832,7 +832,7 @@ test_https_get_LDADD = \
 #test_https_sni_LDADD = \
 #  $(top_builddir)/src/testcurl/libcurl_version_check.a \
 #  $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-#  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+#  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 test_https_get_select_SOURCES = \
   test_https_get_select.c \
@@ -841,7 +841,7 @@ test_https_get_select_SOURCES = \
 test_https_get_select_LDADD = \
   $(top_builddir)/src/testcurl/libcurl_version_check.a \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  
+  $(GNUTLS_LDFLAGS) $(GNUTLS_LIBS)  -lcurl
 
 all: all-recursive
 

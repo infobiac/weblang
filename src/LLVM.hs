@@ -7,6 +7,8 @@ import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
 import qualified LLVM.AST.Constant as AST hiding (GetElementPtr)
+import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
+import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
 import Data.Maybe
@@ -33,7 +35,15 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
                                      , (llvmStringPointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
 }
+
+opops = Map.fromList [
+      ("+", fadd), 
+      ("-", fsub),
+      ("*", fmul),
+      ("/", fdiv)
+  ]
 
 buildLLVM :: Program -> LLVM ()
 buildLLVM (Program _ _ _ fns) = mapM_ functionLLVM fns
@@ -71,6 +81,57 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
+
+termLLVM (Operator opp t1 t2) = do
+  case Map.lookup opp opops of
+    Just ap -> do
+      evalt1 <- termLLVM t1
+      evalt2 <- termLLVM t2
+      ap evalt1 evalt2
+    Nothing -> error $ "unimplemented operator " ++ show opp
+
+termLLVM (IfThenElse bool tr fal) = do
+  iff <- addBlock "iff"
+  ielse <- addBlock "ielse"
+  iexit <- addBlock "iexit"
+  bool <- termLLVM bool
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+  cbr branchval iff ielse
+
+  setBlock iff
+  tval <- termLLVM tr
+  br iexit
+  iff <- getBlock
+
+  setBlock ielse
+  fval <- termLLVM fal
+  br iexit
+  ielse <- getBlock
+
+  setBlock iexit
+  phi int [(tval, iff), (fval, ielse)]
+
+--JUST DO WHAT FOR DOES HERE!
+--termLLVM (If bool tr fal) = do
+--  iff <- addBlock "iff"
+--  iexit <- addBlock "iexit"
+--  bool <- termLLVM bool
+--  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+--  cbr branchval iff iexit
+
+--  setBlock iff
+--  tval <- termLLVM tr
+--  br iexit
+--  iff <- getBlock
+
+--  setBlock ielse
+--  fval <- termLLVM fal
+--  br iexit
+--  ielse <- getBlock
+
+--  setBlock iexit
+--  phi int [(tval, iff), (fval, ielse)]
+
 termLLVM (Literal prim) = primLLVM prim
 termLLVM t = error $ "unimplemented term " ++ show t
 
@@ -80,6 +141,7 @@ primLLVM (ArrVal arr) = do
   ptrArray <- buildPtrArray elemPtrs
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
+primLLVM (NumVal num) = return $ cons $ AST.Float (Fl.Double num)
 primLLVM (StrVal s) = do
   let ptr =
         AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
@@ -98,6 +160,7 @@ functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
 functionCallLLVM "log" arg = llvmCallLog arg
 functionCallLLVM "jn" arg = llvmCallJson arg
 functionCallLLVM "clientPost" arg = llvmCallPost arg
+functionCallLLVM "clientGet" arg = llvmCallGet arg
 functionCallLLVM fnName arg = llvmCallFunc fnName arg
 
 llvmCallJson :: AST.Operand -> Codegen AST.Operand
@@ -112,6 +175,11 @@ llvmCallPost op = call (externf (AST.Name (fromString "post"))) [op]
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
 
+llvmCallGet :: AST.Operand -> Codegen AST.Operand
+llvmCallGet op = call (externf (AST.Name (fromString "get"))) [op]
+
+--llvmArrayToPointer :: AST.Constant -> AST.Constant
+--llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
 
 llvmCharArrayType :: Int -> AST.Type
 llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) (AST.IntegerType 8)

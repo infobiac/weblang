@@ -8,14 +8,14 @@ hello-world.s: hello-world.ll
 	nix-shell -p llvm --command "llc hello-world.ll"
 
 hello-world.ll: examples/hello-world.wl Build-weblang
-	stack exec weblang hello-world.ll < examples/hello-world.wl
+	stack exec --nix weblang hello-world.ll < examples/hello-world.wl
 
 Build-weblang: 
-	stack build :weblang
+	stack build --nix :weblang
 
 
-json: json-example.o jsonlib/jsonlib.o client/client.o
-	nix-shell -p curl gcc --command "g++ json-example.o jsonlib/jsonlib.o client/client.o -o json-example -L./client -lrequests -L/usr/bin -lcurl"
+json: json-example.o jsonlib/jsonlib.o
+	nix-shell -p curl gcc --command "g++ json-example.o jsonlib/jsonlib.o -o json-example"
 
 json-example.o: json-example.s
 	nix-shell -p gcc --command "gcc -c json-example.s -o json-example.o"
@@ -29,6 +29,31 @@ json-example.ll: examples/json-example.wl Build-weblang
 jsonlib/jsonlib.o: jsonlib/jsonlib.cpp
 	nix-shell -p rapidjson gcc --command "g++ $$NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
 
+
+conditional: conditional-example.o
+	nix-shell -p gcc --command "gcc conditional-example.o -o conditional-example"
+
+conditional-example.o: conditional-example.s
+	nix-shell -p gcc --command "gcc -c conditional-example.s -o conditional-example.o" 
+
+conditional-example.s: conditional-example.ll
+	nix-shell -p llvm --command "llc conditional-example.ll"
+
+conditional-example.ll: examples/conditional-example.wl Build-weblang
+	stack --nix exec weblang conditional-example.ll < examples/conditional-example.wl
+
+
+binop: binop-example.o
+	nix-shell -p gcc --command "gcc binop-example.o -o binop-example"
+
+binop-example.o: binop-example.s
+	nix-shell -p gcc --command "gcc -c binop-example.s -o binop-example.o" 
+
+binop-example.s: binop-example.ll
+	nix-shell -p llvm --command "llc binop-example.ll"
+
+binop-example.ll: examples/binop-example.wl Build-weblang
+	stack --nix exec weblang binop-example.ll < examples/binop-example.wl
 
 
 chapter3-bin: chapter3/chapter3.o jsonlib/jsonlib.o

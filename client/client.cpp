@@ -21,4 +21,18 @@ extern "C" {
 		int a = 0;
 		return &a;
 	}
+
+	int* get(const char* jsonString){
+		Document d;
+		d.Parse(jsonString);
+		if(d.HasMember("url")) {
+			const char* url = (d["url"]).GetString();
+			const char* body = (d["body"]).GetString();
+			std::string urlCpp(url);
+			auto r = cpr::Get(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
+			std::cout << r.text << std::endl;
+		}
+		int a = 0;
+		return &a;
+	}
 }
