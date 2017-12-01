@@ -56,7 +56,6 @@ chapter3/test.o: chapter3/test.cpp
 	nix-shell -p gcc --command "g++ -c chapter3/test.cpp -o chapter3/test.o"
 
 
-
 echo-server: echo.o client/client.o
 	nix-shell -p curl gcc --command "g++ echo.o client/client.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
 
@@ -71,6 +70,18 @@ echo.ll: examples/echo-example.wl Build-weblang
 
 client/client.o: client/client.cpp
 	nix-shell -p rapidjson gcc --command "gcc -Wall $$NIX_CFLAGS_COMPILE -c client/client.cpp -I/home/jordanvega/plt/client/cpr-example/opt/cpr/include -Iclient/cpr-example/opt/json/src -Lclient/cpr-example/build/lib -lcpr -lcurl  -o client/client.o"
+
+functions: functions.o
+	nix-shell -p curl gcc --command "gcc functions.o -o functions" 
+
+functions.o: functions.s
+	nix-shell -p gcc --command "gcc -c functions.s -o functions.o"
+
+functions.s: functions.ll
+	nix-shell -p llvm --command "llc functions.ll"
+
+functions.ll: examples/functions-example.wl Build-weblang
+	stack --nix exec weblang functions.ll < examples/functions-example.wl
 
 .PHONY : clean
 clean:
