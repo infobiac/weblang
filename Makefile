@@ -81,7 +81,6 @@ chapter3/test.o: chapter3/test.cpp
 	nix-shell -p gcc --command "g++ -c chapter3/test.cpp -o chapter3/test.o"
 
 
-
 echo-server: echo.o client/client.o
 	nix-shell -p curl gcc --command "g++ echo.o client/client.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
 
@@ -97,7 +96,31 @@ echo.ll: examples/echo-example.wl Build-weblang
 client/client.o: client/client.cpp
 	nix-shell -p rapidjson gcc --command "gcc -Wall $$NIX_CFLAGS_COMPILE -c client/client.cpp -I/home/jordanvega/plt/client/cpr-example/opt/cpr/include -Iclient/cpr-example/opt/json/src -Lclient/cpr-example/build/lib -lcpr -lcurl  -o client/client.o"
 
+functions: functions.o
+	nix-shell -p curl gcc --command "gcc functions.o -o functions" 
+
+functions.o: functions.s
+	nix-shell -p gcc --command "gcc -c functions.s -o functions.o"
+
+functions.s: functions.ll
+	nix-shell -p llvm --command "llc functions.ll"
+
+functions.ll: examples/functions-example.wl Build-weblang
+	stack --nix exec weblang functions.ll < examples/functions-example.wl
+
+functions-crazy: functions-crazy.o
+	nix-shell -p curl gcc --command "gcc functions-crazy.o -o functions-crazy" 
+
+functions-crazy.o: functions-crazy.s
+	nix-shell -p gcc --command "gcc -c functions-crazy.s -o functions-crazy.o"
+
+functions-crazy.s: functions-crazy.ll
+	nix-shell -p llvm --command "llc functions-crazy.ll"
+
+functions-crazy.ll: examples/functions-crazy-example.wl Build-weblang
+	stack --nix exec weblang functions-crazy.ll < examples/functions-crazy-example.wl
+
 .PHONY : clean
 clean:
-	rm -f a.out chapter3-test *.o *.s *.ll hello-world jsonlib/*.o jsonlib/a.out chapter3/*.o chapter3/*.s chapter3/*.ll json-example chapter3-bin client/client.o conditional-example
+	rm -f a.out chapter3-test *.o *.s *.ll hello-world jsonlib/*.o jsonlib/a.out chapter3/*.o chapter3/*.s chapter3/*.ll json-example chapter3-bin client/client.o functions functions-crazy
 
