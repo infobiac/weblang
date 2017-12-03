@@ -74,25 +74,27 @@ functionLLVMMain fns = do
           let ptr = AST.GetElementPtr True argc [cons $ AST.Int 32 1] []
           ref <- instr $ ptr 
           let load = AST.Load False ref Nothing 1 []
-          op <- instr $ load
-          compare <- stringLLVM "otherFunction"
-          compStr <- llvmCallExt2 op compare "strcmp"
---          iff <- addBlock "iff"
---          ielse <- addBlock "ielse"
---          iexit <- addBlock "iexit"
---          cbr compStr iff ielse
-          
---	  setBlock iff
---	  br iexit
---	  iff <- getBlock
+          cmdRef <- instr $ load
+	  let fnName = "otherFunction"
+          mapM (\f -> createEndpointCheck f cmdRef) fnNames
+          functionCallLLVM "log" cmdRef >>= ret . Just
 
---	  setBlock ielse
---	  br iexit
---	  ielse <- getBlock
+createEndpointCheck :: String -> AST.Operand -> Codegen AST.Name
+createEndpointCheck fnName cmdRef = do
+  compare <- stringLLVM fnName
+  compStrRes <- llvmCallExt2 cmdRef compare "strcmp"
+  let equal = AST.ICmp Intypoo.EQ compStrRes (cons $ AST.Int 32 0) []
+  refEq <- instr $ equal
+  iff <- addBlock fnName
+  continue <- addBlock "continue"
+  cbr refEq iff continue
+  
+  setBlock iff
+  functionCallLLVM fnName cmdRef
+  br continue
+  iff <- getBlock
 
---	  setBlock iexit
-          mapM (\x -> functionCallLLVM x op) fnNames 
-          functionCallLLVM "log" op >>= ret . Just
+  setBlock continue
 
 --fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
