@@ -33,6 +33,8 @@ llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0)
 moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json" [(llvmStringPointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external (AST.IntegerType 32) "strcmp" [(llvmStringPointer, AST.Name (fromString "s")), 
+                                         (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmStringPointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmStringPointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -56,6 +58,7 @@ buildLLVM (Program _ _ _ fns) = do
 
 toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmStringPointer, AST.Name (fromString x))]
+
 mainSig :: [(AST.Type, AST.Name)]
 mainSig = [(llvmI32Pointer, AST.Name (fromString "argv")), (llvmPointerStringfPointer, AST.Name (fromString "argc"))] 
 
@@ -72,8 +75,22 @@ functionLLVMMain fns = do
           ref <- instr $ ptr 
           let load = AST.Load False ref Nothing 1 []
           op <- instr $ load
-          let cmp = AST.ICmp Intypoo.EQ op op []
-          opVar <- instr $ cmp
+          compare <- stringLLVM "otherFunction"
+          compStr <- llvmCallExt2 op compare "strcmp"
+--          iff <- addBlock "iff"
+--          ielse <- addBlock "ielse"
+--          iexit <- addBlock "iexit"
+--          cbr compStr iff ielse
+          
+--	  setBlock iff
+--	  br iexit
+--	  iff <- getBlock
+
+--	  setBlock ielse
+--	  br iexit
+--	  ielse <- getBlock
+
+--	  setBlock iexit
           mapM (\x -> functionCallLLVM x op) fnNames 
           functionCallLLVM "log" op >>= ret . Just
 
@@ -180,7 +197,8 @@ externs = Map.fromList [
       ("jn", "json"),
       ("gets", "jgets"),
       ("clientPost", "post"),
-      ("clientGet", "get")
+      ("clientGet", "get"),
+      ("scmp", "strcmp")
   ]
 
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
@@ -192,6 +210,9 @@ functionCallLLVM fn arg = do
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt op func = call (externf (AST.Name (fromString func))) [op]
+
+llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt2 op op2 func = call (externf (AST.Name (fromString func))) [op, op2]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
@@ -218,3 +239,14 @@ stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s ++ [AS
 
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
+
+stringLLVM :: String -> Codegen AST.Operand
+stringLLVM s = do
+  let ptr =
+        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
+  op <- instr $ ptr
+  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
+  let arrayS = stringToLLVMString s
+  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
+  op2 <- instr $ ref
+  return op2
