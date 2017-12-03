@@ -1,6 +1,8 @@
-main arg : inType -> outType
-  log "Hello world"
-  otherFunction "random"
-
 otherFunction arg : someType -> someOtherType
-  log "logging this message"
+  log "logging this"
+
+someOtherFunction arg : someType -> someOtherType
+  log "logging this other"
+
+foo arg : someType -> someOtherType
+  log "bar"

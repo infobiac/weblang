@@ -6,8 +6,9 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
+import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
@@ -27,6 +28,7 @@ buildModule p = runLLVM moduleHeader (buildLLVM p)
 
 llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
 llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
+llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0))
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -45,21 +47,38 @@ opops = Map.fromList [
       ("/", fdiv)
   ]
 
+opFns = Map.empty
+
 buildLLVM :: Program -> LLVM ()
-buildLLVM (Program _ _ _ fns) = mapM_ functionLLVM fns
+buildLLVM (Program _ _ _ fns) = do
+ mapM_ functionLLVM fns
+ functionLLVMMain fns
 
 toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmStringPointer, AST.Name (fromString x))]
+mainSig :: [(AST.Type, AST.Name)]
+mainSig = [(llvmI32Pointer, AST.Name (fromString "argv")), (llvmPointerStringfPointer, AST.Name (fromString "argc"))] 
 
-functionLLVM :: (FnName, Function) -> LLVM ()
-functionLLVM ("main", (Function {..})) = define llvmRetType "main" [] llvmBody
+functionLLVMMain :: [(FnName, Function)] -> LLVM ()
+functionLLVMMain fns = do
+  define llvmRetType "main" mainSig llvmBody 
   where llvmRetType = (AST.IntegerType 32)
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
-          setBlock entry
-          expressionBlockLLVM body >>= ret . Just
+          setBlock entry 
+          let fnNames = map fst fns
+          let argc = local (AST.Name (fromString "argc"))
+          let ptr = AST.GetElementPtr True argc [cons $ AST.Int 32 1] []
+          ref <- instr $ ptr 
+          let load = AST.Load False ref Nothing 1 []
+          op <- instr $ load
+          let cmp = AST.ICmp Intypoo.EQ op op []
+          opVar <- instr $ cmp
+          mapM (\x -> functionCallLLVM x op) fnNames 
+          functionCallLLVM "log" op >>= ret . Just
 
 --fix return type
+functionLLVM :: (FnName, Function) -> LLVM ()
 functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
   where llvmRetType = (AST.IntegerType 32)
         fnargs = toSig arg
