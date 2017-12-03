@@ -124,3 +124,5 @@ functions-crazy.ll: examples/functions-crazy-example.wl Build-weblang
 clean:
 	rm -f a.out chapter3-test *.o *.s *.ll hello-world jsonlib/*.o jsonlib/a.out chapter3/*.o chapter3/*.s chapter3/*.ll json-example chapter3-bin client/client.o functions functions-crazy
 
+server:
+	./makeServer.sh && echo "running server at 35.194.4.65:8000/ \n" &&./runWeblangServer 8000	

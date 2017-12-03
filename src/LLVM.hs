@@ -75,9 +75,11 @@ functionLLVMMain fns = do
           ref <- instr $ ptr 
           let load = AST.Load False ref Nothing 1 []
           cmdRef <- instr $ load
-	  let fnName = "otherFunction"
-          mapM (\f -> createEndpointCheck f cmdRef) fnNames
-          functionCallLLVM "log" cmdRef >>= ret . Just
+          let endpoints = mapM (\f -> createEndpointCheck f cmdRef) fnNames
+          _ <- endpoints
+	  let msg = ""
+          msgRef <- stringLLVM msg
+          functionCallLLVM "log" msgRef >>= ret . Just
 
 createEndpointCheck :: String -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef = do
@@ -92,7 +94,7 @@ createEndpointCheck fnName cmdRef = do
   setBlock iff
   functionCallLLVM fnName cmdRef
   br continue
-  iff <- getBlock
+  iff <- getBlock 
 
   setBlock continue
 
