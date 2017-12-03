@@ -156,28 +156,29 @@ llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "jsonArr")))
   [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
 
+externs = Map.fromList [
+      ("log", "puts"),
+      ("jn", "json"),
+      ("gets", "jgets"),
+      ("clientPost", "post"),
+      ("clientGet", "get")
+  ]
+
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
-functionCallLLVM "log" arg = llvmCallLog arg
-functionCallLLVM "jn" arg = llvmCallJson arg
-functionCallLLVM "clientPost" arg = llvmCallPost arg
-functionCallLLVM "clientGet" arg = llvmCallGet arg
-functionCallLLVM fnName arg = llvmCallFunc fnName arg
+functionCallLLVM fn arg = do
+  case Map.lookup fn externs of
+    Just fn2 -> do
+      llvmCallExt arg fn2
+    Nothing -> llvmCallFunc fn arg
 
-llvmCallJson :: AST.Operand -> Codegen AST.Operand
-llvmCallJson op = call (externf (AST.Name (fromString "json"))) [op]
-
-llvmCallLog :: AST.Operand -> Codegen AST.Operand
-llvmCallLog op = call (externf (AST.Name (fromString "puts"))) [op]
-
-llvmCallPost :: AST.Operand -> Codegen AST.Operand
-llvmCallPost op = call (externf (AST.Name (fromString "post"))) [op]
+llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt op func = call (externf (AST.Name (fromString func))) [op]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
 
-llvmCallGet :: AST.Operand -> Codegen AST.Operand
-llvmCallGet op = call (externf (AST.Name (fromString "get"))) [op]
-
+--llvmCallGetArrIter :: AST.Operand -> Codegen AST.Operand
+--llvmCallGetArrIter arr
 --llvmArrayToPointer :: AST.Constant -> AST.Constant
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
 
