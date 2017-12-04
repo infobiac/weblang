@@ -1,30 +1,14 @@
 hello-world: hello-world.o jsonlib/jsonlib.o
 	nix-shell -p gcc --command "g++ -lm hello-world.o jsonlib/jsonlib.o -o hello-world"
 
-hello-world.o: hello-world.s
-	nix-shell -p gcc --command "gcc -c hello-world.s -o hello-world.o"
-
-hello-world.s: hello-world.ll
-	nix-shell -p llvm --command "llc hello-world.ll"
-
-hello-world.ll: examples/hello-world.wl Build-weblang
-	stack exec --nix weblang hello-world.ll < examples/hello-world.wl
-
-Build-weblang: 
-	stack build --nix :weblang
-
-
 json: json-example.o jsonlib/jsonlib.o
 	nix-shell -p curl gcc --command "g++ json-example.o jsonlib/jsonlib.o -o json-example"
-
-jsonlib/jsonlib.o: jsonlib/jsonlib.cpp
-	nix-shell -p rapidjson gcc --command "g++ $$NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
 
 newtype: newtype.o jsonlib/jsonlib.o
 	nix-shell -p curl gcc --command "g++ newtype.o jsonlib/jsonlib.o -o newtype"
 
-conditional: conditional-example.o
-	nix-shell -p gcc --command "gcc conditional-example.o -o conditional-example"
+conditional: conditional-example.o jsonlib/jsonlib.o
+	nix-shell -p gcc --command "g++ jsonlib/jsonlib.o conditional-example.o -o conditional-example"
 
 binop: binop-example.o jsonlib/jsonlib.o
 	nix-shell -p curl gcc --command "g++ binop-example.o jsonlib/jsonlib.o -o binop-example"
@@ -32,6 +16,8 @@ binop: binop-example.o jsonlib/jsonlib.o
 array: array.o jsonlib/jsonlib.o
 	nix-shell -p curl gcc --command "g++ array.o jsonlib/jsonlib.o -o array"
 
+forloop: forloop.o jsonlib/jsonlib.o 
+	nix-shell -p curl gcc --command "g++ forloop.o jsonlib/jsonlib.o -o forloop"
 
 echo-server: echo.o client/client.o
 	nix-shell -p curl gcc --command "g++ echo.o client/client.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
@@ -72,6 +58,12 @@ functions-crazy.s: functions-crazy.ll
 functions-crazy.ll: examples/functions-crazy-example.wl Build-weblang
 	stack --nix exec weblang functions-crazy.ll < examples/functions-crazy-example.wl
 
+Build-weblang: 
+	stack build --nix :weblang
+
+jsonlib/jsonlib.o: jsonlib/jsonlib.cpp
+	nix-shell -p rapidjson gcc --command "g++ $$NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
+
 %.o : %.s
 	nix-shell -p gcc --command "g++ -c $< -o $@"
 
@@ -80,6 +72,8 @@ functions-crazy.ll: examples/functions-crazy-example.wl Build-weblang
 
 %.ll: examples/%.wl Build-weblang
 	stack --nix exec weblang $@ < $<
+
+.PRECIOUS: %.ll
 
 .PHONY : clean
 clean:

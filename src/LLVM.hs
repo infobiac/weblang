@@ -6,8 +6,9 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, PtrToInt)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
+import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
@@ -43,6 +44,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
+  external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s"))];
 }
 
 externs = Map.fromList [
@@ -53,7 +56,9 @@ externs = Map.fromList [
       ("clientGet", "get"),
       ("jnum", "json_double"),
       ("getdoub", "get_json_double"),
-      ("tostring", "tostring")
+      ("tostring", "tostring"),
+      ("getfst", "create_arr_iter"),
+      ("getnext", "arr_next_elem")
   ]
 
 opops = Map.fromList [
@@ -116,7 +121,8 @@ termLLVM (IfThenElse bool tr fal) = do
   ielse <- addBlock "ielse"
   iexit <- addBlock "iexit"
   bool <- termLLVM bool
-  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+  boolasdoub <- functionCallLLVM "getdoub" bool
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) boolasdoub
   cbr branchval iff ielse
 
   setBlock iff
@@ -132,28 +138,33 @@ termLLVM (IfThenElse bool tr fal) = do
   setBlock iexit
   phi int [(tval, iff), (fval, ielse)]
 
---JUST DO WHAT FOR DOES HERE!
---termLLVM (If bool tr fal) = do
---  iff <- addBlock "iff"
---  iexit <- addBlock "iexit"
---  bool <- termLLVM bool
---  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
---  cbr branchval iff iexit
+termLLVM(ForeachInDo var container body) = do
+  loop <- addBlock "loop"
+  exit <- addBlock "exit"
+  
+  l <- alloca llvmI32Pointer
+  pcontainer <- termLLVM container
+  firstel <- functionCallLLVM "getfst" pcontainer
+  store l firstel
+  assign var l
+  ptrAsInt <- instr $AST.PtrToInt firstel (AST.IntegerType 32) []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
+  cbr test loop exit 
 
---  setBlock iff
---  tval <- termLLVM tr
---  br iexit
---  iff <- getBlock
+  setBlock loop
+  termLLVM body
+  curr <- load l
+  next <- functionCallLLVM "getnext" curr
+  store l next
+  ptrAsInt <- instr $AST.PtrToInt firstel (AST.IntegerType 32) []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
+  cbr test loop exit
 
---  setBlock ielse
---  fval <- termLLVM fal
---  br iexit
---  ielse <- getBlock
-
---  setBlock iexit
---  phi int [(tval, iff), (fval, ielse)]
+  setBlock exit  
+  return $cons $ AST.Float (Fl.Double 0.0)
 
 termLLVM (Literal prim) = primLLVM prim
+termLLVM (Variable val) = getvar val
 termLLVM t = error $ "unimplemented term " ++ show t
 
 primLLVM :: PrimValue -> Codegen AST.Operand
