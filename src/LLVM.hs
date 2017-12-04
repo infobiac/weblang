@@ -40,6 +40,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external (AST.IntegerType 32) "strcpy" [(llvmStringPointer, AST.Name (fromString "s")), (llvmStringPointer, AST.Name (fromString "s"))];
 }
 
 opops = Map.fromList [
@@ -106,6 +107,14 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
+	  let a =
+		AST.Alloca (llvmCharArrayType (5)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
+	  var <- instr $ a
+	  let ref = AST.GetElementPtr True var [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
+          ptr <- instr $ ref 
+          let argptr = local (AST.Name (fromString arg))
+          copy <- llvmCallExt2 ptr argptr "strcpy" 
+          assign arg argptr
           expressionBlockLLVM body >>= ret . Just
 
 expressionBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
@@ -113,7 +122,11 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
 expressionLLVM :: (Int, Expression) -> Codegen AST.Operand
 expressionLLVM (2, Unassigned term) = termLLVM term
-expressionLLVM (2, Assignment _ term) = termLLVM term
+expressionLLVM (2, Assignment v term) = do
+  let op = termLLVM term
+  ptr <- op
+  assign v ptr
+  op 
 expressionLLVM (3, Unassigned term) = termLLVM term
 expressionLLVM e = error $ "unimplemented expression " ++ show e
 
@@ -121,6 +134,7 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
+
 
 termLLVM (Operator opp t1 t2) = do
   case Map.lookup opp opops of
@@ -173,7 +187,7 @@ termLLVM (IfThenElse bool tr fal) = do
 --  phi int [(tval, iff), (fval, ielse)]
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM t = error $ "unimplemented term " ++ show t
+termLLVM (Variable val) = getvar val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do

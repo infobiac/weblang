@@ -1,8 +1,6 @@
 otherFunction arg : someType -> someOtherType
-  log "logging this"
+  jordan = "Vega"
+  gayFunction jordan
 
-someOtherFunction arg : someType -> someOtherType
-  log "logging this other"
-
-foo arg : someType -> someOtherType
-  log "bar"
+gayFunction arg : someType -> someOtherType
+  log arg

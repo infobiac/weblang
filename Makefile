@@ -126,3 +126,16 @@ clean:
 
 server:
 	./makeServer.sh && echo "running server at 35.194.4.65:8000/ \n" &&./runWeblangServer 8000	
+
+
+slack: slack.o client/client.o
+	nix-shell -p curl gcc --command "g++ slack.o client/client.o -o slack -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
+
+slack.o: slack.s
+	nix-shell -p gcc --command "gcc -c slack.s -o slack.o"
+
+slack.s: slack.ll
+	nix-shell -p llvm --command "llc slack.ll"
+
+slack.ll: examples/slack.wl Build-weblang
+	stack --nix exec weblang slack.ll < examples/slack.wl
