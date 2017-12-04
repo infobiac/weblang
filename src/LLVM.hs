@@ -45,7 +45,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
 }
 
 externs = Map.fromList [
@@ -154,9 +154,9 @@ termLLVM(ForeachInDo var container body) = do
   setBlock loop
   termLLVM body
   curr <- load l
-  next <- functionCallLLVM "getnext" curr
+  next <- llvmCallExt2 curr pcontainer "arr_next_elem" 
   store l next
-  ptrAsInt <- instr $AST.PtrToInt firstel (AST.IntegerType 32) []
+  ptrAsInt <- instr $AST.PtrToInt next (AST.IntegerType 32) []
   test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
   cbr test loop exit
 
@@ -164,7 +164,7 @@ termLLVM(ForeachInDo var container body) = do
   return $cons $ AST.Float (Fl.Double 0.0)
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM (Variable val) = getvar val
+termLLVM (Variable val) = getvar val >>= load
 termLLVM t = error $ "unimplemented term " ++ show t
 
 primLLVM :: PrimValue -> Codegen AST.Operand
@@ -203,6 +203,10 @@ llvmCallExt op func =
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
   else call (externf (AST.Name (fromString func))) [op]
+
+
+llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt2 op op2 func = call (externf (AST.Name (fromString func))) [op, op2]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]

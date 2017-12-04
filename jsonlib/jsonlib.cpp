@@ -24,6 +24,7 @@ Value& getp(int* intdoc, const char* key){
 
 
 const char* tostring(int *tempdoc){
+	std::cout.flush();
 	try{
 		Value& typ = getp(tempdoc, "prim_type");
 		if(typ.GetString() == "num"){
@@ -172,8 +173,9 @@ int* create_arr_iter(int* jsonthingie){
 int* arr_next_elem(int* itr, int* intdoc){
 	Value::ConstValueIterator iter = (Value::ConstValueIterator) itr;
 	int* elem = (int*)(++iter);
-	if (elem == ((int *)(*((Document*)(intdoc))).End()))
-		return NULL;
+	if (elem == ((int *)(*((Document*)(intdoc))).End())){
+		return 0;
+	}
 	else
 		return elem;
 }
@@ -183,13 +185,10 @@ int* create_obj_iter(int* jsonthingie){
 	return (int *) &(*itr);
 }
 /*
- // Test function
+// Test function
 int main(){
 	//testing parse
 	const char* test = "{\"test\":\"christophe\"}";
-	std::cout << sizeof(int) <<std::endl;
-	int dd = 5;
-	print(dd);
 	int* j = json(test);
 
 	//testing adds
@@ -197,8 +196,8 @@ int main(){
 	adds(j, "test", "w");
 
 	//testing string
-	std::cout << tostring(j) << std::endl;
-	std::cout << (*((Document*)j))["test"].GetString() << std::endl;
+	//std::cout << tostring(j) << std::endl;
+	//std::cout << (*((Document*)j))["test"].GetString() << std::endl;
 
 	int* d = json_double(3);
 	int* d2 = json_double(5);
@@ -211,7 +210,6 @@ int main(){
 	//std::cout << get_json_string(s) << std::endl;
 	//std::cout << get_json_double(get_json_from_array(pt,0)) << std::endl;
 
-	std::cout << double_to_string(d)<< std::endl;
 
 	int* arr_itr = create_arr_iter(pt);
 
@@ -223,6 +221,5 @@ int main(){
 
 
 	return 0;
-}
-*/
+}*/
 }
