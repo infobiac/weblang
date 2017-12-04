@@ -26,6 +26,7 @@ buildModule :: Program -> AST.Module
 buildModule p = runLLVM moduleHeader (buildLLVM p)
 
 llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
+llvmI32PointerPointer = (AST.PointerType llvmI32Pointer (AST.AddrSpace 0)) 
 llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
 llvmDouble = AST.FloatingPointType AST.DoubleFP
 
@@ -41,6 +42,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
 }
 
 externs = Map.fromList [
@@ -172,7 +174,7 @@ primLLVM (StrVal s) = do
   functionCallLLVM "json_string" op2
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
-llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "jsonArr")))
+llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
   [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
 
 
@@ -206,9 +208,10 @@ buildPtrArray :: [AST.Operand] -> Codegen AST.Operand
 buildPtrArray ptrs = do
   mem <- instr $
     AST.Alloca llvmI32Pointer (Just (cons (AST.Int 32 (fromIntegral (length ptrs))))) 0 []
-
-  forM_ [0..length ptrs] $ \i -> do
-    instr $ AST.Store False mem (ptrs!!i) Nothing (fromIntegral i) []
+  forM_ [0..(length ptrs)-1] $ \i -> do
+    let tempptr = AST.GetElementPtr True mem [cons $ AST.Int 32 (fromIntegral i)] []
+    tempmem <- instr $ tempptr
+    instr $ AST.Store False tempmem (ptrs!!i) Nothing (fromIntegral 0) []
   return mem
 
 stringToLLVMString :: String -> AST.Constant

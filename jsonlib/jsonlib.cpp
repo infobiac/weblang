@@ -24,23 +24,26 @@ Value& getp(int* intdoc, const char* key){
 
 
 const char* tostring(int *tempdoc){
-	Value& typ = getp(tempdoc, "prim_type");
-	if(typ.GetString() == "num"){
-		std::stringstream strdoub;
-      		strdoub << getp(tempdoc, "prim_val").GetDouble();
-		return strdoub.str().c_str();
+	try{
+		Value& typ = getp(tempdoc, "prim_type");
+		if(typ.GetString() == "num"){
+			std::stringstream strdoub;
+			strdoub << getp(tempdoc, "prim_val").GetDouble();
+			return strdoub.str().c_str();
+		}
+		else if(typ.GetString() == "str"){
+			Value& pt = getp(tempdoc, "prim_val");
+			return pt.GetString();
+		}	
 	}
-	else if(typ.GetString() == "str"){
-		Value& pt = getp(tempdoc, "prim_val");
-		return pt.GetString();
-	}	
-
-	Document* d = (Document *)tempdoc;
-	StringBuffer buff;
-	buff.Clear();
-	Writer<StringBuffer> writer(buff);
-	(*d).Accept(writer);
-	return buff.GetString();
+	catch(...){
+		Document* d = (Document *)tempdoc;
+		StringBuffer buff;
+		buff.Clear();
+		Writer<StringBuffer> writer(buff);
+		(*d).Accept(writer);
+		return buff.GetString();
+	}
 }
 
 int print(auto thing2print){
@@ -68,17 +71,6 @@ double get_json_double(int* intdoc){
 }
 
 
-const char* double_to_string(int* intdoc){
-	Value& typ = getp(intdoc, "prim_type");
-	if(typ.GetString() == "num"){
-		std::stringstream strdoub;
-      		strdoub << get_json_double(intdoc);
-		return strdoub.str().c_str();
-	}
-	return "";
-
-}
-
 //Create a string in json by creating a json object wit json_rep_of_str_ts as key
 int* json_string(const char* s){
 	Document *d = new Document();
@@ -104,10 +96,11 @@ int* json_array(int* a[], int numElements){
 	Document *d = new Document();
 	(*d).SetArray();
 	Document::AllocatorType& allocator = (*d).GetAllocator();
+	
 	for(int i = 0; i < numElements; i++){
 		Value tempdoc;
 	       	tempdoc.CopyFrom(*((Document *)(a[i])), allocator);
-		(*d).PushBack(tempdoc, allocator);
+		(*d).PushBack(tempdoc, allocator);	
 	}
 	return (int *)d;
 }
