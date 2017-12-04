@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module LLVM where
 
-import AST hiding (Type)
+import Program hiding (Type)
 import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
@@ -26,7 +26,7 @@ buildModule :: Program -> AST.Module
 buildModule p = runLLVM moduleHeader (buildLLVM p)
 
 llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
-llvmI32PointerPointer = (AST.PointerType llvmI32Pointer (AST.AddrSpace 0)) 
+llvmI32PointerPointer = (AST.PointerType llvmI32Pointer (AST.AddrSpace 0))
 llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
 llvmDouble = AST.FloatingPointType AST.DoubleFP
 
@@ -64,7 +64,7 @@ opops = Map.fromList [
   ]
 
 buildLLVM :: Program -> LLVM ()
-buildLLVM (Program _ _ _ fns) = mapM_ functionLLVM fns
+buildLLVM p = mapM_ functionLLVM (fnDeclarations p)
 
 toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmStringPointer, AST.Name (fromString x))]
@@ -89,11 +89,9 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
 expressionBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
 expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
-expressionLLVM :: (Int, Expression) -> Codegen AST.Operand
-expressionLLVM (2, Unassigned term) = termLLVM term
-expressionLLVM (2, Assignment _ term) = termLLVM term
-expressionLLVM (3, Unassigned term) = termLLVM term
-expressionLLVM e = error $ "unimplemented expression " ++ show e
+expressionLLVM :: Expression -> Codegen AST.Operand
+expressionLLVM (Unassigned term) = termLLVM term
+expressionLLVM (Assignment _ term) = termLLVM term
 
 termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
@@ -120,12 +118,12 @@ termLLVM (IfThenElse bool tr fal) = do
   cbr branchval iff ielse
 
   setBlock iff
-  tval <- termLLVM tr
+  tval <- expressionBlockLLVM tr
   br iexit
   iff <- getBlock
 
   setBlock ielse
-  fval <- termLLVM fal
+  fval <- expressionBlockLLVM fal
   br iexit
   ielse <- getBlock
 
