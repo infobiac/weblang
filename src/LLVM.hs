@@ -40,7 +40,6 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external (AST.IntegerType 32) "strcpy" [(llvmStringPointer, AST.Name (fromString "s")), (llvmStringPointer, AST.Name (fromString "s"))];
 }
 
 opops = Map.fromList [
@@ -116,11 +115,7 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
 expressionLLVM :: (Int, Expression) -> Codegen AST.Operand
 expressionLLVM (2, Unassigned term) = termLLVM term
-expressionLLVM (2, Assignment v term) = do
-  let op = termLLVM term
-  ptr <- op
-  assign v ptr
-  op 
+expressionLLVM (2, Assignment _ term) = termLLVM term
 expressionLLVM (3, Unassigned term) = termLLVM term
 expressionLLVM e = error $ "unimplemented expression " ++ show e
 
@@ -128,7 +123,6 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
-
 
 termLLVM (Operator opp t1 t2) = do
   case Map.lookup opp opops of
@@ -181,7 +175,7 @@ termLLVM (IfThenElse bool tr fal) = do
 --  phi int [(tval, iff), (fval, ielse)]
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM (Variable val) = getvar val
+termLLVM t = error $ "unimplemented term " ++ show t
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do

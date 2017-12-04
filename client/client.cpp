@@ -11,13 +11,11 @@ extern "C" {
 	int* post(const char* jsonString){
 		Document d;
 		d.Parse(jsonString);
-		//"{\"text\" : \"jordan is a slut\"}"}
 		if(d.HasMember("url")) {
 			const char* url = (d["url"]).GetString();
-			const char* payload = (d["payload"]).GetString();
-			std::cout << payload << std::endl;
+			const char* body = (d["body"]).GetString();
 			std::string urlCpp(url);
-			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type", "application/json"}});
+			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
 			std::cout << r.text << std::endl;
 		}
 		int a = 0;
