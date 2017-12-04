@@ -464,10 +464,13 @@ create_response (void *cls,
                 printf("%s at %s\n", "body", session->value_1);
 		printf("%s at %s\n", "url", url);
 		char *buffer;
-		char urlFile[100]; 
-		strcpy(urlFile, "~/plt");
-	        strcat(urlFile, url);
-
+		char urlFile[100];
+	        const char* delimiter = "/";
+		char* token;
+		char* h = strtok(url, delimiter);
+		strcpy(urlFile, "~/plt/");
+	        strcat(urlFile, h);
+		
 		wordexp_t exp_result;
 		wordexp(urlFile, &exp_result, 0);
 		strcpy(urlFile, exp_result.we_wordv[0]);
@@ -477,7 +480,13 @@ create_response (void *cls,
 		if(access(urlFile, F_OK) != -1) {
 			char cmd[256];
 			strcpy(cmd, urlFile);
+	                printf("%s executable\n", cmd);
+			char* func = strtok(NULL, delimiter);
+			strcat(cmd, " ");
+		        strcat(cmd, func);	
 		        strcat(cmd, " > test.txt");
+
+	                printf("cmd: %s\n", cmd);
 			FILE *file = popen(cmd, "r");
 			fclose(file);
 			
