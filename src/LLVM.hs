@@ -27,6 +27,7 @@ buildModule p = runLLVM moduleHeader (buildLLVM p)
 
 llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
 llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
+llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -36,7 +37,22 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
 }
+
+externs = Map.fromList [
+      ("log", "puts"),
+      ("jn", "json"),
+      ("gets", "jgets"),
+      ("clientPost", "post"),
+      ("clientGet", "get"),
+      ("jnum", "json_double"),
+      ("getdoub", "get_json_double"),
+      ("tostring", "tostring")
+  ]
 
 opops = Map.fromList [
       ("+", fadd), 
@@ -86,8 +102,11 @@ termLLVM (Operator opp t1 t2) = do
   case Map.lookup opp opops of
     Just ap -> do
       evalt1 <- termLLVM t1
+      double1 <- functionCallLLVM "getdoub" evalt1 
       evalt2 <- termLLVM t2
-      ap evalt1 evalt2
+      double2 <- functionCallLLVM "getdoub" evalt2
+      result <- ap double1 double2
+      functionCallLLVM "jnum" result
     Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
@@ -141,7 +160,7 @@ primLLVM (ArrVal arr) = do
   ptrArray <- buildPtrArray elemPtrs
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
-primLLVM (NumVal num) = return $ cons $ AST.Float (Fl.Double num)
+primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
 primLLVM (StrVal s) = do
   let ptr =
         AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
@@ -150,19 +169,12 @@ primLLVM (StrVal s) = do
   let arrayS = stringToLLVMString s
   _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
   op2 <- instr $ ref
-  return op2
+  functionCallLLVM "json_string" op2
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "jsonArr")))
   [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
 
-externs = Map.fromList [
-      ("log", "puts"),
-      ("jn", "json"),
-      ("gets", "jgets"),
-      ("clientPost", "post"),
-      ("clientGet", "get")
-  ]
 
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
 functionCallLLVM fn arg = do
@@ -172,7 +184,12 @@ functionCallLLVM fn arg = do
     Nothing -> llvmCallFunc fn arg
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
-llvmCallExt op func = call (externf (AST.Name (fromString func))) [op]
+llvmCallExt op func =
+  if func == "puts"
+  then do
+    st <- functionCallLLVM "tostring" op
+    call (externf (AST.Name (fromString func))) [st]
+  else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
