@@ -57,8 +57,8 @@ conditional-example.ll: examples/conditional-example.wl Build-weblang
 	stack --nix exec weblang conditional-example.ll < examples/conditional-example.wl
 
 
-binop: binop-example.o
-	nix-shell -p gcc --command "gcc binop-example.o -o binop-example"
+binop: binop-example.o jsonlib/jsonlib.o
+	nix-shell -p curl gcc --command "g++ binop-example.o jsonlib/jsonlib.o -o binop-example"
 
 binop-example.o: binop-example.s
 	nix-shell -p gcc --command "gcc -c binop-example.s -o binop-example.o" 

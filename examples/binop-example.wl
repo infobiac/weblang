@@ -10,7 +10,3 @@
 main arg : inType -> outType
   log (8/2)
   log (5+3)
-    //log [gets [jn "{\"test\":\"hey\"}", "te"], ""]
-    //jn "{\"test\":\"hey\"}"
-  //if 1 then log "waddup"
-  //if 0 then log "yo"
