@@ -107,13 +107,7 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
-	  let a =
-		AST.Alloca (llvmCharArrayType (5)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
-	  var <- instr $ a
-	  let ref = AST.GetElementPtr True var [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-          ptr <- instr $ ref 
           let argptr = local (AST.Name (fromString arg))
-          copy <- llvmCallExt2 ptr argptr "strcpy" 
           assign arg argptr
           expressionBlockLLVM body >>= ret . Just
 
