@@ -115,7 +115,11 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
 expressionLLVM :: (Int, Expression) -> Codegen AST.Operand
 expressionLLVM (2, Unassigned term) = termLLVM term
-expressionLLVM (2, Assignment _ term) = termLLVM term
+expressionLLVM (2, Assignment v term) = do
+  let op = termLLVM term
+  ptr <- op
+  assign v ptr
+  op
 expressionLLVM (3, Unassigned term) = termLLVM term
 expressionLLVM e = error $ "unimplemented expression " ++ show e
 
@@ -175,7 +179,7 @@ termLLVM (IfThenElse bool tr fal) = do
 --  phi int [(tval, iff), (fval, ielse)]
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM t = error $ "unimplemented term " ++ show t
+termLLVM (Variable val) = getvar val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do
