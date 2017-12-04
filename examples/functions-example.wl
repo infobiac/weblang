@@ -1,5 +1,5 @@
 otherFunction arg : someType -> someOtherType
-  log "logging this"
+  log arg
 
 someOtherFunction arg : someType -> someOtherType
   log "logging this other"
