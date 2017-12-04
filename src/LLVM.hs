@@ -106,6 +106,8 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
+          let argptr = local (AST.Name (fromString arg))
+          assign arg argptr
           expressionBlockLLVM body >>= ret . Just
 
 expressionBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
