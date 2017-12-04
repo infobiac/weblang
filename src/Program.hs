@@ -92,6 +92,7 @@ transTerm (n, AST.If t) = do
       if elseInc /= n
       then error $ "Found an else expression with indent " ++ show elseInc ++ ", expected indent " ++ show n
       else takeIndented (n + indentIncrement)
+    Just _ -> return []
   return $ IfThenElse (transSimpleTerm t) thenBlock elseBlock
 transTerm (n, AST.ForeachIn v t) = do
   doBlock <- takeIndented (n + indentIncrement)
