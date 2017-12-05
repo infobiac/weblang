@@ -6,7 +6,7 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
 import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
@@ -30,6 +30,7 @@ llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
 llvmI32PointerPointer = (AST.PointerType llvmI32Pointer (AST.AddrSpace 0))
 llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
 llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0))
+llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -41,7 +42,28 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
+  external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
 }
+
+externs = Map.fromList [
+      ("log", "puts"),
+      ("jn", "json"),
+      ("gets", "jgets"),
+      ("clientPost", "post"),
+      ("clientGet", "get"),
+      ("jnum", "json_double"),
+      ("getdoub", "get_json_double"),
+      ("tostring", "tostring"),
+      ("getfst", "create_arr_iter"),
+      ("getnext", "arr_next_elem"),
+      ("scmp", "strcmp")
+  ]
 
 opops = Map.fromList [
       ("+", fadd), 
@@ -59,7 +81,7 @@ buildLLVM p = do
   functionLLVMMain fns
 
 toSig :: String -> [(AST.Type, AST.Name)]
-toSig x = [(llvmStringPointer, AST.Name (fromString x))]
+toSig x = [(llvmI32Pointer, AST.Name (fromString x))]
 
 mainSig :: [(AST.Type, AST.Name)]
 mainSig = [(llvmI32Pointer, AST.Name (fromString "argc")), (llvmPointerStringfPointer, AST.Name (fromString "argv"))] 
@@ -83,7 +105,8 @@ functionLLVMMain fns = do
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
   compare <- stringLLVM fnName
-  compStrRes <- llvmCallExt2 cmdRef compare "strcmp"
+  compllvmstr <- functionCallLLVM "tostring" compare
+  compStrRes <- llvmCallExt2 cmdRef compllvmstr "strcmp"
   let equal = AST.ICmp Intypoo.EQ compStrRes (cons $ AST.Int 32 0) []
   refEq <- instr $ equal
   iff <- addBlock fnName
@@ -91,7 +114,8 @@ createEndpointCheck fnName cmdRef arg = do
   cbr refEq iff continue
   
   setBlock iff
-  functionCallLLVM fnName arg
+  args <- functionCallLLVM "json_string" cmdRef
+  functionCallLLVM fnName args
   br continue
   iff <- getBlock 
 
@@ -139,8 +163,11 @@ termLLVM (Operator opp t1 t2) = do
   case Map.lookup opp opops of
     Just ap -> do
       evalt1 <- termLLVM t1
+      double1 <- functionCallLLVM "getdoub" evalt1
       evalt2 <- termLLVM t2
-      ap evalt1 evalt2
+      double2 <- functionCallLLVM "getdoub" evalt2
+      result <- ap double1 double2
+      functionCallLLVM "jnum" result
     Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
@@ -148,7 +175,8 @@ termLLVM (IfThenElse bool tr fal) = do
   ielse <- addBlock "ielse"
   iexit <- addBlock "iexit"
   bool <- termLLVM bool
-  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
+  boolasdoub <- functionCallLLVM "getdoub" bool
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) boolasdoub
   cbr branchval iff ielse
 
   setBlock iff
@@ -164,28 +192,33 @@ termLLVM (IfThenElse bool tr fal) = do
   setBlock iexit
   phi int [(tval, iff), (fval, ielse)]
 
---JUST DO WHAT FOR DOES HERE!
---termLLVM (If bool tr fal) = do
---  iff <- addBlock "iff"
---  iexit <- addBlock "iexit"
---  bool <- termLLVM bool
---  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) bool
---  cbr branchval iff iexit
+termLLVM(ForeachInDo var container body) = do
+  loop <- addBlock "loop"
+  exit <- addBlock "exit"
+  
+  l <- alloca llvmI32Pointer
+  pcontainer <- termLLVM container
+  firstel <- functionCallLLVM "getfst" pcontainer
+  store l firstel
+  assign var l
+  ptrAsInt <- instr $AST.PtrToInt firstel (AST.IntegerType 32) []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
+  cbr test loop exit 
 
---  setBlock iff
---  tval <- termLLVM tr
---  br iexit
---  iff <- getBlock
+  setBlock loop
+  expressionBlockLLVM body
+  curr <- load l
+  next <- llvmCallExt2 curr pcontainer "arr_next_elem" 
+  store l next
+  ptrAsInt <- instr $AST.PtrToInt next (AST.IntegerType 32) []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
+  cbr test loop exit
 
---  setBlock ielse
---  fval <- termLLVM fal
---  br iexit
---  ielse <- getBlock
-
---  setBlock iexit
---  phi int [(tval, iff), (fval, ielse)]
+  setBlock exit  
+  return $cons $ AST.Float (Fl.Double 0.0)
 
 termLLVM (Literal prim) = primLLVM prim
+--termLLVM (Variable val) = getvar val >>= load
 termLLVM (Variable val) = getvar val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
@@ -194,7 +227,7 @@ primLLVM (ArrVal arr) = do
   ptrArray <- buildPtrArray elemPtrs
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
-primLLVM (NumVal num) = return $ cons $ AST.Float (Fl.Double num)
+primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
 primLLVM (StrVal s) = do
   let ptr =
         AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
@@ -203,20 +236,11 @@ primLLVM (StrVal s) = do
   let arrayS = stringToLLVMString s
   _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
   op2 <- instr $ ref
-  return op2
+  functionCallLLVM "json_string" op2
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
-llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "jsonArr")))
+llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
   [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
-
-externs = Map.fromList [
-      ("log", "puts"),
-      ("jn", "json"),
-      ("gets", "jgets"),
-      ("clientPost", "post"),
-      ("clientGet", "get"),
-      ("scmp", "strcmp")
-  ]
 
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
 functionCallLLVM fn arg = do
@@ -226,7 +250,12 @@ functionCallLLVM fn arg = do
     Nothing -> llvmCallFunc fn arg
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
-llvmCallExt op func = call (externf (AST.Name (fromString func))) [op]
+llvmCallExt op func = 
+  if func == "puts" || func == "post"
+  then do
+    st <- functionCallLLVM "tostring" op
+    call (externf (AST.Name (fromString func))) [st]
+  else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt2 op op2 func = call (externf (AST.Name (fromString func))) [op, op2]
@@ -246,9 +275,10 @@ buildPtrArray :: [AST.Operand] -> Codegen AST.Operand
 buildPtrArray ptrs = do
   mem <- instr $
     AST.Alloca llvmI32Pointer (Just (cons (AST.Int 32 (fromIntegral (length ptrs))))) 0 []
-
-  forM_ [0..length ptrs] $ \i -> do
-    instr $ AST.Store False mem (ptrs!!i) Nothing (fromIntegral i) []
+  forM_ [0..(length ptrs)-1] $ \i -> do
+    let tempptr = AST.GetElementPtr True mem [cons $ AST.Int 32 (fromIntegral i)] []
+    tempmem <- instr $ tempptr
+    instr $ AST.Store False tempmem (ptrs!!i) Nothing (fromIntegral 0) []
   return mem
 
 stringToLLVMString :: String -> AST.Constant
@@ -266,4 +296,4 @@ stringLLVM s = do
   let arrayS = stringToLLVMString s
   _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
   op2 <- instr $ ref
-  return op2
+  functionCallLLVM "json_string" op2
