@@ -2,6 +2,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
+#include <sstream>
 using namespace rapidjson;
 extern "C"{
 
@@ -17,13 +18,30 @@ Value& getp(int* intdoc, const char* key){
 	return (*d)[key];
 }
 
-std::string tostring(int *tempdoc){
-	Document* d = (Document *)tempdoc;
-	StringBuffer buff;
-	buff.Clear();
-	Writer<StringBuffer> writer(buff);
-	(*d).Accept(writer);
-	return std::string(buff.GetString());
+
+
+const char* tostring(int *tempdoc){
+	std::cout.flush();
+	try{
+		Value& typ = getp(tempdoc, "prim_type");
+		if(typ.GetString() == "num"){
+			std::ostringstream strdoub;
+			strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
+			return strdoub.str().c_str();
+		}
+		else if(typ.GetString() == "str"){
+			Value& pt = getp(tempdoc, "prim_val");
+			return pt.GetString();
+		}	
+	}
+	catch(...){
+		Document* d = (Document *)tempdoc;
+		StringBuffer buff;
+		buff.Clear();
+		Writer<StringBuffer> writer(buff);
+		(*d).Accept(writer);
+		return buff.GetString();
+	}
 }
 
 /*
@@ -38,13 +56,16 @@ int* json_double(double dubs){
 	Document *d = new Document();
 	(*d).SetObject();
 	Value db(dubs);
-	(*d).AddMember("json_rep_of_num_ts", dubs, (*d).GetAllocator());
+	(*d).AddMember("prim_type", "num", (*d).GetAllocator());
+	(*d).AddMember("prim_val", dubs, (*d).GetAllocator());
 	return (int*)d;
 }
 
 //Retrieve a double in json
 double get_json_double(int* intdoc){
-	Value& pt = getp(intdoc, "json_rep_of_num_ts");
+	Value& pt = getp(intdoc, "prim_type");
+	if(pt.GetString() == "num")
+		return getp(intdoc, "prim_val").GetDouble();
 	return pt.GetDouble();
 }
 
@@ -55,7 +76,8 @@ int* json_string(const char* s){
 	(*d).SetObject();
 	Value tempvalue;
 	tempvalue.SetString(s, (*d).GetAllocator());
-	(*d).AddMember("json_rep_of_str_ts", tempvalue.Move(), (*d).GetAllocator());
+	(*d).AddMember("prim_type", "str", (*d).GetAllocator());
+	(*d).AddMember("prim_val", tempvalue.Move(), (*d).GetAllocator());
 	return (int*)d;
 
 }
@@ -132,12 +154,37 @@ std::string adds(int *intdoc, const char* key, const char* value){
 		return key;
 	}
 }
+
+
+int* create_arr_iter(int* jsonthingie){
+	Document* d = (Document*)jsonthingie;
+	Value::ConstValueIterator itr = (*d).Begin();
+	return (int *) itr;
+}
+
+int* arr_next_elem(int* itr, int* intdoc){
+	Value::ConstValueIterator iter = (Value::ConstValueIterator) itr;
+	int* elem = (int*)(++iter);
+	if (elem == ((int *)(*((Document*)(intdoc))).End())){
+		return 0;
+	}
+	else
+		return elem;
+}
+int* create_obj_iter(int* jsonthingie){
+	Document *d = (Document*)jsonthingie;
+	Value::ConstMemberIterator itr = (*d).MemberBegin();
+	return (int *) &(*itr);
+}
 /*
- // Test function
+// Test function
 int main(){
 	//testing parse
 	const char* test = "{\"test\":\"christophe\"}";
+<<<<<<< HEAD
+=======
 	std::cout << sizeof(int) <<std::endl;
+>>>>>>> 2819b078101c1be2c044ab36b88749629b683c08
 	int* j = json(test);
 
 	//testing adds
@@ -145,19 +192,34 @@ int main(){
 	adds(j, "test", "w");
 
 	//testing string
-	std::cout << tostring(j) << std::endl;
-	std::cout << (*((Document*)j))["test"].GetString() << std::endl;
+	//std::cout << tostring(j) << std::endl;
+	//std::cout << (*((Document*)j))["test"].GetString() << std::endl;
 
 	int* d = json_double(3);
 	int* s = json_string("waduuuup");
 	int* pts[] = {d, s};
 	int* pt = json_array(pts, 2);
 
+<<<<<<< HEAD
+	//std::cout << get_json_double(d) << std::endl;
+	//std::cout << get_json_string(s) << std::endl;
+	//std::cout << get_json_double(get_json_from_array(pt,0)) << std::endl;
+
+
+	int* arr_itr = create_arr_iter(pt);
+
+	print(pt);
+	while(arr_itr){
+		std::cout << get_json_double(arr_itr) <<std::endl;
+		arr_itr = arr_next_elem(arr_itr, pt);
+	}
+
+=======
 	std::cout << get_json_double(d) << std::endl;
 	std::cout << get_json_string(s) << std::endl;
 	std::cout << get_json_double(get_json_from_array(pt,0)) << std::endl;
+>>>>>>> 2819b078101c1be2c044ab36b88749629b683c08
 
 	return 0;
-}
-*/
+}*/
 }
