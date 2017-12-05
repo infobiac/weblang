@@ -2,6 +2,6 @@
 
 
 forloop arg : inType -> outType
-  foreach x in ["hey", 3]
+  foreach x in arg
     log x
   log 5

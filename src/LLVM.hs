@@ -42,6 +42,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external (AST.IntegerType 32) "strlen" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -62,7 +63,8 @@ externs = Map.fromList [
       ("tostring", "tostring"),
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
-      ("scmp", "strcmp")
+      ("scmp", "strcmp"),
+      ("strlen", "strlen")
   ]
 
 extern2args = Map.fromList [
