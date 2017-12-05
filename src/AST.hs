@@ -14,7 +14,7 @@ type TypeName = String
 type OperatorName = String
 type ExpressionBlock = [(Int, Expression)]
 
-data Program = Program {
+data AST = AST {
     includes :: [Includes]
   , customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
@@ -67,10 +67,10 @@ data PrimValue = StrVal String
                | NullVal
                deriving (Show, Generic, Out)
 
-instance Monoid Program where
-  mempty = Program [] [] [] []
-  mappend (Program ais ats acs afs) (Program bis bts bcs bfs) =
-    Program (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
+instance Monoid AST where
+  mempty = AST [] [] [] []
+  mappend (AST ais ats acs afs) (AST bis bts bcs bfs) =
+    AST (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
 
 -- for pretty printing maps
 instance (Out a, Out b) => Out (Map a b) where

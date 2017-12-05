@@ -1,3 +1,3 @@
-main arg : inType -> outType
+helloworld arg : inType -> outType
   log "Hello,"
   log "world!"

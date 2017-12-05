@@ -48,10 +48,10 @@ Program
   | line TopLevel               { $2 }
 
 TopLevel
-  : FunctionDeclaration        { Program [] [] [] [$1] }
-  | Constant                   { Program [] [] [$1] [] }
-  | CustomType                 { Program [] [$1] [] [] }
-  | Includes                   { Program [$1] [] [] [] }
+  : FunctionDeclaration        { AST [] [] [] [$1] }
+  | Constant                   { AST [] [] [$1] [] }
+  | CustomType                 { AST [] [$1] [] [] }
+  | Includes                   { AST [$1] [] [] [] }
 
 Includes
   : includes quoted            { Includes $2 }

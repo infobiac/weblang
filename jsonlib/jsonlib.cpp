@@ -3,8 +3,6 @@
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
 #include <sstream>
-#include <typeinfo>
-
 using namespace rapidjson;
 extern "C"{
 
@@ -14,7 +12,6 @@ int* json(const char*s){
 	(*d).Parse(s);
 	return (int*)d;
 }
-
 
 Value& getp(int* intdoc, const char* key){
 	Document* d = (Document*)intdoc;
@@ -28,8 +25,8 @@ const char* tostring(int *tempdoc){
 	try{
 		Value& typ = getp(tempdoc, "prim_type");
 		if(typ.GetString() == "num"){
-			std::stringstream strdoub;
-			strdoub << getp(tempdoc, "prim_val").GetDouble();
+			std::ostringstream strdoub;
+			strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
 			return strdoub.str().c_str();
 		}
 		else if(typ.GetString() == "str"){
@@ -47,9 +44,12 @@ const char* tostring(int *tempdoc){
 	}
 }
 
-int print(auto thing2print){
-	std::cout<<(typeid(thing2print).name())<<std::endl;
-}
+/*
+ *Todo: Create functions to construct each type
+ * Getters 
+ * Method that takes in array of documents, combines them into one object
+ */
+
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
 int* json_double(double dubs){
@@ -61,14 +61,12 @@ int* json_double(double dubs){
 	return (int*)d;
 }
 
-
 //Retrieve a double in json
 double get_json_double(int* intdoc){
-	Value& typ = getp(intdoc, "prim_type");
-	if(typ.GetString() == "num")
+	Value& pt = getp(intdoc, "prim_type");
+	if(pt.GetString() == "num")
 		return getp(intdoc, "prim_val").GetDouble();
-	//Value& pt = getp(intdoc, "prim_val");
-	//return pt.GetDouble();
+	return pt.GetDouble();
 }
 
 
@@ -84,7 +82,6 @@ int* json_string(const char* s){
 
 }
 
-
 //Retrieve a string in json
 const char* get_json_string(int* intdoc){
 	Value& pt = getp(intdoc, "json_rep_of_str_ts");
@@ -97,11 +94,10 @@ int* json_array(int* a[], int numElements){
 	Document *d = new Document();
 	(*d).SetArray();
 	Document::AllocatorType& allocator = (*d).GetAllocator();
-	
 	for(int i = 0; i < numElements; i++){
 		Value tempdoc;
 	       	tempdoc.CopyFrom(*((Document *)(a[i])), allocator);
-		(*d).PushBack(tempdoc, allocator);	
+		(*d).PushBack(tempdoc, allocator);
 	}
 	return (int *)d;
 }
@@ -120,14 +116,11 @@ int* json_null(){
 	(*d).AddMember("json_rep_of_null_ts", NULL, (*d).GetAllocator());
 	return (int*)d;
 }
-
-
 //Retrieve a null in json
 int* get_json_null(int* intdoc){
 	Value& pt = getp(intdoc, "json_rep_of_null_ts");
 	return (int*)&pt;
 }
-
 
 int test(const char* s){
 	std::cout << "HI" << std::endl;
@@ -145,7 +138,6 @@ const char* jgets(int* intdoc, const char* key){
 		return "";
 	}
 }
-
 
 std::string adds(int *intdoc, const char* key, const char* value){
 	Document* d = (Document*)intdoc;
@@ -189,6 +181,10 @@ int* create_obj_iter(int* jsonthingie){
 int main(){
 	//testing parse
 	const char* test = "{\"test\":\"christophe\"}";
+<<<<<<< HEAD
+=======
+	std::cout << sizeof(int) <<std::endl;
+>>>>>>> 2819b078101c1be2c044ab36b88749629b683c08
 	int* j = json(test);
 
 	//testing adds
@@ -200,12 +196,11 @@ int main(){
 	//std::cout << (*((Document*)j))["test"].GetString() << std::endl;
 
 	int* d = json_double(3);
-	int* d2 = json_double(5);
-	
-	//int* s = json_string("waduuuup");
-	int* pts[] = {d, d2};
+	int* s = json_string("waduuuup");
+	int* pts[] = {d, s};
 	int* pt = json_array(pts, 2);
 
+<<<<<<< HEAD
 	//std::cout << get_json_double(d) << std::endl;
 	//std::cout << get_json_string(s) << std::endl;
 	//std::cout << get_json_double(get_json_from_array(pt,0)) << std::endl;
@@ -219,6 +214,11 @@ int main(){
 		arr_itr = arr_next_elem(arr_itr, pt);
 	}
 
+=======
+	std::cout << get_json_double(d) << std::endl;
+	std::cout << get_json_string(s) << std::endl;
+	std::cout << get_json_double(get_json_from_array(pt,0)) << std::endl;
+>>>>>>> 2819b078101c1be2c044ab36b88749629b683c08
 
 	return 0;
 }*/
