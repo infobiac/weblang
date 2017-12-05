@@ -119,7 +119,7 @@ createEndpointCheck fnName cmdRef arg = do
   cbr refEq iff continue
   
   setBlock iff
-  args <- functionCallLLVM "json_string" cmdRef
+  args <- functionCallLLVM "json_string" arg
   functionCallLLVM fnName args
   br continue
   iff <- getBlock 
