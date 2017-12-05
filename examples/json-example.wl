@@ -7,6 +7,8 @@ type Natural x : Integral
 
 x = ["first", 2, [3.0], {four: 4}]
 
-main arg : inType -> outType
+a arg : inType -> outType
   testjson = jn "{\"test\":\"hey\"}"
-  log [gets [jn "{\"test\":\"hey\"}", "te"], ""]
+  result = gets[testjson,"test"]
+  log "test"
+  log result
