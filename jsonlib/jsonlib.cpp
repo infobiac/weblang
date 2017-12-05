@@ -6,23 +6,18 @@
 using namespace rapidjson;
 extern "C"{
 
-int* json(const char*s){
-	std::cout << "Storing: " << s << std::endl;
-	Document* d = new Document();
-	(*d).Parse(s);
-	return (int*)d;
-}
-
 Value& getp(int* intdoc, const char* key){
 	Document* d = (Document*)intdoc;
 	return (*d)[key];
 }
 
 
-
-const char* tostring(int *tempdoc){
+const char* tostring(int* tempdoc){
 	std::cout.flush();
 	try{
+		Value* str = (Value*)tempdoc;
+		if(str->IsString())
+			return str->GetString();
 		Value& typ = getp(tempdoc, "prim_type");
 		if(typ.GetString() == "num"){
 			std::ostringstream strdoub;
@@ -43,6 +38,15 @@ const char* tostring(int *tempdoc){
 		return buff.GetString();
 	}
 }
+
+int* json(int* s){
+	const char* str = tostring(s); 
+	Document* d = new Document();
+	(*d).Parse(str);
+	return (int*)d;
+}
+
+
 
 /*
  *Todo: Create functions to construct each type
@@ -127,15 +131,14 @@ int test(const char* s){
 	return 3;
 }
 
-const char* jgets(int* intdoc, const char* key){
+int* jgets(int* intdoc, int* key){
 	Document* d = (Document*) intdoc;
-	if((*d).HasMember(key)){
-		std::cout << "we got it" << std::endl;
-		return getp((int*)d, key).GetString();
+	const char* skey = tostring(key);
+	if((*d).HasMember(skey)){
+		return (int*)(&(getp((int*)d, skey)));
 	}
 	else{
-		std::cout << "not here" << std::endl;
-		return "";
+		return 0;
 	}
 }
 

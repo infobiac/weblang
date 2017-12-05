@@ -33,12 +33,12 @@ llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0)
 llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do {
-  external llvmI32Pointer "json" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "strcmp" [(llvmStringPointer, AST.Name (fromString "s")), 
                                          (llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmStringPointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
-                                     , (llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                     , (llvmI32Pointer, AST.Name (fromString "s"))];
   external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -55,7 +55,6 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
 externs = Map.fromList [
       ("log", "puts"),
       ("jn", "json"),
-      ("gets", "jgets"),
       ("clientPost", "post"),
       ("clientGet", "get"),
       ("jnum", "json_double"),
@@ -67,6 +66,7 @@ externs = Map.fromList [
   ]
 
 extern2args = Map.fromList [
+      ("gets", "jgets"),
       ("geta", "get_json_from_array")
   ]
 
