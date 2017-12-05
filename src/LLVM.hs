@@ -50,8 +50,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get_json_from_array" [(llvmI32Pointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
-  external llvmStringPointer "adds" [ (llvmI32Pointer, AST.Name (fromString "s"))
-    , (llvmStringPointer, AST.Name (fromString "s")), (llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "adds" [ (llvmI32Pointer, AST.Name (fromString "s"))
+    , (llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
 }
 
 externs = Map.fromList [
@@ -300,7 +300,7 @@ llvmCallExt3args :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt3args op func = do
   op1 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 0)]
   op2 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 1)]
-  op3 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 1)]
+  op3 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 2)]
   if func == "get_json_from_array"
   then do
     idx <- functionCallLLVM "getdoub" op2   

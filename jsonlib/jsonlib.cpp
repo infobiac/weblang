@@ -142,11 +142,13 @@ int* jgets(int* intdoc, int* key){
 	}
 }
 
-std::string adds(int *intdoc, const char* key, const char* value){
+int* adds(int *intdoc, int* jkey, int* jvalue){
+	const char* key = tostring(jkey);
+	const char* value = tostring(jvalue);
 	Document* d = (Document*)intdoc;
 	if ((*d).HasMember(key)){
 		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
-		return key;
+		return intdoc;
 	}
 	else{
 		Value tempkey;
@@ -154,7 +156,8 @@ std::string adds(int *intdoc, const char* key, const char* value){
 		tempkey.SetString(key, (*d).GetAllocator());
 		tempvalue.SetString(value, (*d).GetAllocator());
 		(*d).AddMember(tempkey.Move(), tempvalue.Move(), (*d).GetAllocator());
-		return key;
+		std::cout << "return" <<std::endl;
+		return intdoc;
 	}
 }
 
