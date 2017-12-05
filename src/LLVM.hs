@@ -145,7 +145,9 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
           entry <- addBlock entryBlockName
           setBlock entry
           let argptr = local (AST.Name (fromString arg))
-          assign arg argptr
+          l <- alloca llvmI32Pointer
+          store l argptr
+          assign arg l
           expressionBlockLLVM body >>= ret . Just
 
 expressionBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
@@ -155,8 +157,10 @@ expressionLLVM :: Expression -> Codegen AST.Operand
 expressionLLVM (Unassigned term) = termLLVM term
 expressionLLVM (Assignment v term) = do
   let op = termLLVM term
+  l <- alloca llvmI32Pointer
   ptr <- op
-  assign v ptr
+  store l ptr
+  assign v l
   op
 
 termLLVM :: Term -> Codegen AST.Operand
@@ -223,8 +227,8 @@ termLLVM(ForeachInDo var container body) = do
   return $cons $ AST.Float (Fl.Double 0.0)
 
 termLLVM (Literal prim) = primLLVM prim
---termLLVM (Variable val) = getvar val >>= load
-termLLVM (Variable val) = getvar val
+termLLVM (Variable val) = getvar val >>= load
+--termLLVM (Variable val) = getvar val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do
