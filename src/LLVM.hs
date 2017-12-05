@@ -6,7 +6,7 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
 import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
@@ -49,6 +49,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get_json_from_array" [(llvmI32Pointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
 }
 
 externs = Map.fromList [
@@ -63,6 +64,10 @@ externs = Map.fromList [
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
       ("scmp", "strcmp")
+  ]
+
+extern2args = Map.fromList [
+      ("geta", "get_json_from_array")
   ]
 
 opops = Map.fromList [
@@ -247,7 +252,10 @@ functionCallLLVM fn arg = do
   case Map.lookup fn externs of
     Just fn2 -> do
       llvmCallExt arg fn2
-    Nothing -> llvmCallFunc fn arg
+    Nothing -> case Map.lookup fn extern2args of
+      Just fn3 -> do 
+        llvmCallExt2args arg fn3
+      Nothing -> llvmCallFunc fn arg
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt op func = 
@@ -259,6 +267,18 @@ llvmCallExt op func =
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt2 op op2 func = call (externf (AST.Name (fromString func))) [op, op2]
+
+llvmCallExt2args :: AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt2args op func = do
+  op1 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 0)]
+  op2 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 1)]
+  if func == "get_json_from_array"
+  then do
+    idx <- functionCallLLVM "getdoub" op2   
+    let conv = AST.FPToUI idx (AST.IntegerType 32) []
+    intidx <- instr $conv
+    llvmCallExt2 op1 intidx func
+  else llvmCallExt2 op1 op2 func
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
