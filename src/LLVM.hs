@@ -84,7 +84,7 @@ toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmI32Pointer, AST.Name (fromString x))]
 
 mainSig :: [(AST.Type, AST.Name)]
-mainSig = [(llvmI32Pointer, AST.Name (fromString "argv")), (llvmPointerStringfPointer, AST.Name (fromString "argc"))] 
+mainSig = [(llvmI32Pointer, AST.Name (fromString "argc")), (llvmPointerStringfPointer, AST.Name (fromString "argv"))] 
 
 functionLLVMMain :: [(FnName, Function)] -> LLVM ()
 functionLLVMMain fns = do
@@ -94,19 +94,16 @@ functionLLVMMain fns = do
           entry <- addBlock entryBlockName
           setBlock entry 
           let fnNames = map fst fns
-          let argc = local (AST.Name (fromString "argc"))
-          let ptr = AST.GetElementPtr True argc [cons $ AST.Int 32 1] []
-          ref <- instr $ ptr 
-          let load = AST.Load False ref Nothing 1 []
-          cmdRef <- instr $ load
-          let endpoints = mapM (\f -> createEndpointCheck f cmdRef) fnNames
+          argv1 <- argvAt 1
+          argv2 <- argvAt 2
+          let endpoints = mapM (\f -> createEndpointCheck f argv1 argv2) fnNames
           _ <- endpoints
 	  let msg = ""
           msgRef <- stringLLVM msg
           functionCallLLVM "log" msgRef >>= ret . Just
 
-createEndpointCheck :: String -> AST.Operand -> Codegen AST.Name
-createEndpointCheck fnName cmdRef = do
+createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
+createEndpointCheck fnName cmdRef arg = do
   compare <- stringLLVM fnName
   compllvmstr <- functionCallLLVM "tostring" compare
   compStrRes <- llvmCallExt2 cmdRef compllvmstr "strcmp"
@@ -123,6 +120,16 @@ createEndpointCheck fnName cmdRef = do
   iff <- getBlock 
 
   setBlock continue
+
+argvAt:: Integer -> Codegen AST.Operand
+argvAt idx = do
+  let argv = local (AST.Name (fromString "argv"))
+  let ptr = AST.GetElementPtr True argv [cons $ AST.Int 32 idx] []
+  ref <- instr $ ptr 
+  let load = AST.Load False ref Nothing 1 []
+  op <- instr $ load
+  return op
+
 
 --fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
