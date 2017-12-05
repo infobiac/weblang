@@ -49,20 +49,22 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do {
   external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "adds" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmStringPointer, AST.Name (fromString "key")),(llvmStringPointer, AST.Name (fromString "value"))]
 }
 
 externs = Map.fromList [
-      ("log", "puts"),
-      ("jn", "json"),
-      ("gets", "jgets"),
-      ("clientPost", "post"),
-      ("clientGet", "get"),
-      ("jnum", "json_double"),
-      ("getdoub", "get_json_double"),
-      ("tostring", "tostring"),
-      ("getfst", "create_arr_iter"),
-      ("getnext", "arr_next_elem"),
-      ("scmp", "strcmp")
+      ("log", ("puts", "1")),
+      ("jn", ("json", "1")),
+      ("gets", ("jgets", "1")),
+      ("clientPost", ("post", "1")),
+      ("clientGet", ("get", "1")),
+      ("jnum", ("json_double", "1")),
+      ("getdoub", ("get_json_double", "1")),
+      ("tostring", ("tostring", "1")),
+      ("getfst", ("create_arr_iter", "1")),
+      ("getnext", ("arr_next_elem", "1")),
+      ("scmp", ("strcmp", "2")),
+      ("jadds",("adds", "3"))
   ]
 
 opops = Map.fromList [
@@ -259,6 +261,9 @@ llvmCallExt op func =
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt2 op op2 func = call (externf (AST.Name (fromString func))) [op, op2]
+
+llvmCallExt3 :: AST.Operand -> AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt3 op op2 op3 func= call (externf (AST.Name (fromString func))) [op, op2, op3]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
