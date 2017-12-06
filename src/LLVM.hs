@@ -106,11 +106,8 @@ functionLLVMMain fns = do
           let fnNames = map fst fns
           argv1 <- argvAt 1
           argv2 <- argvAt 2
-          let endpoints = mapM (\f -> createEndpointCheck f argv1 argv2) fnNames
-          _ <- endpoints
-          let msg = ""
-          msgRef <- stringLLVM msg
-          functionCallLLVM "log" msgRef >>= ret . Just
+          mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
+          ret $ Just (cons $ AST.Int 32 0)
 
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
