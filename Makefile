@@ -1,3 +1,6 @@
+assignment: assignment.o jsonlib/jsonlib.o
+	nix-shell -p gcc --command "g++ assignment.o jsonlib/jsonlib.o -o assignment"
+
 hello-world: hello-world.o
 	nix-shell -p gcc --command "gcc -lm hello-world.o -o hello-world"
 

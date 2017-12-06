@@ -295,7 +295,7 @@ llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
 
 llvmCharArrayType :: Int -> AST.Type
-llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) llvmI32
+llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) llvmI8
 
 buildPtrArray :: [AST.Operand] -> Codegen AST.Operand
 buildPtrArray ptrs = do

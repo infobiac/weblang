@@ -1,3 +1,5 @@
-helloworld arg : inType -> outType
-  log "Hello,"
-  log "world!"
+f x : a -> b
+  a = 1
+  b = 1 + a
+  c = b + a
+  log c
