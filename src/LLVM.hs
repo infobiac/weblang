@@ -140,7 +140,6 @@ argvAt idx = do
   op <- instr $ load
   return op
 
-
 --fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
 functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
@@ -189,7 +188,7 @@ termLLVM (IfThenElse bool tr fal) = do
   iexit <- addBlock "iexit"
   bool <- termLLVM bool
   boolasdoub <- functionCallLLVM "getdoub" bool
-  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) boolasdoub
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Int 32 0) boolasdoub
   cbr branchval iff ielse
 
   setBlock iff
