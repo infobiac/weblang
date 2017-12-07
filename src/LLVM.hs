@@ -12,6 +12,7 @@ import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
+import Control.Monad.State
 import Data.Maybe
 import Data.Word
 import Data.String
@@ -26,31 +27,35 @@ writeModule fp m =
 buildModule :: Program -> AST.Module
 buildModule p = runLLVM moduleHeader (buildLLVM p)
 
-llvmI32Pointer = (AST.PointerType (AST.IntegerType 32) (AST.AddrSpace 0))
+llvmI8 = AST.IntegerType 8
+llvmI32 = AST.IntegerType 32
+llvmI32Pointer = (AST.PointerType llvmI32 (AST.AddrSpace 0))
 llvmI32PointerPointer = (AST.PointerType llvmI32Pointer (AST.AddrSpace 0))
-llvmStringPointer = (AST.PointerType (AST.IntegerType 8) (AST.AddrSpace 0))
+llvmStringPointer = (AST.PointerType llvmI8 (AST.AddrSpace 0))
 llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0))
 llvmDouble = AST.FloatingPointType AST.DoubleFP
 
-moduleHeader = runLLVM (emptyModule "WebLang") $ do {
+moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
-  external (AST.IntegerType 32) "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external (AST.IntegerType 32) "strcmp" [(llvmStringPointer, AST.Name (fromString "s")), 
+  external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
                                          (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
-  external (AST.IntegerType 32) "test" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "json_array" [(llvmI32PointerPointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
+  external llvmI32Pointer "json_array" [ (llvmI32PointerPointer, AST.Name (fromString "s"))
+                                       , (llvmI32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "arr_next_elem" [(llvmI32Pointer, AST.Name (fromString "s")), (llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get_json_from_array" [(llvmI32Pointer, AST.Name (fromString "s")), (AST.IntegerType 32, (fromString "s"))];
-}
+  external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                          , (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32, (fromString "s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -71,7 +76,7 @@ extern2args = Map.fromList [
   ]
 
 opops = Map.fromList [
-      ("+", fadd), 
+      ("+", fadd),
       ("-", fsub),
       ("*", fmul),
       ("/", fdiv)
@@ -89,40 +94,37 @@ toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmI32Pointer, AST.Name (fromString x))]
 
 mainSig :: [(AST.Type, AST.Name)]
-mainSig = [(llvmI32Pointer, AST.Name (fromString "argc")), (llvmPointerStringfPointer, AST.Name (fromString "argv"))] 
+mainSig = [ (llvmI32Pointer, AST.Name (fromString "argc"))
+          , (llvmPointerStringfPointer, AST.Name (fromString "argv"))]
 
 functionLLVMMain :: [(FnName, Function)] -> LLVM ()
 functionLLVMMain fns = do
-  define llvmRetType "main" mainSig llvmBody 
-  where llvmRetType = (AST.IntegerType 32)
+  define llvmRetType "main" mainSig llvmBody
+  where llvmRetType = llvmI32
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
-          setBlock entry 
+          setBlock entry
           let fnNames = map fst fns
           argv1 <- argvAt 1
           argv2 <- argvAt 2
-          let endpoints = mapM (\f -> createEndpointCheck f argv1 argv2) fnNames
-          _ <- endpoints
-	  let msg = ""
-          msgRef <- stringLLVM msg
-          functionCallLLVM "log" msgRef >>= ret . Just
+          mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
+          ret $ Just (cons $ AST.Int 32 0)
 
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
-  compare <- stringLLVM fnName
-  compllvmstr <- functionCallLLVM "tostring" compare
-  compStrRes <- llvmCallExt2 cmdRef compllvmstr "strcmp"
+  compare <- rawStringLLVM fnName
+  compStrRes <- llvmCallExt2 cmdRef compare "strcmp"
   let equal = AST.ICmp Intypoo.EQ compStrRes (cons $ AST.Int 32 0) []
   refEq <- instr $ equal
   iff <- addBlock fnName
   continue <- addBlock "continue"
   cbr refEq iff continue
-  
+
   setBlock iff
   args <- functionCallLLVM "json_string" arg
   functionCallLLVM fnName args
   br continue
-  iff <- getBlock 
+  iff <- getBlock
 
   setBlock continue
 
@@ -130,16 +132,15 @@ argvAt:: Integer -> Codegen AST.Operand
 argvAt idx = do
   let argv = local (AST.Name (fromString "argv"))
   let ptr = AST.GetElementPtr True argv [cons $ AST.Int 32 idx] []
-  ref <- instr $ ptr 
+  ref <- instr $ ptr
   let load = AST.Load False ref Nothing 1 []
   op <- instr $ load
   return op
 
-
 --fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
 functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
-  where llvmRetType = (AST.IntegerType 32)
+  where llvmRetType = llvmI32Pointer
         fnargs = toSig arg
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
@@ -155,13 +156,24 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
 expressionLLVM :: Expression -> Codegen AST.Operand
 expressionLLVM (Unassigned term) = termLLVM term
-expressionLLVM (Assignment v term) = do
-  let op = termLLVM term
-  l <- alloca llvmI32Pointer
-  ptr <- op
+expressionLLVM (Assignment name term) = do
+  maybeVal <- getvar name
+  ptr <- termLLVM term
+  l <- case maybeVal of
+    Nothing -> do
+      l <- alloca llvmI32Pointer
+      assign name l
+      return l
+    Just val -> return val
   store l ptr
-  assign v l
-  op
+  return ptr
+
+scopedBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
+scopedBlockLLVM exprs = do
+  symTable <- symtab <$> get
+  res <- expressionBlockLLVM exprs
+  modify $ \state -> state {symtab = symTable}
+  return res
 
 termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
@@ -189,46 +201,49 @@ termLLVM (IfThenElse bool tr fal) = do
   cbr branchval iff ielse
 
   setBlock iff
-  tval <- expressionBlockLLVM tr
+  tval <- scopedBlockLLVM tr
   br iexit
   iff <- getBlock
 
   setBlock ielse
-  fval <- expressionBlockLLVM fal
+  fval <- scopedBlockLLVM fal
   br iexit
   ielse <- getBlock
 
   setBlock iexit
-  phi int [(tval, iff), (fval, ielse)]
+  phi llvmI32Pointer [(tval, iff), (fval, ielse)]
 
-termLLVM(ForeachInDo var container body) = do
+termLLVM (ForeachInDo var container body) = do
   loop <- addBlock "loop"
   exit <- addBlock "exit"
-  
+
   l <- alloca llvmI32Pointer
   pcontainer <- termLLVM container
   firstel <- functionCallLLVM "getfst" pcontainer
   store l firstel
   assign var l
-  ptrAsInt <- instr $AST.PtrToInt firstel (AST.IntegerType 32) []
-  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
-  cbr test loop exit 
-
-  setBlock loop
-  expressionBlockLLVM body
-  curr <- load l
-  next <- llvmCallExt2 curr pcontainer "arr_next_elem" 
-  store l next
-  ptrAsInt <- instr $AST.PtrToInt next (AST.IntegerType 32) []
-  test <- icmp Intypoo.NE (cons $ AST.Int 32 (fromIntegral 0)) ptrAsInt
+  ptrAsInt <- instr $ AST.PtrToInt firstel llvmI32 []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 0) ptrAsInt
   cbr test loop exit
 
-  setBlock exit  
-  return $cons $ AST.Float (Fl.Double 0.0)
+  setBlock loop
+  scopedBlockLLVM body
+  curr <- load l
+  next <- llvmCallExt2 curr pcontainer "arr_next_elem"
+  store l next
+  ptrAsInt <- instr $ AST.PtrToInt next llvmI32 []
+  test <- icmp Intypoo.NE (cons $ AST.Int 32 0) ptrAsInt
+  cbr test loop exit
+
+  setBlock exit
+  return pcontainer
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM (Variable val) = getvar val >>= load
---termLLVM (Variable val) = getvar val
+termLLVM (Variable var) = do
+  maybeVal <- getvar var
+  case maybeVal of
+    Nothing -> error $ "Local variable not in scope: " ++ show var
+    Just val -> load val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do
@@ -237,15 +252,7 @@ primLLVM (ArrVal arr) = do
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
 primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
-primLLVM (StrVal s) = do
-  let ptr =
-        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
-  op <- instr $ ptr
-  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-  let arrayS = stringToLLVMString s
-  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
-  op2 <- instr $ ref
-  functionCallLLVM "json_string" op2
+primLLVM (StrVal s) = stringLLVM s
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
@@ -257,16 +264,17 @@ functionCallLLVM fn arg = do
     Just fn2 -> do
       llvmCallExt arg fn2
     Nothing -> case Map.lookup fn extern2args of
-      Just fn3 -> do 
+      Just fn3 -> do
         llvmCallExt2args arg fn3
       Nothing -> llvmCallFunc fn arg
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
-llvmCallExt op func = 
+llvmCallExt op func =
   if func == "puts" || func == "post"
   then do
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
+    return op
   else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
@@ -278,8 +286,8 @@ llvmCallExt2args op func = do
   op2 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $ AST.Int 32 (fromIntegral 1)]
   if func == "get_json_from_array"
   then do
-    idx <- functionCallLLVM "getdoub" op2   
-    let conv = AST.FPToUI idx (AST.IntegerType 32) []
+    idx <- functionCallLLVM "getdoub" op2
+    let conv = AST.FPToUI idx llvmI32 []
     intidx <- instr $conv
     llvmCallExt2 op1 intidx func
   else llvmCallExt2 op1 op2 func
@@ -293,7 +301,7 @@ llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
 --llvmArrayToPointer arr = AST.GetElementPtr True arr [AST.Int 32 0]
 
 llvmCharArrayType :: Int -> AST.Type
-llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) (AST.IntegerType 8)
+llvmCharArrayType n = AST.ArrayType (fromIntegral n :: Word64) llvmI8
 
 buildPtrArray :: [AST.Operand] -> Codegen AST.Operand
 buildPtrArray ptrs = do
@@ -306,18 +314,23 @@ buildPtrArray ptrs = do
   return mem
 
 stringToLLVMString :: String -> AST.Constant
-stringToLLVMString s = AST.Array (AST.IntegerType 8) (map charToLLVMInt s ++ [AST.Int 8 0])
+stringToLLVMString s = AST.Array llvmI8 (map charToLLVMInt s ++ [AST.Int 8 0])
 
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
 
-stringLLVM :: String -> Codegen AST.Operand
-stringLLVM s = do
+rawStringLLVM :: String -> Codegen AST.Operand
+rawStringLLVM s = do
   let ptr =
-        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
+        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 1))) 0 []
   op <- instr $ ptr
-  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
   let arrayS = stringToLLVMString s
   _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
+  let ref = AST.GetElementPtr True op [cons $ AST.Int 8 0, cons $ AST.Int 8 0] []
   op2 <- instr $ ref
-  functionCallLLVM "json_string" op2
+  return op2
+
+stringLLVM :: String -> Codegen AST.Operand
+stringLLVM s = do
+  op <- rawStringLLVM s
+  functionCallLLVM "json_string" op
