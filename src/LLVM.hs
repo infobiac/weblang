@@ -235,15 +235,7 @@ primLLVM (ArrVal arr) = do
   llvmCallJsonArr ptrArray (length elemPtrs)
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
 primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
-primLLVM (StrVal s) = do
-  let ptr =
-        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
-  op <- instr $ ptr
-  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-  let arrayS = stringToLLVMString s
-  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
-  op2 <- instr $ ref
-  functionCallLLVM "json_string" op2
+primLLVM (StrVal s) = stringLLVM s
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
@@ -323,11 +315,5 @@ rawStringLLVM s = do
 
 stringLLVM :: String -> Codegen AST.Operand
 stringLLVM s = do
-  let ptr =
-        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 (fromIntegral 1)))) 0 []
-  op <- instr $ ptr
-  let ref = AST.GetElementPtr True op [cons $ AST.Int 32 0, cons $ AST.Int 32 0] []
-  let arrayS = stringToLLVMString s
-  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
-  op2 <- instr $ ref
-  functionCallLLVM "json_string" op2
+  op <- rawStringLLVM s
+  functionCallLLVM "json_string" op
