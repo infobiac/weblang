@@ -168,6 +168,12 @@ expressionLLVM (Assignment name term) = do
   store l ptr
   return ptr
 
+scopedBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
+scopedBlockLLVM exprs = do
+  symTable <- symtab <$> get
+  res <- expressionBlockLLVM exprs
+  modify $ \state -> state {symtab = symTable}
+  return res
 
 termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
@@ -195,12 +201,12 @@ termLLVM (IfThenElse bool tr fal) = do
   cbr branchval iff ielse
 
   setBlock iff
-  tval <- expressionBlockLLVM tr
+  tval <- scopedBlockLLVM tr
   br iexit
   iff <- getBlock
 
   setBlock ielse
-  fval <- expressionBlockLLVM fal
+  fval <- scopedBlockLLVM fal
   br iexit
   ielse <- getBlock
 
@@ -221,7 +227,7 @@ termLLVM (ForeachInDo var container body) = do
   cbr test loop exit
 
   setBlock loop
-  expressionBlockLLVM body
+  scopedBlockLLVM body
   curr <- load l
   next <- llvmCallExt2 curr pcontainer "arr_next_elem"
   store l next
@@ -233,11 +239,11 @@ termLLVM (ForeachInDo var container body) = do
   return pcontainer
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM (Variable val) = do
-  var <- getvar val
-  case var of
+termLLVM (Variable var) = do
+  maybeVal <- getvar var
+  case maybeVal of
     Nothing -> error $ "Local variable not in scope: " ++ show var
-    Just x -> load x
+    Just val -> load val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do
