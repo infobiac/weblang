@@ -1,8 +1,25 @@
-language: haskell
+language: nix
+
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.stack
 
 before_install:
-    - curl -sSL https://get.haskellstack.org/ | sh
-    - curl https://nixos.org/nix/install | sh
-    - stack --install-ghc
+    # Download and unpack the stack executable
+    - mkdir -p ~/.local/bin
+    - export PATH=$HOME/.local/bin:$PATH
+    - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    - stack config set system-ghc --global true
+    - export PATH=/opt/ghc/7.10.2/bin:$PATH
+
+addons:
+      apt:
+          sources:
+              - hvr-ghc
+          packages:
+              - ghc-7.10.2
+
 script:
-    - make hello-world
+    stack build --nix :weblang
