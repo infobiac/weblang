@@ -12,6 +12,7 @@ import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
 import Codegen
 import Control.Monad
+import Control.Monad.State
 import Data.Maybe
 import Data.Word
 import Data.String
@@ -155,12 +156,18 @@ expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
 
 expressionLLVM :: Expression -> Codegen AST.Operand
 expressionLLVM (Unassigned term) = termLLVM term
-expressionLLVM (Assignment v term) = do
-  l <- alloca llvmI32Pointer
+expressionLLVM (Assignment name term) = do
+  maybeVal <- getvar name
   ptr <- termLLVM term
+  l <- case maybeVal of
+    Nothing -> do
+      l <- alloca llvmI32Pointer
+      assign name l
+      return l
+    Just val -> return val
   store l ptr
-  assign v l
   return ptr
+
 
 termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
@@ -226,7 +233,11 @@ termLLVM (ForeachInDo var container body) = do
   return pcontainer
 
 termLLVM (Literal prim) = primLLVM prim
-termLLVM (Variable val) = getvar val >>= load
+termLLVM (Variable val) = do
+  var <- getvar val
+  case var of
+    Nothing -> error $ "Local variable not in scope: " ++ show var
+    Just x -> load x
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do
