@@ -111,9 +111,8 @@ functionLLVMMain fns = do
 
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
-  compare <- stringLLVM fnName
-  compllvmstr <- functionCallLLVM "tostring" compare
-  compStrRes <- llvmCallExt2 cmdRef compllvmstr "strcmp"
+  compare <- rawStringLLVM fnName
+  compStrRes <- llvmCallExt2 cmdRef compare "strcmp"
   let equal = AST.ICmp Intypoo.EQ compStrRes (cons $ AST.Int 32 0) []
   refEq <- instr $ equal
   iff <- addBlock fnName
@@ -140,7 +139,7 @@ argvAt idx = do
 --fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
 functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
-  where llvmRetType = llvmI32
+  where llvmRetType = llvmI32Pointer
         fnargs = toSig arg
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
@@ -224,7 +223,7 @@ termLLVM (ForeachInDo var container body) = do
   cbr test loop exit
 
   setBlock exit
-  return . cons $ AST.Float (Fl.Double 0.0)
+  return pcontainer
 
 termLLVM (Literal prim) = primLLVM prim
 termLLVM (Variable val) = getvar val >>= load
@@ -266,6 +265,7 @@ llvmCallExt op func =
   then do
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
+    return op
   else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
@@ -309,6 +309,17 @@ stringToLLVMString s = AST.Array llvmI8 (map charToLLVMInt s ++ [AST.Int 8 0])
 
 charToLLVMInt :: Char -> AST.Constant
 charToLLVMInt = AST.Int 8 . fromIntegral . ord
+
+rawStringLLVM :: String -> Codegen AST.Operand
+rawStringLLVM s = do
+  let ptr =
+        AST.Alloca (llvmCharArrayType (1+length s)) (Just (cons (AST.Int 32 1))) 0 []
+  op <- instr $ ptr
+  let arrayS = stringToLLVMString s
+  _ <- instr $ AST.Store False op (cons arrayS) Nothing 0 []
+  let ref = AST.GetElementPtr True op [cons $ AST.Int 8 0, cons $ AST.Int 8 0] []
+  op2 <- instr $ ref
+  return op2
 
 stringLLVM :: String -> Codegen AST.Operand
 stringLLVM s = do
