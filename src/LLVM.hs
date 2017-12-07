@@ -197,7 +197,7 @@ termLLVM (IfThenElse bool tr fal) = do
   iexit <- addBlock "iexit"
   bool <- termLLVM bool
   boolasdoub <- functionCallLLVM "getdoub" bool
-  branchval <- fcmp Floatypoo.ONE (cons $ AST.Int 32 0) boolasdoub
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) boolasdoub
   cbr branchval iff ielse
 
   setBlock iff
@@ -211,7 +211,7 @@ termLLVM (IfThenElse bool tr fal) = do
   ielse <- getBlock
 
   setBlock iexit
-  phi int [(tval, iff), (fval, ielse)]
+  phi llvmI32Pointer [(tval, iff), (fval, ielse)]
 
 termLLVM (ForeachInDo var container body) = do
   loop <- addBlock "loop"
