@@ -1,5 +1,6 @@
 conditional arg : inType -> outType
-  if 0
+  x = true
+  if arg
     log "hi"
     log "hi"
   else

@@ -39,6 +39,8 @@ data LexToken =
   -- primitives
   | NumberToken Double
   | NullToken
+  | TrueToken
+  | FalseToken
   | QuoteToken String
   | CommaToken
   | LeftSquareBracketToken

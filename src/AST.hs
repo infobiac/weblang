@@ -65,6 +65,8 @@ data PrimValue = StrVal String
                | ArrVal [Term]
                | ObjVal (Map String Term)
                | NullVal
+               | TrueVal
+               | FalseVal
                deriving (Show, Generic, Out)
 
 instance Monoid AST where

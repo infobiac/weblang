@@ -32,6 +32,8 @@ import AST
   num		    { Pos _ _ (NumberToken $$) }
   helper    { Pos _ _ (HelperToken) }
   null		  { Pos _ _ (NullToken) }
+  true		  { Pos _ _ (TrueToken) }
+  false		  { Pos _ _ (FalseToken) }
   if        { Pos _ _ (IfToken) }
   then      { Pos _ _ (ThenToken) }
   else      { Pos _ _ (ElseToken) }
@@ -120,6 +122,8 @@ Literal
   | '{' indent ObjectTerms indent '}' { (ObjVal $3) }
   | '{' ObjectTerms '}'               { (ObjVal $2) }
   | null                              { NullVal }
+  | true                              { TrueVal }
+  | false                             { FalseVal }
 
 ArrayTerms
   : Term ',' ArrayTerms           { $1 : $3 }

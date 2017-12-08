@@ -119,6 +119,8 @@ transPrim (AST.NumVal s) = (NumVal s)
 transPrim (AST.ArrVal s) = (ArrVal (map transSimpleTerm s))
 transPrim (AST.ObjVal s) = (ObjVal (fmap transSimpleTerm s))
 transPrim AST.NullVal = NullVal
+transPrim AST.TrueVal = TrueVal
+transPrim AST.FalseVal = FalseVal
 
 data Program = Program {
     customTypes :: [(TypeName, NewType)]
@@ -153,4 +155,6 @@ data PrimValue = StrVal String
                | ArrVal [Term]
                | ObjVal (Map String Term)
                | NullVal
+               | TrueVal
+               | FalseVal
                deriving (Show, Generic, Out)

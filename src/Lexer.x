@@ -35,6 +35,8 @@ tokens :-
   "helper"                                                     { \pos s -> withPos pos $ HelperToken }
   "includes"                                                   { \pos s -> withPos pos $ IncludesToken }
   "null"                                                       { \pos s -> withPos pos $ NullToken }
+  "true"                                                       { \pos s -> withPos pos $ TrueToken }
+  "false"                                                      { \pos s -> withPos pos $ FalseToken }
   \[                                                           { \pos s -> withPos pos $ LeftSquareBracketToken }
   \]                                                           { \pos s -> withPos pos $ RightSquareBracketToken }
   \(                                                           { \pos s -> withPos pos $ LeftParenToken }
