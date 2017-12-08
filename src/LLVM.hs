@@ -253,6 +253,18 @@ primLLVM (ArrVal arr) = do
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
 primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
 primLLVM (StrVal s) = stringLLVM s
+primLLVM (NullVal) = nullLLVM
+primLLVM (TrueVal) = trueLLVM
+primLLVM (FalseVal) = falseLLVM
+
+nullLLVM :: Codegen AST.Operand
+nullLLVM = error "need to build a null builder"
+
+trueLLVM :: Codegen AST.Operand
+trueLLVM = error "need to build a true builder"
+
+falseLLVM :: Codegen AST.Operand
+falseLLVM = error "need to build a false builder"
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
