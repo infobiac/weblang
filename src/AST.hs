@@ -19,6 +19,11 @@ data AST = AST {
   , customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
+  , imports :: [Import]
+  } deriving (Show, Generic, Out)
+
+data Import = Import {
+    server :: Term
   } deriving (Show, Generic, Out)
 
 data Includes = Includes {
@@ -70,9 +75,9 @@ data PrimValue = StrVal String
                deriving (Show, Generic, Out)
 
 instance Monoid AST where
-  mempty = AST [] [] [] []
-  mappend (AST ais ats acs afs) (AST bis bts bcs bfs) =
-    AST (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
+  mempty = AST [] [] [] [] []
+  mappend (AST ais ats acs afs ams) (AST bis bts bcs bfs bms) =
+    AST (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs) (ams ++ bms)
 
 -- for pretty printing maps
 instance (Out a, Out b) => Out (Map a b) where

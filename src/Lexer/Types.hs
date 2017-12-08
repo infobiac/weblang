@@ -28,6 +28,7 @@ data LexToken =
   | HelperToken
 
   | IncludesToken
+  | ImportToken
 
   -- syntax symbols
   | EqualsToken

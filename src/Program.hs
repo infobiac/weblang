@@ -36,6 +36,7 @@ astToProgram ast = Program {
     customTypes = AST.customTypes ast
   , constants = map (\(n, v) -> (n, transSimpleTerm v)) $ AST.constants ast
   , fnDeclarations = map (\(n, f) -> (n, transFunction f)) $ AST.fnDeclarations ast
+  , imports = map transImport $ AST.imports ast
   }
 
 transFunction :: AST.Function -> Function
@@ -46,6 +47,9 @@ transFunction astFunc = Function {
   , body = transExpressions $ AST.body astFunc
   , helper = AST.helper astFunc
   }
+
+transImport :: AST.Import -> Import
+transImport (AST.Import t) = Import $ transSimpleTerm t
 
 transExpressions :: AST.ExpressionBlock -> ExpressionBlock
 transExpressions = evalState (whileJust transExpression return)
@@ -126,6 +130,7 @@ data Program = Program {
     customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
+  , imports :: [Import]
   } deriving (Show, Generic, Out)
 
 data Function = Function {
@@ -135,6 +140,9 @@ data Function = Function {
   , body :: ExpressionBlock
   , helper :: Bool
   } deriving (Show, Generic, Out)
+
+data Import = Import Term
+            deriving (Show, Generic, Out)
 
 type ExpressionBlock = [Expression]
 

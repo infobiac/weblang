@@ -42,6 +42,7 @@ import AST
   do        { Pos _ _ (DoToken) }
   type      { Pos _ _ (TypeToken) }
   includes  { Pos _ _ (IncludesToken) }
+  import    { Pos _ _ (ImportToken) }
 
 %%
 
@@ -50,10 +51,14 @@ Program
   | line TopLevel               { $2 }
 
 TopLevel
-  : FunctionDeclaration        { AST [] [] [] [$1] }
-  | Constant                   { AST [] [] [$1] [] }
-  | CustomType                 { AST [] [$1] [] [] }
-  | Includes                   { AST [$1] [] [] [] }
+  : FunctionDeclaration        { AST [] [] [] [$1] [] }
+  | Constant                   { AST [] [] [$1] [] [] }
+  | CustomType                 { AST [] [$1] [] [] [] }
+  | Includes                   { AST [$1] [] [] [] [] }
+  | Import                     { AST [] [] [] [] [$1] }
+
+Import
+  : import Term                { Import $2 }
 
 Includes
   : includes quoted            { Includes $2 }
