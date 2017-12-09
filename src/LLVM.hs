@@ -117,7 +117,7 @@ functionLLVMMain fns = do
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
-          let fnNames = map fst fns
+          let fnNames = map fst . filter (not . helper . snd) $ fns
           argv1 <- argvAt 1
           argv2 <- argvAt 2
           mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
