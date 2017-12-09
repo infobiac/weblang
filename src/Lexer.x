@@ -20,7 +20,7 @@ tokens :-
   \" ( \n | [^\"\\] | \\. )* \"                               { \pos s -> withPos pos $ QuoteToken (parseQuoted s) }
   "/*" ( $newline | [^\*] | \*+ ($newline | [^\/]) )* "*/"    ;
   ^$space+                                                    { \pos s -> withPos pos $ IndentToken (length s) }
-  @empty_lines $space+                                        { \pos s -> withPos pos $ IndentToken (length s - 1) }
+  $space* @empty_lines $space+                                { \pos -> withPos pos . IndentToken . length . takeWhile (== ' ') . reverse }
   @empty_lines                                                { \pos s -> withPos pos $ NewlineToken }
   $white+                                                     ;
   "//".*                                                      ;
@@ -46,11 +46,21 @@ tokens :-
   \{                                                          { \pos s -> withPos pos $ LeftCurlyBracketToken }
   \}                                                          { \pos s -> withPos pos $ RightCurlyBracketToken }
   \,                                                          { \pos s -> withPos pos $ CommaToken }
-  \=                                                          { \pos s -> withPos pos $ EqualsToken }
   \:                                                          { \pos s -> withPos pos $ ColonToken }
   "->"                                                        { \pos s -> withPos pos $ ArrowToken }
   $alpha [$alpha $digit \_ \']*                               { \pos s -> withPos pos $ VarToken s }
-  [\+\-\*\/\>\<\=\|]+                                         { \pos s -> withPos pos $ OperatorToken s }
+  \+                                                          { \pos s -> withPos pos $ PlusToken }
+  \-                                                          { \pos s -> withPos pos $ MinusToken }
+  \*                                                          { \pos s -> withPos pos $ MultiplyToken }
+  \/                                                          { \pos s -> withPos pos $ DivideToken }
+  \=\=                                                        { \pos s -> withPos pos $ EQToken }
+  \=                                                          { \pos s -> withPos pos $ EqualsToken }
+  \<\=                                                        { \pos s -> withPos pos $ LEQToken }
+  \>\=                                                        { \pos s -> withPos pos $ GEQToken }
+  \<                                                          { \pos s -> withPos pos $ LTToken }
+  \>                                                          { \pos s -> withPos pos $ GTToken }
+  \|\|                                                        { \pos s -> withPos pos $ OrToken }
+  \&\&                                                        { \pos s -> withPos pos $ AndToken }
 
 {
 tokenize :: String -> [Pos LexToken]

@@ -14,7 +14,17 @@ data LexToken =
     VarToken String
   | NewlineToken
   | IndentToken Int
-  | OperatorToken String
+  | PlusToken
+  | MinusToken
+  | MultiplyToken
+  | DivideToken
+  | EQToken
+  | LEQToken
+  | GEQToken
+  | LTToken
+  | GTToken
+  | OrToken
+  | AndToken
 
   | IfToken
   | ThenToken

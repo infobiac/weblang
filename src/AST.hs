@@ -56,7 +56,7 @@ data Expression = Assignment ValName Term
 data Term = Variable ValName
           | Accessor Term Term
           | FunctionCall FnName Term
-          | Operator OperatorName Term Term
+          | OperatorTerm Operator Term Term
           | Literal PrimValue
           | If Term
           | Else
@@ -65,6 +65,19 @@ data Term = Variable ValName
           | ForeachIn ValName Term
           | Do
           deriving (Show, Generic, Out)
+
+data Operator = Plus
+              | Minus
+              | Multiply
+              | Divide
+              | EQ
+              | LEQ
+              | GEQ
+              | GT
+              | LT
+              | And
+              | Or
+              deriving (Show, Generic, Out, Eq, Ord)
 
 data PrimValue = StrVal String
                | NumVal Double

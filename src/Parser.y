@@ -4,6 +4,7 @@ module Parser (parse) where
 import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Monoid
+import Prelude hiding (EQ, LEQ, GEQ, GT, LT)
 
 import Lexer.Types
 import AST
@@ -15,7 +16,17 @@ import AST
 
 %token
   quoted    { Pos _ _ (QuoteToken $$) }
-  oper      { Pos _ _ (OperatorToken $$) }
+  '+'       { Pos _ _ (PlusToken) }
+  '-'       { Pos _ _ (MinusToken) }
+  '*'       { Pos _ _ (MultiplyToken) }
+  '/'       { Pos _ _ (DivideToken) }
+  '=='      { Pos _ _ (EQToken) }
+  '<='      { Pos _ _ (LEQToken) }
+  '>='      { Pos _ _ (GEQToken) }
+  '<'       { Pos _ _ (LTToken) }
+  '>'       { Pos _ _ (GTToken) }
+  '||'      { Pos _ _ (OrToken) }
+  '&&'      { Pos _ _ (AndToken) }
   '['		    { Pos _ _ (LeftSquareBracketToken) }
   ']'		    { Pos _ _ (RightSquareBracketToken) }
   '{'		    { Pos _ _ (LeftCurlyBracketToken) }
@@ -88,30 +99,55 @@ Expression
   | Term          { Unassigned $1 }
 
 Term
-  : Term1                 { $1 }
-  | foreach var in Term1  { ForeachIn $2 $4 }
+  : ForeachInDo           { $1 }
+  | foreach var in Term6  { ForeachIn $2 $4 }
   | if Term1              { If $2 }
   | IfThenElse            { $1 }
-  | ForeachInDo           { $1 }
+  | Term1                 { $1 }
 
 Term1
-  : var Term0                 { FunctionCall $1 $2 }
-  | Term1 oper Term0          { Operator $2 $1 $3  }
+  : Term1 '||' Term2      { OperatorTerm Or $1 $3 }
+  | Term2                 { $1 }
+
+Term2
+  : Term2 '&&' Term3      { OperatorTerm And $1 $3 }
+  | Term3                 { $1 }
+
+Term3
+  : Term4 '==' Term4       { OperatorTerm EQ $1 $3  }
+  | Term4 '>=' Term4       { OperatorTerm GEQ $1 $3  }
+  | Term4 '<=' Term4       { OperatorTerm LEQ $1 $3  }
+  | Term4 '>' Term4        { OperatorTerm GT $1 $3  }
+  | Term4 '<' Term4        { OperatorTerm LT $1 $3  }
+  | Term4                  { $1 }
+
+Term4
+  : Term4 '+' Term5       { OperatorTerm Plus $1 $3  }
+  | Term4 '-' Term5       { OperatorTerm Minus $1 $3  }
+  | Term5                 { $1 }
+
+Term5
+  : Term5 '*' Term6       { OperatorTerm Multiply $1 $3  }
+  | Term5 '/' Term6       { OperatorTerm Divide $1 $3  }
+  | Term6                 { $1 }
+
+Term6
+  : var Term7                 { FunctionCall $1 $2 }
   | else                      { Else }
   | do                        { Do }
-  | Term0                     { $1 }
+  | Term7                     { $1 }
 
-Term0
+Term7
   : '(' Term ')'          { $2 }
   | var                   { Variable $1 }
   | Literal               { Literal $1 }
-  | Term0 '.' '[' Term ']'   { Accessor $1 $4 }
+  | Term7 '.' '[' Term ']'   { Accessor $1 $4 }
 
 IfThenElse
-  : if Term0 then Term else Term1 { IfThenElse $2 $4 $6 }
+  : if Term1 then Term else Term1  { IfThenElse $2 $4 $6 }
 
 ForeachInDo
-  : foreach var in Term0 do Term1  { ForeachInDo $2 $4 $6 }
+  : foreach var in Term1 do Term1  { ForeachInDo $2 $4 $6 }
 
 Literal
   : quoted                            { (StrVal $1) }

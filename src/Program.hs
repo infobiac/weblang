@@ -16,6 +16,7 @@ import Control.Monad.State
 import Control.Monad.Loops
 import AST as X
        ( AST
+       , Operator (..)
        , ValName (..)
        , FnName (..)
        , TypeName (..)
@@ -109,7 +110,7 @@ transSimpleTerm :: AST.Term -> Term
 transSimpleTerm (AST.Variable v) = Variable v
 transSimpleTerm (AST.Accessor a b) = Accessor (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.FunctionCall n a) = FunctionCall n (transSimpleTerm a)
-transSimpleTerm (AST.Operator n a b) = Operator n (transSimpleTerm a) (transSimpleTerm b)
+transSimpleTerm (AST.OperatorTerm n a b) = OperatorTerm n (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.Literal v) = Literal (transPrim v)
 transSimpleTerm (AST.IfThenElse p a b) =
   IfThenElse (transSimpleTerm a) [Unassigned $ transSimpleTerm a] [Unassigned $ transSimpleTerm b]
@@ -154,7 +155,7 @@ data Expression = Assignment ValName Term
 data Term = Variable ValName
           | Accessor Term Term
           | FunctionCall FnName Term
-          | Operator OperatorName Term Term
+          | OperatorTerm Operator Term Term
           | Literal PrimValue
           | IfThenElse Term ExpressionBlock ExpressionBlock
           | ForeachInDo ValName Term ExpressionBlock

@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module LLVM where
 
+import Prelude hiding (EQ, LEQ, GEQ, GT, LT)
 import Program hiding (Type)
 import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
@@ -77,11 +78,21 @@ extern2args = Map.fromList [
       ("geta", "get_json_from_array")
   ]
 
-opops = Map.fromList [
-      ("+", fadd),
-      ("-", fsub),
-      ("*", fmul),
-      ("/", fdiv)
+boolOperators = Map.fromList [
+    (Or, error "unimplemented operator")
+  , (And, error "unimplemented operator")
+  ]
+
+numOperators = Map.fromList [
+    (Plus, fadd)
+  , (Minus, fsub)
+  , (Multiply, fmul)
+  , (Divide, fdiv)
+  , (EQ, error "unimplemented operator")
+  , (LEQ, error "unimplemented operator")
+  , (GEQ, error "unimplemented operator")
+  , (LT, error "unimplemented operator")
+  , (GT, error "unimplemented operator")
   ]
 
 opFns = Map.empty
@@ -196,8 +207,8 @@ termLLVM (Accessor tTerm indexTerm) = do
                [t, index_int]
 
   return element
-termLLVM (Operator opp t1 t2) = do
-  case Map.lookup opp opops of
+termLLVM (OperatorTerm opp t1 t2) = do
+  case Map.lookup opp numOperators of
     Just ap -> do
       evalt1 <- termLLVM t1
       double1 <- functionCallLLVM "getdoub" evalt1
@@ -205,7 +216,10 @@ termLLVM (Operator opp t1 t2) = do
       double2 <- functionCallLLVM "getdoub" evalt2
       result <- ap double1 double2
       functionCallLLVM "jnum" result
-    Nothing -> error $ "unimplemented operator " ++ show opp
+    Nothing -> case Map.lookup opp boolOperators of
+      Just oper -> do
+        error "boolean operators not implemented"
+      Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"
