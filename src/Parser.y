@@ -95,17 +95,17 @@ Term
   | ForeachInDo           { $1 }
 
 Term1
-  : var Term0             { FunctionCall $1 $2 }
-  | Term1 oper Term0      { Operator $2 $1 $3  }
-  | else                  { Else }
-  | do                    { Do }
-  | Term0                 { $1 }
+  : var Term0                 { FunctionCall $1 $2 }
+  | Term1 oper Term0          { Operator $2 $1 $3  }
+  | else                      { Else }
+  | do                        { Do }
+  | Term0                     { $1 }
 
 Term0
   : '(' Term ')'          { $2 }
   | var                   { Variable $1 }
   | Literal               { Literal $1 }
-  | Term0 '.' '[' Term0 ']'   { Accessor $1 $4 }
+  | Term0 '.' '[' Term ']'   { Accessor $1 $4 }
 
 IfThenElse
   : if Term0 then Term else Term1 { IfThenElse $2 $4 $6 }
