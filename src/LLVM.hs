@@ -99,9 +99,16 @@ opFns = Map.empty
 
 buildLLVM :: Program -> LLVM ()
 buildLLVM p = do
+  mapM_ constantLLVM (constants p)
   let fns = fnDeclarations p
   mapM_ functionLLVM fns
   functionLLVMMain fns
+
+constantLLVM :: (ValName, Term) -> LLVM ()
+constantLLVM (name, term) = do
+  -- looks like constants with GlobalVariable won't work, since we need to execute code to use JSON interop
+  -- maybe we could declare globals as initially null, then generate code to change them
+  error "constants unimplemented"
 
 toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmI32Pointer, AST.Name (fromString x))]
