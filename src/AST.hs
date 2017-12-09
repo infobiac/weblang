@@ -54,6 +54,7 @@ data Expression = Assignment ValName Term
                 deriving (Show, Generic, Out)
 
 data Term = Variable ValName
+          | Accessor Term Term
           | FunctionCall FnName Term
           | Operator OperatorName Term Term
           | Literal PrimValue

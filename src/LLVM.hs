@@ -38,6 +38,7 @@ llvmDouble = AST.FloatingPointType AST.DoubleFP
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
                                          (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
@@ -67,7 +68,8 @@ externs = Map.fromList [
       ("tostring", "tostring"),
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
-      ("scmp", "strcmp")
+      ("scmp", "strcmp"),
+      ("floor", "floor")
   ]
 
 extern2args = Map.fromList [
@@ -179,7 +181,21 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
+termLLVM (Accessor tTerm indexTerm) = do
+  t <- termLLVM tTerm
+  index <- termLLVM indexTerm
 
+   -- TODO check if t is array
+   -- TODO check if index is num (or int?)
+
+  index_double <- functionCallLLVM "getdoub" index
+  index_int <- instr $ AST.FPToUI index_double llvmI32 []
+
+  element <- call
+               (externf (AST.Name (fromString "get_json_from_array")))
+               [t, index_int]
+
+  return element
 termLLVM (Operator opp t1 t2) = do
   case Map.lookup opp opops of
     Just ap -> do

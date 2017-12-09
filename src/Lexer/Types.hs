@@ -44,6 +44,7 @@ data LexToken =
   | FalseToken
   | QuoteToken String
   | CommaToken
+  | DotToken
   | LeftSquareBracketToken
   | RightSquareBracketToken
   | LeftCurlyBracketToken

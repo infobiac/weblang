@@ -23,6 +23,7 @@ import AST
   '('		    { Pos _ _ (LeftParenToken) }
   ')'		    { Pos _ _ (RightParenToken) }
   ','		    { Pos _ _ (CommaToken) }
+  '.'		    { Pos _ _ (DotToken) }
   '='		    { Pos _ _ (EqualsToken) }
   ':'		    { Pos _ _ (ColonToken) }
   arrow	    { Pos _ _ (ArrowToken) }
@@ -75,7 +76,7 @@ FunctionDeclaration
   | helper var var ':' Type arrow Type Expressions    { ($2, Function $5 $7 $3 $8 True) }
 
 Type
-  : var '[' Term ']'  { Type $1 (Just $3) }
+  : var '{' Term '}'  { Type $1 (Just $3) }
   | var               { Type $1 Nothing }
 
 Expressions
@@ -104,6 +105,7 @@ Term0
   : '(' Term ')'          { $2 }
   | var                   { Variable $1 }
   | Literal               { Literal $1 }
+  | Term0 '.' '[' Term0 ']'   { Accessor $1 $4 }
 
 IfThenElse
   : if Term0 then Term else Term1 { IfThenElse $2 $4 $6 }

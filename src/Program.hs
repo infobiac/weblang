@@ -107,6 +107,7 @@ transTerm (_, t) = return $ transSimpleTerm t
 
 transSimpleTerm :: AST.Term -> Term
 transSimpleTerm (AST.Variable v) = Variable v
+transSimpleTerm (AST.Accessor a b) = Accessor (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.FunctionCall n a) = FunctionCall n (transSimpleTerm a)
 transSimpleTerm (AST.Operator n a b) = Operator n (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.Literal v) = Literal (transPrim v)
@@ -151,6 +152,7 @@ data Expression = Assignment ValName Term
                 deriving (Show, Generic, Out)
 
 data Term = Variable ValName
+          | Accessor Term Term
           | FunctionCall FnName Term
           | Operator OperatorName Term Term
           | Literal PrimValue
