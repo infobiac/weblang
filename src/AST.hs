@@ -19,6 +19,11 @@ data AST = AST {
   , customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
+  , imports :: [Import]
+  } deriving (Show, Generic, Out)
+
+data Import = Import {
+    server :: Term
   } deriving (Show, Generic, Out)
 
 data Includes = Includes {
@@ -49,8 +54,9 @@ data Expression = Assignment ValName Term
                 deriving (Show, Generic, Out)
 
 data Term = Variable ValName
+          | Accessor Term Term
           | FunctionCall FnName Term
-          | Operator OperatorName Term Term
+          | OperatorTerm Operator Term Term
           | Literal PrimValue
           | If Term
           | Else
@@ -60,17 +66,32 @@ data Term = Variable ValName
           | Do
           deriving (Show, Generic, Out)
 
+data Operator = Plus
+              | Minus
+              | Multiply
+              | Divide
+              | EQ
+              | LEQ
+              | GEQ
+              | GT
+              | LT
+              | And
+              | Or
+              deriving (Show, Generic, Out, Eq, Ord)
+
 data PrimValue = StrVal String
                | NumVal Double
                | ArrVal [Term]
                | ObjVal (Map String Term)
                | NullVal
+               | TrueVal
+               | FalseVal
                deriving (Show, Generic, Out)
 
 instance Monoid AST where
-  mempty = AST [] [] [] []
-  mappend (AST ais ats acs afs) (AST bis bts bcs bfs) =
-    AST (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs)
+  mempty = AST [] [] [] [] []
+  mappend (AST ais ats acs afs ams) (AST bis bts bcs bfs bms) =
+    AST (ais ++ bis) (ats ++ bts) (acs ++ bcs) (afs ++ bfs) (ams ++ bms)
 
 -- for pretty printing maps
 instance (Out a, Out b) => Out (Map a b) where

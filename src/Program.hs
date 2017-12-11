@@ -16,6 +16,7 @@ import Control.Monad.State
 import Control.Monad.Loops
 import AST as X
        ( AST
+       , Operator (..)
        , ValName (..)
        , FnName (..)
        , TypeName (..)
@@ -36,6 +37,7 @@ astToProgram ast = Program {
     customTypes = AST.customTypes ast
   , constants = map (\(n, v) -> (n, transSimpleTerm v)) $ AST.constants ast
   , fnDeclarations = map (\(n, f) -> (n, transFunction f)) $ AST.fnDeclarations ast
+  , imports = map transImport $ AST.imports ast
   }
 
 transFunction :: AST.Function -> Function
@@ -46,6 +48,9 @@ transFunction astFunc = Function {
   , body = transExpressions $ AST.body astFunc
   , helper = AST.helper astFunc
   }
+
+transImport :: AST.Import -> Import
+transImport (AST.Import t) = Import $ transSimpleTerm t
 
 transExpressions :: AST.ExpressionBlock -> ExpressionBlock
 transExpressions = evalState (whileJust transExpression return)
@@ -103,8 +108,9 @@ transTerm (_, t) = return $ transSimpleTerm t
 
 transSimpleTerm :: AST.Term -> Term
 transSimpleTerm (AST.Variable v) = Variable v
+transSimpleTerm (AST.Accessor a b) = Accessor (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.FunctionCall n a) = FunctionCall n (transSimpleTerm a)
-transSimpleTerm (AST.Operator n a b) = Operator n (transSimpleTerm a) (transSimpleTerm b)
+transSimpleTerm (AST.OperatorTerm n a b) = OperatorTerm n (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.Literal v) = Literal (transPrim v)
 transSimpleTerm (AST.IfThenElse p a b) =
   IfThenElse (transSimpleTerm a) [Unassigned $ transSimpleTerm a] [Unassigned $ transSimpleTerm b]
@@ -119,11 +125,14 @@ transPrim (AST.NumVal s) = (NumVal s)
 transPrim (AST.ArrVal s) = (ArrVal (map transSimpleTerm s))
 transPrim (AST.ObjVal s) = (ObjVal (fmap transSimpleTerm s))
 transPrim AST.NullVal = NullVal
+transPrim AST.TrueVal = TrueVal
+transPrim AST.FalseVal = FalseVal
 
 data Program = Program {
     customTypes :: [(TypeName, NewType)]
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
+  , imports :: [Import]
   } deriving (Show, Generic, Out)
 
 data Function = Function {
@@ -134,6 +143,9 @@ data Function = Function {
   , helper :: Bool
   } deriving (Show, Generic, Out)
 
+data Import = Import Term
+            deriving (Show, Generic, Out)
+
 type ExpressionBlock = [Expression]
 
 data Expression = Assignment ValName Term
@@ -141,8 +153,9 @@ data Expression = Assignment ValName Term
                 deriving (Show, Generic, Out)
 
 data Term = Variable ValName
+          | Accessor Term Term
           | FunctionCall FnName Term
-          | Operator OperatorName Term Term
+          | OperatorTerm Operator Term Term
           | Literal PrimValue
           | IfThenElse Term ExpressionBlock ExpressionBlock
           | ForeachInDo ValName Term ExpressionBlock
@@ -153,4 +166,6 @@ data PrimValue = StrVal String
                | ArrVal [Term]
                | ObjVal (Map String Term)
                | NullVal
+               | TrueVal
+               | FalseVal
                deriving (Show, Generic, Out)

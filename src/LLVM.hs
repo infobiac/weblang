@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module LLVM where
 
+import Prelude hiding (EQ, LEQ, GEQ, GT, LT)
 import Program hiding (Type)
 import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
@@ -38,6 +39,7 @@ llvmDouble = AST.FloatingPointType AST.DoubleFP
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
                                          (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
@@ -67,7 +69,8 @@ externs = Map.fromList [
       ("tostring", "tostring"),
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
-      ("scmp", "strcmp")
+      ("scmp", "strcmp"),
+      ("floor", "floor")
   ]
 
 extern2args = Map.fromList [
@@ -75,20 +78,37 @@ extern2args = Map.fromList [
       ("geta", "get_json_from_array")
   ]
 
-opops = Map.fromList [
-      ("+", fadd),
-      ("-", fsub),
-      ("*", fmul),
-      ("/", fdiv)
+boolOperators = Map.fromList [
+    (Or, error "unimplemented operator")
+  , (And, error "unimplemented operator")
+  ]
+
+numOperators = Map.fromList [
+    (Plus, fadd)
+  , (Minus, fsub)
+  , (Multiply, fmul)
+  , (Divide, fdiv)
+  , (EQ, error "unimplemented operator")
+  , (LEQ, error "unimplemented operator")
+  , (GEQ, error "unimplemented operator")
+  , (LT, error "unimplemented operator")
+  , (GT, error "unimplemented operator")
   ]
 
 opFns = Map.empty
 
 buildLLVM :: Program -> LLVM ()
 buildLLVM p = do
+  mapM_ constantLLVM (constants p)
   let fns = fnDeclarations p
   mapM_ functionLLVM fns
   functionLLVMMain fns
+
+constantLLVM :: (ValName, Term) -> LLVM ()
+constantLLVM (name, term) = do
+  -- looks like constants with GlobalVariable won't work, since we need to execute code to use JSON interop
+  -- maybe we could declare globals as initially null, then generate code to change them
+  error "constants unimplemented"
 
 toSig :: String -> [(AST.Type, AST.Name)]
 toSig x = [(llvmI32Pointer, AST.Name (fromString x))]
@@ -104,7 +124,7 @@ functionLLVMMain fns = do
         llvmBody = createBlocks $ execCodegen $ do
           entry <- addBlock entryBlockName
           setBlock entry
-          let fnNames = map fst fns
+          let fnNames = map fst . filter (not . helper . snd) $ fns
           argv1 <- argvAt 1
           argv2 <- argvAt 2
           mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
@@ -179,9 +199,23 @@ termLLVM :: Term -> Codegen AST.Operand
 termLLVM (FunctionCall fname arg) = do
   op <- termLLVM arg
   functionCallLLVM fname op
+termLLVM (Accessor tTerm indexTerm) = do
+  t <- termLLVM tTerm
+  index <- termLLVM indexTerm
 
-termLLVM (Operator opp t1 t2) = do
-  case Map.lookup opp opops of
+   -- TODO check if t is array
+   -- TODO check if index is num (or int?)
+
+  index_double <- functionCallLLVM "getdoub" index
+  index_int <- instr $ AST.FPToUI index_double llvmI32 []
+
+  element <- call
+               (externf (AST.Name (fromString "get_json_from_array")))
+               [t, index_int]
+
+  return element
+termLLVM (OperatorTerm opp t1 t2) = do
+  case Map.lookup opp numOperators of
     Just ap -> do
       evalt1 <- termLLVM t1
       double1 <- functionCallLLVM "getdoub" evalt1
@@ -189,7 +223,10 @@ termLLVM (Operator opp t1 t2) = do
       double2 <- functionCallLLVM "getdoub" evalt2
       result <- ap double1 double2
       functionCallLLVM "jnum" result
-    Nothing -> error $ "unimplemented operator " ++ show opp
+    Nothing -> case Map.lookup opp boolOperators of
+      Just oper -> do
+        error "boolean operators not implemented"
+      Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"
@@ -253,6 +290,18 @@ primLLVM (ArrVal arr) = do
 primLLVM (ObjVal obj) = error "unimplemented: object literals"
 primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
 primLLVM (StrVal s) = stringLLVM s
+primLLVM (NullVal) = nullLLVM
+primLLVM (TrueVal) = trueLLVM
+primLLVM (FalseVal) = falseLLVM
+
+nullLLVM :: Codegen AST.Operand
+nullLLVM = error "need to build a null builder"
+
+trueLLVM :: Codegen AST.Operand
+trueLLVM = error "need to build a true builder"
+
+falseLLVM :: Codegen AST.Operand
+falseLLVM = error "need to build a false builder"
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
