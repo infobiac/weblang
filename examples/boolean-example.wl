@@ -29,3 +29,12 @@ bool t : a -> b
   log m
   log n
   log o
+  
+  if 5==5
+    log "worked"
+  else
+    log "nope"
+  if 5>6
+    log "nope"
+  else
+    log "worked"

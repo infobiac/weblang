@@ -68,7 +68,6 @@ const char* tostring(int* tempdoc){
 }
 
 int* json_bool(int b){
-	std::cout << b << std::endl;
 	Document *d = new Document();
 	(*d).SetObject();
 	if(b==1){
@@ -82,14 +81,14 @@ int* json_bool(int b){
 	return (int*)d;
 }
 
-int get_json_bool(int* intdoc){
+double get_json_bool(int* intdoc){
 	Value& pt = getp(intdoc, "prim_type");
 	if(pt.GetString() == "bool"){
 		if(getp(intdoc, "prim_val").GetBool())
 			return 1;
 		return 0;
 	}
-	return NULL;
+	return 0;
 }
 
 
@@ -134,6 +133,8 @@ double get_json_double(int* intdoc){
 	Value& pt = getp(intdoc, "prim_type");
 	if(pt.GetString() == "num")
 		return getp(intdoc, "prim_val").GetDouble();
+	else if(pt.GetString() == "bool");
+		return get_json_bool(intdoc);
 	return pt.GetDouble();
 }
 
