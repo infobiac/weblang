@@ -7,7 +7,7 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI, ZExt)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
 import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
@@ -38,6 +38,7 @@ llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
@@ -47,21 +48,26 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
-  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_array" [ (llvmI32PointerPointer, AST.Name (fromString "s"))
                                        , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "is_json_array" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
-                                                , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
       ("jn", "json"),
+      ("isObj", "is_json_object"),
       ("clientPost", "post"),
       ("clientGet", "get"),
       ("jnum", "json_double"),
@@ -70,7 +76,11 @@ externs = Map.fromList [
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
       ("scmp", "strcmp"),
-      ("floor", "floor")
+      ("floor", "floor"),
+      ("isString", "is_json_string"),
+      ("isNum", "is_json_double"),
+      ("isArr", "is_json_array"),
+      ("jbool", "json_bool")
   ]
 
 extern2args = Map.fromList [
@@ -83,16 +93,19 @@ boolOperators = Map.fromList [
   , (And, error "unimplemented operator")
   ]
 
+eqOperators = Map.fromList [
+    (EQ, fcmp Floatypoo.OEQ)
+  , (LEQ, fcmp Floatypoo.OLE)
+  , (GEQ, fcmp Floatypoo.OGE)
+  , (LT, fcmp Floatypoo.OLT)
+  , (GT, fcmp Floatypoo.OGT)
+  ]
+
 numOperators = Map.fromList [
     (Plus, fadd)
   , (Minus, fsub)
   , (Multiply, fmul)
   , (Divide, fdiv)
-  , (EQ, error "unimplemented operator")
-  , (LEQ, error "unimplemented operator")
-  , (GEQ, error "unimplemented operator")
-  , (LT, error "unimplemented operator")
-  , (GT, error "unimplemented operator")
   ]
 
 opFns = Map.empty
@@ -223,10 +236,19 @@ termLLVM (OperatorTerm opp t1 t2) = do
       double2 <- functionCallLLVM "getdoub" evalt2
       result <- ap double1 double2
       functionCallLLVM "jnum" result
-    Nothing -> case Map.lookup opp boolOperators of
-      Just oper -> do
-        error "boolean operators not implemented"
-      Nothing -> error $ "unimplemented operator " ++ show opp
+    Nothing -> case Map.lookup opp eqOperators of
+      Just ap -> do
+        evalt1 <- termLLVM t1
+        double1 <- functionCallLLVM "getdoub" evalt1
+        evalt2 <- termLLVM t2
+        double2 <- functionCallLLVM "getdoub" evalt2
+        result <- ap double1 double2
+        int32 <- instr $ AST.ZExt result llvmI32 []
+        functionCallLLVM "json_bool" int32
+      Nothing -> case Map.lookup opp boolOperators of
+        Just oper -> do
+          error "boolean operators not implemented"
+        Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"
@@ -298,10 +320,13 @@ nullLLVM :: Codegen AST.Operand
 nullLLVM = error "need to build a null builder"
 
 trueLLVM :: Codegen AST.Operand
-trueLLVM = error "need to build a true builder"
+trueLLVM = do
+  tr <- (rawStringLLVM "true\0")
+  functionCallLLVM "json_bool" (cons $AST.Int 32 (fromIntegral 1))
 
 falseLLVM :: Codegen AST.Operand
-falseLLVM = error "need to build a false builder"
+falseLLVM = do
+  functionCallLLVM "json_bool" (cons $AST.Int 32 (fromIntegral 0))
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
@@ -383,3 +408,4 @@ stringLLVM :: String -> Codegen AST.Operand
 stringLLVM s = do
   op <- rawStringLLVM s
   functionCallLLVM "json_string" op
+
