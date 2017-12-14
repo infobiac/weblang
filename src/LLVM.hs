@@ -7,7 +7,7 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI, ZExt)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
 import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
@@ -93,16 +93,19 @@ boolOperators = Map.fromList [
   , (And, error "unimplemented operator")
   ]
 
+eqOperators = Map.fromList [
+    (EQ, fcmp Floatypoo.OEQ)
+  , (LEQ, fcmp Floatypoo.OLE)
+  , (GEQ, fcmp Floatypoo.OGE)
+  , (LT, fcmp Floatypoo.OLT)
+  , (GT, fcmp Floatypoo.OGT)
+  ]
+
 numOperators = Map.fromList [
     (Plus, fadd)
   , (Minus, fsub)
   , (Multiply, fmul)
   , (Divide, fdiv)
-  , (EQ, error "unimplemented operator")
-  , (LEQ, error "unimplemented operator")
-  , (GEQ, error "unimplemented operator")
-  , (LT, error "unimplemented operator")
-  , (GT, error "unimplemented operator")
   ]
 
 opFns = Map.empty
@@ -233,10 +236,19 @@ termLLVM (OperatorTerm opp t1 t2) = do
       double2 <- functionCallLLVM "getdoub" evalt2
       result <- ap double1 double2
       functionCallLLVM "jnum" result
-    Nothing -> case Map.lookup opp boolOperators of
-      Just oper -> do
-        error "boolean operators not implemented"
-      Nothing -> error $ "unimplemented operator " ++ show opp
+    Nothing -> case Map.lookup opp eqOperators of
+      Just ap -> do
+        evalt1 <- termLLVM t1
+        double1 <- functionCallLLVM "getdoub" evalt1
+        evalt2 <- termLLVM t2
+        double2 <- functionCallLLVM "getdoub" evalt2
+        result <- ap double1 double2
+        int32 <- instr $ AST.ZExt result llvmI32 []
+        functionCallLLVM "json_bool" int32
+      Nothing -> case Map.lookup opp boolOperators of
+        Just oper -> do
+          error "boolean operators not implemented"
+        Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"

@@ -68,6 +68,7 @@ const char* tostring(int* tempdoc){
 }
 
 int* json_bool(int b){
+	std::cout << b << std::endl;
 	Document *d = new Document();
 	(*d).SetObject();
 	if(b==1){
