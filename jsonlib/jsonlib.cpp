@@ -6,6 +6,10 @@
 using namespace rapidjson;
 extern "C"{
 
+int* is_json_double(int*);
+int* is_json_string(int*);
+
+
 Value& getp(int* intdoc, const char* key){
 	Document* d = (Document*)intdoc;
 	return (*d)[key];
@@ -14,7 +18,7 @@ Value& getp(int* intdoc, const char* key){
 
 const char* tostring(int* tempdoc){
 	std::cout.flush();
-	try{
+	if((*((Document*) tempdoc)).IsObject()){
 		Value* str = (Value*)tempdoc;
 		if(str->IsString())
 			return str->GetString();
@@ -48,21 +52,19 @@ const char* tostring(int* tempdoc){
 			return objstr.str().c_str();
 		}
 	}
-	catch(...){
+	else{
 		Document* d = (Document *)tempdoc;
+		for (Value::ConstValueIterator itr = (*d).Begin(); itr != (*d).End(); ++itr){
+			tostring((int *) itr);
+		}
 		StringBuffer buff;
 		buff.Clear();
 		Writer<StringBuffer> writer(buff);
 		(*d).Accept(writer);
-		return buff.GetString();
+		std::ostringstream objstr;
+		objstr << buff.GetString() << '\0';
+		return objstr.str().c_str();
 	}
-}
-
-int* json(int* s){
-	const char* str = tostring(s); 
-	Document* d = new Document();
-	(*d).Parse(str);
-	return (int*)d;
 }
 
 int* json_bool(int b){
@@ -79,6 +81,31 @@ int* json_bool(int b){
 	return (int*)d;
 }
 
+int get_json_bool(int* intdoc){
+	Value& pt = getp(intdoc, "prim_type");
+	if(pt.GetString() == "bool"){
+		if(getp(intdoc, "prim_val").GetBool())
+			return 1;
+		return 0;
+	}
+	return NULL;
+}
+
+
+int* json(int* s){
+	const char* str = tostring(s); 
+	Document* d = new Document();
+	(*d).Parse(str);
+	return (int*)d;
+}
+
+
+int* is_json_object(int* s){
+	Document *d = (Document *) s;
+	if((*d).IsObject() && !get_json_bool(is_json_double(s)) && !get_json_bool(is_json_string(s)))
+		return json_bool(1);
+	return json_bool(0);
+}
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
 int* json_double(double dubs){
@@ -145,6 +172,13 @@ int* json_array(int* a[], int numElements){
 		(*d).PushBack(tempdoc, allocator);
 	}
 	return (int *)d;
+}
+
+int* is_json_array(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsArray())
+		return json_bool(1);
+	return json_bool(0);
 }
 
 //Return a pointer to the value at the idxth position

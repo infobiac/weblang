@@ -38,6 +38,7 @@ llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
@@ -55,16 +56,18 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_array" [ (llvmI32PointerPointer, AST.Name (fromString "s"))
                                        , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "is_json_array" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
-                                                , (llvmI32, (fromString "s"))];
   external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
       ("jn", "json"),
+      ("isObj", "is_json_object"),
       ("clientPost", "post"),
       ("clientGet", "get"),
       ("jnum", "json_double"),
@@ -76,6 +79,7 @@ externs = Map.fromList [
       ("floor", "floor"),
       ("isString", "is_json_string"),
       ("isNum", "is_json_double"),
+      ("isArr", "is_json_array"),
       ("jbool", "json_bool")
   ]
 
