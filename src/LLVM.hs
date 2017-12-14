@@ -84,7 +84,7 @@ externs = Map.fromList [
   ]
 
 extern2args = Map.fromList [
-      ("gets", "jgets"),
+      ("get", "jgets"),
       ("geta", "get_json_from_array")
   ]
 
