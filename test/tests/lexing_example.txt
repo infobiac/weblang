@@ -1,0 +1,14 @@
+/* comment
+*/
+// comment 2
+" \"escaped quotes\" other text " done
+  " this
+quote
+is
+multiline and indented"
+  some indented text
+    some deeper indented text
+  -0.1023
+ 0.1241
+10
+-10.0
