@@ -1,4 +1,11 @@
-f arr : a -> b
-  a = [1,2,[3,if 1 then 4 else 0],5]
-  c = a.[a.[1]].[if 1 then 1 else 0] // should be 4
+accessor x : a -> b
+  a = 5
+  b = "hi"
+  c = isString a
+  d = isString b
+  e = isNum a
+  f = isNum b
   log c
+  log d
+  log e
+  log f

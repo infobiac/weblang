@@ -47,9 +47,11 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
-  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_double" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmI32Pointer "is_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmDouble "get_json_double" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_array" [ (llvmI32PointerPointer, AST.Name (fromString "s"))
                                        , (llvmI32, (fromString "s"))];
@@ -58,6 +60,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                                 , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -70,7 +73,10 @@ externs = Map.fromList [
       ("getfst", "create_arr_iter"),
       ("getnext", "arr_next_elem"),
       ("scmp", "strcmp"),
-      ("floor", "floor")
+      ("floor", "floor"),
+      ("isString", "is_json_string"),
+      ("isNum", "is_json_double"),
+      ("jbool", "json_bool")
   ]
 
 extern2args = Map.fromList [
@@ -298,10 +304,13 @@ nullLLVM :: Codegen AST.Operand
 nullLLVM = error "need to build a null builder"
 
 trueLLVM :: Codegen AST.Operand
-trueLLVM = error "need to build a true builder"
+trueLLVM = do
+  tr <- (rawStringLLVM "true\0")
+  functionCallLLVM "json_bool" (cons $AST.Int 32 (fromIntegral 1))
 
 falseLLVM :: Codegen AST.Operand
-falseLLVM = error "need to build a false builder"
+falseLLVM = do
+  functionCallLLVM "json_bool" (cons $AST.Int 32 (fromIntegral 0))
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
@@ -383,3 +392,4 @@ stringLLVM :: String -> Codegen AST.Operand
 stringLLVM s = do
   op <- rawStringLLVM s
   functionCallLLVM "json_string" op
+

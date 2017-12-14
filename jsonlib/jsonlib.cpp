@@ -18,16 +18,35 @@ const char* tostring(int* tempdoc){
 		Value* str = (Value*)tempdoc;
 		if(str->IsString())
 			return str->GetString();
-		Value& typ = getp(tempdoc, "prim_type");
-		if(typ.GetString() == "num"){
-			std::ostringstream strdoub;
-			strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
-			return strdoub.str().c_str();
+		if((*((Document*) tempdoc)).HasMember("prim_type")){
+			Value& typ = getp(tempdoc, "prim_type");
+			if(typ.GetString() == "num"){
+				std::ostringstream strdoub;
+				strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
+				return strdoub.str().c_str();
+			}
+			else if(typ.GetString() == "str"){
+				Value& pt = getp(tempdoc, "prim_val");
+				return pt.GetString();
+			}
+			else if(typ.GetString() == "bool"){	
+				Value& pt = getp(tempdoc, "prim_val");
+				if(pt.GetBool())
+					return "true";
+				else
+					return "false";
+			}
 		}
-		else if(typ.GetString() == "str"){
-			Value& pt = getp(tempdoc, "prim_val");
-			return pt.GetString();
-		}	
+		else {
+			Document* d = (Document *)tempdoc;
+			StringBuffer buff;
+			buff.Clear();
+			Writer<StringBuffer> writer(buff);
+			(*d).Accept(writer);	
+			std::ostringstream objstr;
+			objstr << buff.GetString() << '\0';
+			return objstr.str().c_str();
+		}
 	}
 	catch(...){
 		Document* d = (Document *)tempdoc;
@@ -46,13 +65,19 @@ int* json(int* s){
 	return (int*)d;
 }
 
-
-
-/*
- *Todo: Create functions to construct each type
- * Getters 
- * Method that takes in array of documents, combines them into one object
- */
+int* json_bool(int b){
+	Document *d = new Document();
+	(*d).SetObject();
+	if(b==1){
+		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
+		(*d).AddMember("prim_val", true, (*d).GetAllocator());
+	}
+	else{
+		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
+		(*d).AddMember("prim_val", false, (*d).GetAllocator());
+	}
+	return (int*)d;
+}
 
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
@@ -63,6 +88,17 @@ int* json_double(double dubs){
 	(*d).AddMember("prim_type", "num", (*d).GetAllocator());
 	(*d).AddMember("prim_val", dubs, (*d).GetAllocator());
 	return (int*)d;
+}
+
+int * is_json_double(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsObject() && (*d).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "num")
+			return json_bool(1);
+		return json_bool(0);
+	}
+	return json_bool(0);
 }
 
 //Retrieve a double in json
@@ -86,10 +122,15 @@ int* json_string(const char* s){
 
 }
 
-//Retrieve a string in json
-const char* get_json_string(int* intdoc){
-	Value& pt = getp(intdoc, "json_rep_of_str_ts");
-	return pt.GetString();
+int* is_json_string(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsObject() && (*d).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "str")
+			return json_bool(1);
+		return json_bool(0);
+	}
+	return json_bool(0);
 }
 
 
