@@ -37,8 +37,11 @@ llvmPointerStringfPointer = (AST.PointerType llvmStringPointer (AST.AddrSpace 0)
 llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
-  external llvmI32Pointer "json" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_from_string" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "add_to_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))
+                                     , (llvmI32Pointer, AST.Name (fromString "s"))
+                                     , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
@@ -67,7 +70,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
 
 externs = Map.fromList [
       ("log", "puts"),
-      ("jn", "json"),
+      ("jn", "json_from_string"),
       ("isObj", "is_json_object"),
       ("clientPost", "post"),
       ("clientGet", "get"),
@@ -88,6 +91,11 @@ externs = Map.fromList [
 extern2args = Map.fromList [
       ("get", "jgets"),
       ("geta", "get_json_from_array")
+  ]
+
+
+extern3args = Map.fromList [
+      ("addToObj", "add_to_json_object")
   ]
 
 boolOperators = Map.fromList [
@@ -342,7 +350,10 @@ functionCallLLVM fn arg = do
     Nothing -> case Map.lookup fn extern2args of
       Just fn3 -> do
         llvmCallExt2args arg fn3
-      Nothing -> llvmCallFunc fn arg
+      Nothing -> case Map.lookup fn extern3args of
+          Just fn4 -> do
+            llvmCallExt3args arg fn4
+          Nothing -> llvmCallFunc fn arg
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt op func =
@@ -367,6 +378,13 @@ llvmCallExt2args op func = do
     intidx <- instr $conv
     llvmCallExt2 op1 intidx func
   else llvmCallExt2 op1 op2 func
+
+llvmCallExt3args :: AST.Operand -> String -> Codegen AST.Operand
+llvmCallExt3args op func = do
+  op1 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $AST.Int 32 (fromIntegral 0)]
+  op2 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $AST.Int 32 (fromIntegral 1)]
+  op3 <- call (externf (AST.Name (fromString "get_json_from_array"))) [op, cons $AST.Int 32 (fromIntegral 2)]
+  call (externf (AST.Name (fromString func))) [op1, op2, op3]
 
 llvmCallFunc :: String -> AST.Operand -> Codegen AST.Operand
 llvmCallFunc fnName op = call (externf (AST.Name (fromString fnName))) [op]
