@@ -136,7 +136,10 @@ type URL = String
 data Endpoint = Endpoint URL EndpointName Method
 
 importLLVM :: Import -> LLVM [String]
-importLLVM (Import (Literal (ObjVal obj))) = mapM (endpointFnLLVM) endpoints
+importLLVM (Import arg) = mapM (endpointFnLLVM) (parseImportArg arg)
+
+parseImportArg :: Term -> [Endpoint]
+parseImportArg (Literal (ObjVal obj)) = endpoints
   where getVal objName obj key = fromMaybe (error $ key ++ " missing from " ++ objName) (Map.lookup key obj)
         getImpVal = getVal "import statement" obj
         url = case getImpVal "url" of
@@ -157,7 +160,7 @@ importLLVM (Import (Literal (ObjVal obj))) = mapM (endpointFnLLVM) endpoints
 
             _ -> error "endpoint values in import statement should be object literals"
           _ -> error "endpoint key in import statement should be an array value"
-importLLVM _ = error "Import called with non-primitive object argument"
+parseImportArg _ = error "Import called with non-primitive object argument"
 
 endpointFnLLVM :: Endpoint -> LLVM String
 endpointFnLLVM (Endpoint url endpoint method) = define llvmRetType endpoint fnargs llvmBody >> return endpoint
