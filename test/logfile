@@ -1,0 +1,828 @@
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testArg"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "logThis"
+  2:11 QuoteToken "Arguments work"
+  2:27 NewlineToken
+  4:1 VarToken "logThis"
+  4:9 VarToken "arg"
+  4:13 ColonToken
+  4:15 VarToken "someType"
+  4:24 ArrowToken
+  4:27 VarToken "someOtherType"
+  4:40 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "arg"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testArg",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "logThis"
+                                                                       (Literal (StrVal "Arguments work")))],
+                                      helper = False}),
+                           ("logThis",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Variable "arg"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/testArg.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testLog"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "log"
+  2:7 QuoteToken "Logging works"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testLog",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Literal (StrVal "Logging works")))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/testLog.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testForReassign"
+  1:17 VarToken "arg"
+  1:21 ColonToken
+  1:23 VarToken "someType"
+  1:32 ArrowToken
+  1:35 VarToken "someOtherType"
+  1:48 IndentToken 2
+  2:3 VarToken "x"
+  2:5 EqualsToken
+  2:7 NumberToken 1.0
+  2:8 IndentToken 2
+  3:3 ForeachToken
+  3:11 VarToken "i"
+  3:13 InToken
+  3:16 LeftSquareBracketToken
+  3:17 NumberToken 1.0
+  3:18 CommaToken
+  3:19 NumberToken 2.0
+  3:20 CommaToken
+  3:21 NumberToken 3.0
+  3:22 CommaToken
+  3:23 NumberToken 4.0
+  3:24 RightSquareBracketToken
+  3:25 IndentToken 4
+  4:5 VarToken "x"
+  4:7 EqualsToken
+  4:9 VarToken "x"
+  4:11 PlusToken
+  4:13 NumberToken 1.0
+  4:14 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "x"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testForReassign",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "x"
+                                                         (Literal (NumVal 1.0)),
+                                              Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Assignment "x"
+                                                                                  (OperatorTerm Plus
+                                                                                                (Variable "x")
+                                                                                                (Literal (NumVal 1.0)))]),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "x"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/testForReassign.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testFor"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 ForeachToken
+  2:11 VarToken "i"
+  2:13 InToken
+  2:16 LeftSquareBracketToken
+  2:17 NumberToken 1.0
+  2:18 CommaToken
+  2:19 NumberToken 2.0
+  2:20 CommaToken
+  2:21 NumberToken 3.0
+  2:22 CommaToken
+  2:23 NumberToken 4.0
+  2:24 RightSquareBracketToken
+  2:25 IndentToken 4
+  3:5 VarToken "log"
+  3:9 VarToken "i"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testFor",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Unassigned (FunctionCall "log"
+                                                                                                (Variable "i"))])],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/testFor.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testVar"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "variable"
+  2:12 EqualsToken
+  2:14 QuoteToken "Variables work"
+  2:30 IndentToken 2
+  3:3 VarToken "log"
+  3:7 VarToken "variable"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testVar",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "variable"
+                                                         (Literal (StrVal "Variables work")),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "variable"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/testVar.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testArg"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "logThis"
+  2:11 QuoteToken "Arguments work"
+  2:27 NewlineToken
+  4:1 VarToken "logThis"
+  4:9 VarToken "arg"
+  4:13 ColonToken
+  4:15 VarToken "someType"
+  4:24 ArrowToken
+  4:27 VarToken "someOtherType"
+  4:40 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "arg"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testArg",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "logThis"
+                                                                       (Literal (StrVal "Arguments work")))],
+                                      helper = False}),
+                           ("logThis",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Variable "arg"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Arg.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testFor"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 ForeachToken
+  2:11 VarToken "i"
+  2:13 InToken
+  2:16 LeftSquareBracketToken
+  2:17 NumberToken 1.0
+  2:18 CommaToken
+  2:19 NumberToken 2.0
+  2:20 CommaToken
+  2:21 NumberToken 3.0
+  2:22 CommaToken
+  2:23 NumberToken 4.0
+  2:24 RightSquareBracketToken
+  2:25 IndentToken 4
+  3:5 VarToken "log"
+  3:9 VarToken "i"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testFor",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Unassigned (FunctionCall "log"
+                                                                                                (Variable "i"))])],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/For.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testLog"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "log"
+  2:7 QuoteToken "Logging works"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testLog",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Literal (StrVal "Logging works")))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Log.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testVar"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "variable"
+  2:12 EqualsToken
+  2:14 QuoteToken "Variables work"
+  2:30 IndentToken 2
+  3:3 VarToken "log"
+  3:7 VarToken "variable"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testVar",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "variable"
+                                                         (Literal (StrVal "Variables work")),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "variable"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Var.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testForReassign"
+  1:17 VarToken "arg"
+  1:21 ColonToken
+  1:23 VarToken "someType"
+  1:32 ArrowToken
+  1:35 VarToken "someOtherType"
+  1:48 IndentToken 2
+  2:3 VarToken "x"
+  2:5 EqualsToken
+  2:7 NumberToken 1.0
+  2:8 IndentToken 2
+  3:3 ForeachToken
+  3:11 VarToken "i"
+  3:13 InToken
+  3:16 LeftSquareBracketToken
+  3:17 NumberToken 1.0
+  3:18 CommaToken
+  3:19 NumberToken 2.0
+  3:20 CommaToken
+  3:21 NumberToken 3.0
+  3:22 CommaToken
+  3:23 NumberToken 4.0
+  3:24 RightSquareBracketToken
+  3:25 IndentToken 4
+  4:5 VarToken "x"
+  4:7 EqualsToken
+  4:9 VarToken "x"
+  4:11 PlusToken
+  4:13 NumberToken 1.0
+  4:14 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "x"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testForReassign",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "x"
+                                                         (Literal (NumVal 1.0)),
+                                              Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Assignment "x"
+                                                                                  (OperatorTerm Plus
+                                                                                                (Variable "x")
+                                                                                                (Literal (NumVal 1.0)))]),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "x"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/ForReassign.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testFor"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 ForeachToken
+  2:11 VarToken "i"
+  2:13 InToken
+  2:16 LeftSquareBracketToken
+  2:17 NumberToken 1.0
+  2:18 CommaToken
+  2:19 NumberToken 2.0
+  2:20 CommaToken
+  2:21 NumberToken 3.0
+  2:22 CommaToken
+  2:23 NumberToken 4.0
+  2:24 RightSquareBracketToken
+  2:25 IndentToken 4
+  3:5 VarToken "log"
+  3:9 VarToken "i"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testFor",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Unassigned (FunctionCall "log"
+                                                                                                (Variable "i"))])],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/for.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testForReassign"
+  1:17 VarToken "arg"
+  1:21 ColonToken
+  1:23 VarToken "someType"
+  1:32 ArrowToken
+  1:35 VarToken "someOtherType"
+  1:48 IndentToken 2
+  2:3 VarToken "x"
+  2:5 EqualsToken
+  2:7 NumberToken 1.0
+  2:8 IndentToken 2
+  3:3 ForeachToken
+  3:11 VarToken "i"
+  3:13 InToken
+  3:16 LeftSquareBracketToken
+  3:17 NumberToken 1.0
+  3:18 CommaToken
+  3:19 NumberToken 2.0
+  3:20 CommaToken
+  3:21 NumberToken 3.0
+  3:22 CommaToken
+  3:23 NumberToken 4.0
+  3:24 RightSquareBracketToken
+  3:25 IndentToken 4
+  4:5 VarToken "x"
+  4:7 EqualsToken
+  4:9 VarToken "x"
+  4:11 PlusToken
+  4:13 NumberToken 1.0
+  4:14 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "x"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testForReassign",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "x"
+                                                         (Literal (NumVal 1.0)),
+                                              Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Assignment "x"
+                                                                                  (OperatorTerm Plus
+                                                                                                (Variable "x")
+                                                                                                (Literal (NumVal 1.0)))]),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "x"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/forReassign.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testArg"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "logThis"
+  2:11 QuoteToken "Arguments work"
+  2:27 NewlineToken
+  4:1 VarToken "logThis"
+  4:9 VarToken "arg"
+  4:13 ColonToken
+  4:15 VarToken "someType"
+  4:24 ArrowToken
+  4:27 VarToken "someOtherType"
+  4:40 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "arg"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testArg",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "logThis"
+                                                                       (Literal (StrVal "Arguments work")))],
+                                      helper = False}),
+                           ("logThis",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Variable "arg"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/argument.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testVar"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "variable"
+  2:12 EqualsToken
+  2:14 QuoteToken "Variables work"
+  2:30 IndentToken 2
+  3:3 VarToken "log"
+  3:7 VarToken "variable"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testVar",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "variable"
+                                                         (Literal (StrVal "Variables work")),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "variable"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/variable.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testLog"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "log"
+  2:7 QuoteToken "Logging works"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testLog",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Literal (StrVal "Logging works")))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/log.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testArg"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "logThis"
+  2:11 QuoteToken "Arguments work"
+  2:27 NewlineToken
+  4:1 VarToken "logThis"
+  4:9 VarToken "arg"
+  4:13 ColonToken
+  4:15 VarToken "someType"
+  4:24 ArrowToken
+  4:27 VarToken "someOtherType"
+  4:40 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "arg"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testArg",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "logThis"
+                                                                       (Literal (StrVal "Arguments work")))],
+                                      helper = False}),
+                           ("logThis",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Variable "arg"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Arg.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testFor"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 ForeachToken
+  2:11 VarToken "i"
+  2:13 InToken
+  2:16 LeftSquareBracketToken
+  2:17 NumberToken 1.0
+  2:18 CommaToken
+  2:19 NumberToken 2.0
+  2:20 CommaToken
+  2:21 NumberToken 3.0
+  2:22 CommaToken
+  2:23 NumberToken 4.0
+  2:24 RightSquareBracketToken
+  2:25 IndentToken 4
+  3:5 VarToken "log"
+  3:9 VarToken "i"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testFor",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Unassigned (FunctionCall "log"
+                                                                                                (Variable "i"))])],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/For.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testLog"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "log"
+  2:7 QuoteToken "Logging works"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testLog",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Unassigned (FunctionCall "log"
+                                                                       (Literal (StrVal "Logging works")))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Log.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testVar"
+  1:9 VarToken "arg"
+  1:13 ColonToken
+  1:15 VarToken "someType"
+  1:24 ArrowToken
+  1:27 VarToken "someOtherType"
+  1:40 IndentToken 2
+  2:3 VarToken "variable"
+  2:12 EqualsToken
+  2:14 QuoteToken "Variables work"
+  2:30 IndentToken 2
+  3:3 VarToken "log"
+  3:7 VarToken "variable"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testVar",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "variable"
+                                                         (Literal (StrVal "Variables work")),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "variable"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/Var.ll
+Tokens: 
+  0:0 NewlineToken
+  1:1 VarToken "testForReassign"
+  1:17 VarToken "arg"
+  1:21 ColonToken
+  1:23 VarToken "someType"
+  1:32 ArrowToken
+  1:35 VarToken "someOtherType"
+  1:48 IndentToken 2
+  2:3 VarToken "x"
+  2:5 EqualsToken
+  2:7 NumberToken 1.0
+  2:8 IndentToken 2
+  3:3 ForeachToken
+  3:11 VarToken "i"
+  3:13 InToken
+  3:16 LeftSquareBracketToken
+  3:17 NumberToken 1.0
+  3:18 CommaToken
+  3:19 NumberToken 2.0
+  3:20 CommaToken
+  3:21 NumberToken 3.0
+  3:22 CommaToken
+  3:23 NumberToken 4.0
+  3:24 RightSquareBracketToken
+  3:25 IndentToken 4
+  4:5 VarToken "x"
+  4:7 EqualsToken
+  4:9 VarToken "x"
+  4:11 PlusToken
+  4:13 NumberToken 1.0
+  4:14 IndentToken 2
+  5:3 VarToken "log"
+  5:7 VarToken "x"
+
+IR:
+Program {customTypes = [],
+         constants = [],
+         fnDeclarations = [("testForReassign",
+                            Function {inputType = Type {parentType = "someType",
+                                                        predicate = Nothing},
+                                      outputType = Type {parentType = "someType",
+                                                         predicate = Nothing},
+                                      arg = "arg",
+                                      body = [Assignment "x"
+                                                         (Literal (NumVal 1.0)),
+                                              Unassigned (ForeachInDo "i"
+                                                                      (Literal (ArrVal [Literal (NumVal 1.0),
+                                                                                        Literal (NumVal 2.0),
+                                                                                        Literal (NumVal 3.0),
+                                                                                        Literal (NumVal 4.0)]))
+                                                                      [Assignment "x"
+                                                                                  (OperatorTerm Plus
+                                                                                                (Variable "x")
+                                                                                                (Literal (NumVal 1.0)))]),
+                                              Unassigned (FunctionCall "log"
+                                                                       (Variable "x"))],
+                                      helper = False})],
+         imports = []}
+Writing LLVM assembly to testss/ForReassign.ll
