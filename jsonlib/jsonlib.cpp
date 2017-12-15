@@ -2,6 +2,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
+#include <cmath>
 #include <sstream>
 using namespace rapidjson;
 extern "C"{
@@ -173,9 +174,6 @@ int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
 	const char* key = tostring(jkey);
 	const char* value = tostring(jvalue);
 	Document* d = (Document*)intdoc;
-	std::cout << key<<std::endl;
-	std::cout << value <<std::endl;
-	std::cout << tostring(intdoc) <<std::endl;
 	if ((*d).HasMember(key)){
 		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
 		return intdoc;
@@ -317,16 +315,22 @@ int test(const char* s){
 }
 
 int* jgets(int* intdoc, int* key){
-
 	Document* d = (Document*) intdoc;
-	const char* skey = tostring(key);
-	if((*d).HasMember(skey)){
-		std::cout <<"if" <<std::endl;
-		return (int*)(&(getp((int*)d, skey)));
+	if ((*d).IsObject()){
+		const char* skey = tostring(key);
+		if((*d).HasMember(skey)){
+			return (int*)(&(getp((int*)d, skey)));
+		}
+		else{
+			return 0;
+		}
 	}
-	else{
-
-		std::cout <<"else" <<std::endl;
+	else {
+		double dubidx = get_json_double(key);
+		int idx = (int) std::round(dubidx);
+		if(idx < (*d).Size()){
+			return (int *)(&((*d)[idx]));
+		}
 		return 0;
 	}
 }

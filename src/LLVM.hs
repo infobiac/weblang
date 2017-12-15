@@ -231,12 +231,9 @@ termLLVM (Accessor tTerm indexTerm) = do
    -- TODO check if t is array
    -- TODO check if index is num (or int?)
 
-  index_double <- functionCallLLVM "getdoub" index
-  index_int <- instr $ AST.FPToUI index_double llvmI32 []
-
   element <- call
-               (externf (AST.Name (fromString "get_json_from_array")))
-               [t, index_int]
+               (externf (AST.Name (fromString "jgets")))
+               [t, index]
 
   return element
 termLLVM (OperatorTerm opp t1 t2) = do
