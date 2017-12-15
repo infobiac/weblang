@@ -2,9 +2,16 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
+#include <cmath>
 #include <sstream>
 using namespace rapidjson;
 extern "C"{
+
+int* is_json_double(int*);
+int* is_json_string(int*);
+int* json_double(double);
+int* json_string(const char*);
+
 
 Value& getp(int* intdoc, const char* key){
 	Document* d = (Document*)intdoc;
@@ -14,45 +21,197 @@ Value& getp(int* intdoc, const char* key){
 
 const char* tostring(int* tempdoc){
 	std::cout.flush();
-	try{
+	if((*((Document*) tempdoc)).IsObject()){
 		Value* str = (Value*)tempdoc;
 		if(str->IsString())
 			return str->GetString();
-		Value& typ = getp(tempdoc, "prim_type");
-		if(typ.GetString() == "num"){
-			std::ostringstream strdoub;
-			strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
-			return strdoub.str().c_str();
+		if((*((Document*) tempdoc)).HasMember("prim_type")){
+			Value& typ = getp(tempdoc, "prim_type");
+			if(typ.GetString() == "num"){
+				std::ostringstream strdoub;
+				strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
+				char* ret = (char*) malloc(strlen(strdoub.str().c_str())+1);
+				strcpy(ret, strdoub.str().c_str());
+				return ret;
+			}
+			else if(typ.GetString() == "str"){
+				std::ostringstream strstr;
+				Value& pt = getp(tempdoc, "prim_val");
+				strstr << pt.GetString() << '\0';
+				char* ret = (char*) malloc(strlen(strstr.str().c_str())+1);
+				strcpy(ret, strstr.str().c_str());
+				return ret;
+			}
+			else if(typ.GetString() == "bool"){	
+				Value& pt = getp(tempdoc, "prim_val");
+				if(pt.GetBool())
+					return "true";
+				else
+					return "false";
+			}
 		}
-		else if(typ.GetString() == "str"){
-			Value& pt = getp(tempdoc, "prim_val");
-			return pt.GetString();
-		}	
+		else {
+			Document* d = (Document *)tempdoc;
+			std::ostringstream objstr;
+			objstr<<"{";
+			for (Value::ConstMemberIterator itr = (*d).MemberBegin(); itr != (*d).MemberEnd(); ++itr){
+				objstr << itr->name.GetString() << ":" << tostring((int*)&(itr->value));
+				if (itr+1 != (*d).MemberEnd())
+					objstr << ",";
+			}
+			objstr << "}" <<'\0';
+			char* ret = (char*) malloc(strlen(objstr.str().c_str())+1);
+			strcpy(ret, objstr.str().c_str());
+			return ret;
+		}
 	}
-	catch(...){
+	else{
 		Document* d = (Document *)tempdoc;
-		StringBuffer buff;
-		buff.Clear();
-		Writer<StringBuffer> writer(buff);
-		(*d).Accept(writer);
-		return buff.GetString();
+		std::ostringstream objstr;
+		objstr << "[";
+		for (Value::ConstValueIterator itr = (*d).Begin(); itr != (*d).End(); ++itr){
+			objstr << tostring((int *) itr);
+			if (itr+1 !=(*d).End())
+				objstr << ",";
+		}
+		objstr << "]" << '\0';
+		char* ret = (char*) malloc(strlen(objstr.str().c_str())+1);
+		strcpy(ret, objstr.str().c_str());
+
+		return ret;
 	}
 }
 
-int* json(int* s){
-	const char* str = tostring(s); 
-	Document* d = new Document();
-	(*d).Parse(str);
+const char* internaltostring(int* tempdoc){
+	std::ostringstream strstr;
+	Value& pt = getp(tempdoc, "prim_val");
+	strstr << pt.GetString() << '\0';
+	char* ret = (char*) malloc(strlen(strstr.str().c_str())+1);
+	strcpy(ret, strstr.str().c_str());
+	return ret;
+}
+
+int* json_bool(int b){
+	Document *d = new Document();
+	(*d).SetObject();
+	if(b==1){
+		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
+		(*d).AddMember("prim_val", true, (*d).GetAllocator());
+	}
+	else{
+		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
+		(*d).AddMember("prim_val", false, (*d).GetAllocator());
+	}
 	return (int*)d;
 }
 
+double get_json_bool(int* intdoc){
+	Value& pt = getp(intdoc, "prim_type");
+	if(pt.GetString() == "bool"){
+		if(getp(intdoc, "prim_val").GetBool())
+			return 1;
+		return 0;
+	}
+	return 0;
+}
 
 
-/*
- *Todo: Create functions to construct each type
- * Getters 
- * Method that takes in array of documents, combines them into one object
- */
+int* json_from_string(int* s){
+	const char* str = tostring(s);
+	Document* init = new Document();
+	(*init).Parse(str);
+	if ((*init).IsObject()){
+		for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
+			if(itr->value.IsNumber()){
+				int* tempjdubs = json_double(itr->value.GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->value.IsString()){
+				int* tempjstr = json_string(itr->value.GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+		}	
+	}
+	else if ((*init).IsArray()){
+		std::cout << "yoooo" << std::endl;
+		int count = 0;
+		for (Value::ConstValueIterator itr = (*init).Begin(); itr != (*init).End(); ++itr){
+			if(itr->IsNumber()){
+				int* tempjdubs = json_double(itr->GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[count].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->IsString()){
+				int* tempjstr = json_string(itr->GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[count].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+			count++;
+		}
+	}
+
+	return (int*) init;
+}
+
+int* json_object(int* a[], int num){
+	Document *d = new Document();
+	(*d).SetObject();
+	Document::AllocatorType& allocator = (*d).GetAllocator();
+	for(int i = 0; i < num; i++){
+		Value tempkey;
+		Value tempvalue;
+		tempkey.SetString(tostring(a[2*i]), allocator);
+		tempvalue.CopyFrom(*((Document *)a[2*i+1]), allocator);
+		(*d).AddMember(tempkey, tempvalue, allocator);
+	}
+
+	return (int *)d;
+
+}
+
+int* get_json_from_object(int* intdoc, int* key){
+	Document* d = (Document*) intdoc;
+	const char* skey = tostring(key);
+	if((*d).HasMember(skey)){
+		return (int*)(&(getp((int*)d, skey)));
+	}
+	else{
+		return 0;
+	}
+}
+
+int* is_json_object(int* s){
+	Document *d = (Document *) s;
+	if((*d).IsObject() && !get_json_bool(is_json_double(s)) && !get_json_bool(is_json_string(s)))
+		return json_bool(1);
+	return json_bool(0);
+}
+
+int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
+	const char* key = tostring(jkey);
+	const char* value = tostring(jvalue);
+	Document* d = (Document*)intdoc;
+	if ((*d).HasMember(key)){
+		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
+		return intdoc;
+	}
+	else{
+		Document* findoc = new Document();
+		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
+
+		Value tempkey;
+		tempkey.SetString(key, (*findoc).GetAllocator());
+
+		Value tempvalue;
+		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
+
+		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
+		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
+		return (int*) findoc;
+	}
+}
 
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
@@ -65,11 +224,42 @@ int* json_double(double dubs){
 	return (int*)d;
 }
 
+
+int* to_json_double(int* intdoc){
+	Document *d = new Document();
+	Document *old = (Document*) intdoc;
+	(*d).SetObject();
+
+	if((*old).IsObject() && (*old).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "str"){
+			Value& val = getp(intdoc, "prim_val");
+			double temp = std::stod(val.GetString());
+			return json_double(temp);
+		}
+	}
+	return NULL;
+}
+
+
+int * is_json_double(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsObject() && (*d).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "num")
+			return json_bool(1);
+		return json_bool(0);
+	}
+	return json_bool(0);
+}
+
 //Retrieve a double in json
 double get_json_double(int* intdoc){
 	Value& pt = getp(intdoc, "prim_type");
 	if(pt.GetString() == "num")
 		return getp(intdoc, "prim_val").GetDouble();
+	else if(pt.GetString() == "bool");
+		return get_json_bool(intdoc);
 	return pt.GetDouble();
 }
 
@@ -86,10 +276,15 @@ int* json_string(const char* s){
 
 }
 
-//Retrieve a string in json
-const char* get_json_string(int* intdoc){
-	Value& pt = getp(intdoc, "json_rep_of_str_ts");
-	return pt.GetString();
+int* is_json_string(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsObject() && (*d).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "str")
+			return json_bool(1);
+		return json_bool(0);
+	}
+	return json_bool(0);
 }
 
 
@@ -104,6 +299,13 @@ int* json_array(int* a[], int numElements){
 		(*d).PushBack(tempdoc, allocator);
 	}
 	return (int *)d;
+}
+
+int* is_json_array(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsArray())
+		return json_bool(1);
+	return json_bool(0);
 }
 
 //Return a pointer to the value at the idxth position
@@ -133,28 +335,22 @@ int test(const char* s){
 
 int* jgets(int* intdoc, int* key){
 	Document* d = (Document*) intdoc;
-	const char* skey = tostring(key);
-	if((*d).HasMember(skey)){
-		return (int*)(&(getp((int*)d, skey)));
+	if ((*d).IsObject()){
+		const char* skey = tostring(key);
+		if((*d).HasMember(skey)){
+			return (int*)(&(getp((int*)d, skey)));
+		}
+		else{
+			return 0;
+		}
 	}
-	else{
+	else {
+		double dubidx = get_json_double(key);
+		int idx = (int) std::round(dubidx);
+		if(idx < (*d).Size()){
+			return (int *)(&((*d)[idx]));
+		}
 		return 0;
-	}
-}
-
-std::string adds(int *intdoc, const char* key, const char* value){
-	Document* d = (Document*)intdoc;
-	if ((*d).HasMember(key)){
-		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
-		return key;
-	}
-	else{
-		Value tempkey;
-		Value tempvalue;
-		tempkey.SetString(key, (*d).GetAllocator());
-		tempvalue.SetString(value, (*d).GetAllocator());
-		(*d).AddMember(tempkey.Move(), tempvalue.Move(), (*d).GetAllocator());
-		return key;
 	}
 }
 
