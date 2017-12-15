@@ -135,6 +135,22 @@ int* json_from_string(int* s){
 	return (int*) init;
 }
 
+int* json_object(int* a[], int num){
+	Document *d = new Document();
+	(*d).SetObject();
+	Document::AllocatorType& allocator = (*d).GetAllocator();
+	for(int i = 0; i < num; i++){
+		Value tempkey;
+		Value tempvalue;
+		tempkey.SetString(tostring(a[2*i]), allocator);
+		tempvalue.CopyFrom(*((Document *)a[2*i+1]), allocator);
+		(*d).AddMember(tempkey, tempvalue, allocator);
+	}
+
+	return (int *)d;
+
+}
+
 int* get_json_from_object(int* intdoc, int* key){
 	Document* d = (Document*) intdoc;
 	const char* skey = tostring(key);
@@ -152,6 +168,34 @@ int* is_json_object(int* s){
 		return json_bool(1);
 	return json_bool(0);
 }
+
+int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
+	const char* key = tostring(jkey);
+	const char* value = tostring(jvalue);
+	Document* d = (Document*)intdoc;
+	std::cout << key<<std::endl;
+	std::cout << value <<std::endl;
+	std::cout << tostring(intdoc) <<std::endl;
+	if ((*d).HasMember(key)){
+		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
+		return intdoc;
+	}
+	else{
+		Document* findoc = new Document();
+		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
+
+		Value tempkey;
+		tempkey.SetString(key, (*findoc).GetAllocator());
+
+		Value tempvalue;
+		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
+
+		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
+		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
+		return (int*) findoc;
+	}
+}
+
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
 int* json_double(double dubs){
@@ -284,33 +328,6 @@ int* jgets(int* intdoc, int* key){
 
 		std::cout <<"else" <<std::endl;
 		return 0;
-	}
-}
-
-int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
-	const char* key = tostring(jkey);
-	const char* value = tostring(jvalue);
-	Document* d = (Document*)intdoc;
-	std::cout << key<<std::endl;
-	std::cout << value <<std::endl;
-	std::cout << tostring(intdoc) <<std::endl;
-	if ((*d).HasMember(key)){
-		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
-		return intdoc;
-	}
-	else{
-		Document* findoc = new Document();
-		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
-
-		Value tempkey;
-		tempkey.SetString(key, (*findoc).GetAllocator());
-
-		Value tempvalue;
-		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
-
-		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
-		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
-		return (int*) findoc;
 	}
 }
 

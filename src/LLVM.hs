@@ -38,6 +38,8 @@ llvmDouble = AST.FloatingPointType AST.DoubleFP
 
 moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "json_from_string" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "json_object" [(llvmI32PointerPointer, AST.Name(fromString "s"))
+                                     , (llvmI32, (fromString "s"))];
   external llvmI32Pointer "is_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "add_to_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))
@@ -319,7 +321,10 @@ primLLVM (ArrVal arr) = do
   elemPtrs <- mapM termLLVM arr
   ptrArray <- buildPtrArray elemPtrs
   llvmCallJsonArr ptrArray (length elemPtrs)
-primLLVM (ObjVal obj) = error "unimplemented: object literals"
+primLLVM (ObjVal obj) = do
+  elemPtrs <- mapM termLLVM obj
+  ptrArray <- buildObjPtrArray (Map.toList elemPtrs)
+  llvmCallJsonObj ptrArray (length elemPtrs)
 primLLVM (NumVal num) = functionCallLLVM "jnum" (cons (AST.Float (Fl.Double num)))
 primLLVM (StrVal s) = stringLLVM s
 primLLVM (NullVal) = nullLLVM
@@ -331,7 +336,6 @@ nullLLVM = error "need to build a null builder"
 
 trueLLVM :: Codegen AST.Operand
 trueLLVM = do
-  tr <- (rawStringLLVM "true\0")
   functionCallLLVM "json_bool" (cons $AST.Int 32 (fromIntegral 1))
 
 falseLLVM :: Codegen AST.Operand
@@ -340,6 +344,10 @@ falseLLVM = do
 
 llvmCallJsonArr :: AST.Operand -> Int -> Codegen AST.Operand
 llvmCallJsonArr elemPtrArray n = call (externf (AST.Name (fromString "json_array")))
+  [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
+
+llvmCallJsonObj :: AST.Operand -> Int -> Codegen AST.Operand
+llvmCallJsonObj elemPtrArray n = call (externf (AST.Name (fromString "json_object")))
   [elemPtrArray, (cons $ AST.Int 32 (fromIntegral n))]
 
 functionCallLLVM :: String -> AST.Operand -> Codegen AST.Operand
@@ -405,6 +413,20 @@ buildPtrArray ptrs = do
     let tempptr = AST.GetElementPtr True mem [cons $ AST.Int 32 (fromIntegral i)] []
     tempmem <- instr $ tempptr
     instr $ AST.Store False tempmem (ptrs!!i) Nothing (fromIntegral 0) []
+  return mem
+
+buildObjPtrArray :: [(String, AST.Operand)] -> Codegen AST.Operand
+buildObjPtrArray ptrs = do
+  mem <- instr $
+    AST.Alloca llvmI32Pointer (Just (cons (AST.Int 32 (fromIntegral (2*(length ptrs)))))) 0 []
+  forM_ [0..(length ptrs)-1] $ \i -> do
+    let tempptr1 = AST.GetElementPtr True mem [cons $ AST.Int 32 (2*(fromIntegral i))] []
+    tempmem1 <- instr $ tempptr1
+    op <- stringLLVM (fst (ptrs!!i))
+    instr $AST.Store False tempmem1 op Nothing (fromIntegral 0) []
+    let tempptr2 = AST.GetElementPtr True mem [cons $ AST.Int 32 ((2*(fromIntegral i))+1)] []
+    tempmem2 <- instr $ tempptr2
+    instr $AST.Store False tempmem2 (snd (ptrs!!i)) Nothing (fromIntegral 0) []
   return mem
 
 stringToLLVMString :: String -> AST.Constant
