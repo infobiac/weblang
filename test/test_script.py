@@ -30,7 +30,7 @@ expected_files = os.listdir("./expected")
 testcount = 0
 passed = 0
 logfile = 'test_log'
-
+os.system('echo "STARTING TEST" > '+logfile)
 for f in test_files:
     if('.wl' in f):
         testcount+=1
