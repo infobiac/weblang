@@ -15,9 +15,10 @@ class bcolors:
 def compilefile(f,test,logfile):
 #    os.system('python testss/'+f + ' > test_output 2>&1')
     os.system('echo "\n"[Testing '+ test+ ' at ' +str(datetime.datetime.now()) + '] >> ' +logfile)
-    os.system('./build '+'testss/'+test+' >> logfile') 
-    os.system('testss/'+test+' test'+test+' a'+' > test_output')
+    os.system('./build '+'testss/'+test+' > errors_warnings 2>&1' ) 
+    os.system('testss/'+test+' test'+test+' a'+' > test_output 2>&1')
     os.system('cat test_output>>'+ logfile)
+    os.system('cat errors_warnings>>'+ logfile)
     output = 'test_output'
     return output
 
@@ -43,6 +44,6 @@ for f in test_files:
         else:
             print(bcolors.FAIL+"[Failed] "+test+bcolors.ENDC)
 
-os.system('rm -rf test_output')
+os.system('rm  test_output')
 os.system('echo "----------------------- NEW TEST ------------------------------">>'+ logfile)
 print(bcolors.HEADER+bcolors.BOLD+"Passed "+str(passed)+" out of "+str(testcount)+" tests."+bcolors.ENDC)
