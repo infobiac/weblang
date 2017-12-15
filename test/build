@@ -1,5 +1,0 @@
-BASENAME=$1
-stack exec weblang $BASENAME.ll < $BASENAME.wl
-nix-shell -p llvm --command "llc $BASENAME.ll"
-nix-shell -p gcc --command "gcc -c $BASENAME.s -o $BASENAME.o"
-nix-shell -p gcc --command "g++ -lm $BASENAME.o ../jsonlib/jsonlib.o -o $BASENAME" && rm $BASENAME.s && rm $BASENAME.o
