@@ -124,10 +124,59 @@ opFns = Map.empty
 
 buildLLVM :: Program -> LLVM ()
 buildLLVM p = do
+  mapM_ importLLVM (imports p)
   mapM_ constantLLVM (constants p)
   let fns = fnDeclarations p
   mapM_ functionLLVM fns
   functionLLVMMain fns
+
+data Method = Post | Get deriving (Show, Eq)
+type EndpointName = String
+type URL = String
+data Endpoint = Endpoint URL EndpointName Method
+
+importLLVM :: Import -> LLVM [String]
+importLLVM (Import (Literal (ObjVal obj))) = mapM (endpointFnLLVM) endpoints
+  where getVal objName obj key = fromMaybe (error $ key ++ " missing from " ++ objName) (Map.lookup key obj)
+        getImpVal = getVal "import statement" obj
+        url = case getImpVal "url" of
+          (Literal (StrVal url)) -> url
+          _ -> error "url key in import statement should be a string value"
+        endpoints = case getImpVal "endpoints" of
+          (Literal (ArrVal endpointTerms)) -> flip map endpointTerms $ \t -> case t of
+            (Literal (ObjVal endpointObj)) ->
+              let getEndpVal = getVal "endpoint statement" endpointObj
+                  name = case getEndpVal "name" of
+                    (Literal (StrVal name)) -> name
+                    _ -> error "endpoint name should be a string"
+                  method = case getEndpVal "is_post" of
+                    (Literal TrueVal) -> Post
+                    (Literal FalseVal) -> Get
+                    _ -> error "endpoint is_post should be true/false"
+              in Endpoint url name method
+
+            _ -> error "endpoint values in import statement should be object literals"
+          _ -> error "endpoint key in import statement should be an array value"
+importLLVM _ = error "Import called with non-primitive object argument"
+
+endpointFnLLVM :: Endpoint -> LLVM String
+endpointFnLLVM (Endpoint url endpoint method) = define llvmRetType endpoint fnargs llvmBody >> return endpoint
+  where arg = "arg"
+        fnargs = toSig arg
+        llvmRetType = llvmI32Pointer
+        llvmBody = createBlocks . execCodegen $ do
+          entry <- addBlock entryBlockName
+          setBlock entry
+          let argptr = local (AST.Name (fromString arg))
+          let path = url ++ "/" ++ endpoint
+          let binding = if method == Post then "post" else "get"
+
+          pathTerm <- rawStringLLVM path
+          argTerm <- call (externf (AST.Name (fromString "tostring"))) [argptr]
+
+          --let argPrim = ObjVal (Map.fromList [("url", Literal (StrVal url)), ("payload", argptr)])
+          res <- call (externf (AST.Name (fromString binding))) [argTerm]
+          ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
 constantLLVM (name, term) = do
@@ -154,6 +203,7 @@ functionLLVMMain fns = do
           argv2 <- argvAt 2
           mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
           ret $ Just (cons $ AST.Int 32 0)
+
 
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
