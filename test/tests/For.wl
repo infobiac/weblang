@@ -1,0 +1,5 @@
+testFor arg : someType -> someOtherType
+  foreach i in [1,2,3,4]
+    log i  
+
+

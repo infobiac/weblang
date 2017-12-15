@@ -22,5 +22,6 @@ addons:
            - ghc-7.10.2
         
 script:
-        stack build --nix :weblang
-        python test/test_script.py 
+        - stack build --nix :weblang
+        - nix-shell -p rapidjson gcc --command "g++ $NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
+        - python test_script.py 
