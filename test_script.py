@@ -23,7 +23,7 @@ def compilefile(f,test,logfile,test_files):
 
 
 ##### START TEST SCRIPT #####
-test_files = "test/testss"
+test_files = "test/tests"
 expected_files = "test/expected"
 tests = os.listdir(test_files)
 expected = os.listdir(expected_files)
