@@ -120,16 +120,35 @@ int* json_from_string(int* s){
 	const char* str = tostring(s);
 	Document* init = new Document();
 	(*init).Parse(str);
-	for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
-		if(itr->value.IsNumber()){
-			int* tempjdubs = json_double(itr->value.GetDouble());
-			Document* jdubs = (Document *) tempjdubs;
-		 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
-		}
-		else if(itr->value.IsString()){
-			int* tempjstr = json_string(itr->value.GetString());
-			Document* jstr = (Document *) tempjstr;
-			(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+	if ((*init).IsObject()){
+		for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
+			if(itr->value.IsNumber()){
+				int* tempjdubs = json_double(itr->value.GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->value.IsString()){
+				int* tempjstr = json_string(itr->value.GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+		}	
+	}
+	else if ((*init).IsArray()){
+		std::cout << "yoooo" << std::endl;
+		int count = 0;
+		for (Value::ConstValueIterator itr = (*init).Begin(); itr != (*init).End(); ++itr){
+			if(itr->IsNumber()){
+				int* tempjdubs = json_double(itr->GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[count].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->IsString()){
+				int* tempjstr = json_string(itr->GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[count].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+			count++;
 		}
 	}
 
