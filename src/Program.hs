@@ -113,7 +113,7 @@ transSimpleTerm (AST.FunctionCall n a) = FunctionCall n (transSimpleTerm a)
 transSimpleTerm (AST.OperatorTerm n a b) = OperatorTerm n (transSimpleTerm a) (transSimpleTerm b)
 transSimpleTerm (AST.Literal v) = Literal (transPrim v)
 transSimpleTerm (AST.IfThenElse p a b) =
-  IfThenElse (transSimpleTerm a) [Unassigned $ transSimpleTerm a] [Unassigned $ transSimpleTerm b]
+  IfThenElse (transSimpleTerm p) [Unassigned $ transSimpleTerm a] [Unassigned $ transSimpleTerm b]
 transSimpleTerm t@(AST.If _) = error $ "unexpected If term: " ++ show t
 transSimpleTerm (AST.Else) = error "unexpected Else term"
 transSimpleTerm t@(AST.ForeachIn _ _) = error $ "unexpected ForeachIn term: " ++ show t
