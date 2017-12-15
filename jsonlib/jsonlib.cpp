@@ -80,6 +80,7 @@ const char* tostring(int* tempdoc){
 		return ret;
 	}
 }
+
 const char* internaltostring(int* tempdoc){
 	std::ostringstream strstr;
 	Value& pt = getp(tempdoc, "prim_val");
@@ -162,6 +163,24 @@ int* json_double(double dubs){
 	(*d).AddMember("prim_val", dubs, (*d).GetAllocator());
 	return (int*)d;
 }
+
+
+int* to_json_double(int* intdoc){
+	Document *d = new Document();
+	Document *old = (Document*) intdoc;
+	(*d).SetObject();
+
+	if((*old).IsObject() && (*old).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "str"){
+			Value& val = getp(intdoc, "prim_val");
+			double temp = std::stod(val.GetString());
+			return json_double(temp);
+		}
+	}
+	return NULL;
+}
+
 
 int * is_json_double(int* intdoc){
 	Document *d = (Document *) intdoc;
