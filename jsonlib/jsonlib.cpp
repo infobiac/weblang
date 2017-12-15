@@ -2,6 +2,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
+#include <cmath>
 #include <sstream>
 using namespace rapidjson;
 extern "C"{
@@ -119,20 +120,55 @@ int* json_from_string(int* s){
 	const char* str = tostring(s);
 	Document* init = new Document();
 	(*init).Parse(str);
-	for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
-		if(itr->value.IsNumber()){
-			int* tempjdubs = json_double(itr->value.GetDouble());
-			Document* jdubs = (Document *) tempjdubs;
-		 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
-		}
-		else if(itr->value.IsString()){
-			int* tempjstr = json_string(itr->value.GetString());
-			Document* jstr = (Document *) tempjstr;
-			(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+	if ((*init).IsObject()){
+		for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
+			if(itr->value.IsNumber()){
+				int* tempjdubs = json_double(itr->value.GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->value.IsString()){
+				int* tempjstr = json_string(itr->value.GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+		}	
+	}
+	else if ((*init).IsArray()){
+		std::cout << "yoooo" << std::endl;
+		int count = 0;
+		for (Value::ConstValueIterator itr = (*init).Begin(); itr != (*init).End(); ++itr){
+			if(itr->IsNumber()){
+				int* tempjdubs = json_double(itr->GetDouble());
+				Document* jdubs = (Document *) tempjdubs;
+			 	(*init)[count].CopyFrom(*jdubs,(*init).GetAllocator());
+			}
+			else if(itr->IsString()){
+				int* tempjstr = json_string(itr->GetString());
+				Document* jstr = (Document *) tempjstr;
+				(*init)[count].CopyFrom(*jstr,(*init).GetAllocator());
+			}
+			count++;
 		}
 	}
 
 	return (int*) init;
+}
+
+int* json_object(int* a[], int num){
+	Document *d = new Document();
+	(*d).SetObject();
+	Document::AllocatorType& allocator = (*d).GetAllocator();
+	for(int i = 0; i < num; i++){
+		Value tempkey;
+		Value tempvalue;
+		tempkey.SetString(tostring(a[2*i]), allocator);
+		tempvalue.CopyFrom(*((Document *)a[2*i+1]), allocator);
+		(*d).AddMember(tempkey, tempvalue, allocator);
+	}
+
+	return (int *)d;
+
 }
 
 int* get_json_from_object(int* intdoc, int* key){
@@ -152,6 +188,31 @@ int* is_json_object(int* s){
 		return json_bool(1);
 	return json_bool(0);
 }
+
+int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
+	const char* key = tostring(jkey);
+	const char* value = tostring(jvalue);
+	Document* d = (Document*)intdoc;
+	if ((*d).HasMember(key)){
+		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
+		return intdoc;
+	}
+	else{
+		Document* findoc = new Document();
+		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
+
+		Value tempkey;
+		tempkey.SetString(key, (*findoc).GetAllocator());
+
+		Value tempvalue;
+		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
+
+		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
+		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
+		return (int*) findoc;
+	}
+}
+
 
 //Create a double in json by creating a json object with json_rep_of_num_ts as key
 int* json_double(double dubs){
@@ -273,44 +334,23 @@ int test(const char* s){
 }
 
 int* jgets(int* intdoc, int* key){
-
 	Document* d = (Document*) intdoc;
-	const char* skey = tostring(key);
-	if((*d).HasMember(skey)){
-		std::cout <<"if" <<std::endl;
-		return (int*)(&(getp((int*)d, skey)));
+	if ((*d).IsObject()){
+		const char* skey = tostring(key);
+		if((*d).HasMember(skey)){
+			return (int*)(&(getp((int*)d, skey)));
+		}
+		else{
+			return 0;
+		}
 	}
-	else{
-
-		std::cout <<"else" <<std::endl;
+	else {
+		double dubidx = get_json_double(key);
+		int idx = (int) std::round(dubidx);
+		if(idx < (*d).Size()){
+			return (int *)(&((*d)[idx]));
+		}
 		return 0;
-	}
-}
-
-int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
-	const char* key = tostring(jkey);
-	const char* value = tostring(jvalue);
-	Document* d = (Document*)intdoc;
-	std::cout << key<<std::endl;
-	std::cout << value <<std::endl;
-	std::cout << tostring(intdoc) <<std::endl;
-	if ((*d).HasMember(key)){
-		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
-		return intdoc;
-	}
-	else{
-		Document* findoc = new Document();
-		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
-
-		Value tempkey;
-		tempkey.SetString(key, (*findoc).GetAllocator());
-
-		Value tempvalue;
-		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
-
-		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
-		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
-		return (int*) findoc;
 	}
 }
 
