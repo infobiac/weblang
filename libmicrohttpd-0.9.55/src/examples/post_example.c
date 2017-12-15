@@ -461,7 +461,9 @@ create_response (void *cls,
                 
                 /* Run weblang command */
 
-                printf("%s at %s\n", "body", session->value_1);
+		char *arg = session->value_1;
+
+                printf("%s at %s\n", "arg ", arg);
 		printf("%s at %s\n", "url", url);
 		char *buffer;
 		char urlFile[100];
@@ -483,7 +485,9 @@ create_response (void *cls,
 	                printf("%s executable\n", cmd);
 			char* func = strtok(NULL, delimiter);
 			strcat(cmd, " ");
-		        strcat(cmd, func);	
+		        strcat(cmd, func);
+			strcat(cmd, " ");
+			strcat(cmd, arg);	
 		        strcat(cmd, " > test.txt");
 
 	                printf("cmd: %s\n", cmd);
