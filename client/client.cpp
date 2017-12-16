@@ -20,12 +20,11 @@ extern "C" {
 			strcpy(ret, r.text.c_str());
 			return (int *) ret;
 		}
-		throw "Please provide a url";
+		throw "Please provide a url and payload!";
 	}
 
 	int* get(int* json){
 		Document* d = (Document*)json;
-		std::cout <<"actual" <<std::endl;
 		if((*d).HasMember("url")) {
 			const char* url = ((*d)["url"])["prim_val"].GetString();
 			const char* body = ((*d)["body"])["prim_val"].GetString();
