@@ -53,6 +53,7 @@ tokens :-
   \-                                                          { \pos s -> withPos pos $ MinusToken }
   \*                                                          { \pos s -> withPos pos $ MultiplyToken }
   \/                                                          { \pos s -> withPos pos $ DivideToken }
+  \%                                                          { \pos s -> withPos pos $ ModToken }
   \=\=                                                        { \pos s -> withPos pos $ EQToken }
   \=                                                          { \pos s -> withPos pos $ EqualsToken }
   \<\=                                                        { \pos s -> withPos pos $ LEQToken }

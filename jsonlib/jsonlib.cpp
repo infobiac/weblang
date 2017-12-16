@@ -135,7 +135,6 @@ int* json_from_string(int* s){
 		}	
 	}
 	else if ((*init).IsArray()){
-		std::cout << "yoooo" << std::endl;
 		int count = 0;
 		for (Value::ConstValueIterator itr = (*init).Begin(); itr != (*init).End(); ++itr){
 			if(itr->IsNumber()){
