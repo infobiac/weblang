@@ -205,20 +205,18 @@ int* add_to_json_object(int *intdoc, int* jkey, int* jvalue){
 	const char* key = tostring(jkey);
 	const char* value = tostring(jvalue);
 	Document* d = (Document*)intdoc;
+	Document* findoc = new Document();
+	(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
+	Value tempkey;
+	tempkey.SetString(key, (*findoc).GetAllocator());
+	Value tempvalue;
+	tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
+
 	if ((*d).HasMember(key)){
-		(*d)[key].SetString(value, strlen(value), (*d).GetAllocator());
+		(*d)[key] = tempvalue;
 		return intdoc;
 	}
 	else{
-		Document* findoc = new Document();
-		(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
-
-		Value tempkey;
-		tempkey.SetString(key, (*findoc).GetAllocator());
-
-		Value tempvalue;
-		tempvalue.CopyFrom(*((Document*)jvalue),(*findoc).GetAllocator());
-
 		(*findoc).AddMember(tempkey, tempvalue, (*findoc).GetAllocator());
 		(*d).CopyFrom((*findoc), (*findoc).GetAllocator());
 		return (int*) findoc;
@@ -326,6 +324,28 @@ int* get_json_from_array(int* arr, int idx){
 	return (int *)(&((*d)[idx]));
 }
 
+int* push_to_json_array(int* arr, int* add){
+	Document* d = (Document*) arr;
+	Document* findoc = new Document();
+	(*findoc).CopyFrom((*d), (*findoc).GetAllocator());
+
+	Value tempvalue;
+	tempvalue.CopyFrom(*((Document*)add), (*findoc).GetAllocator());
+	(*findoc).PushBack(tempvalue, (*findoc).GetAllocator());
+	return (int*) findoc;
+}
+
+int* replace_json_array_element(int* temparr, int* tempel, int* tempidx){
+	Document* findoc = new Document();
+	int idx = (int) get_json_double(tempidx);
+	Document* arr = (Document *) temparr;
+	(*findoc).CopyFrom((*arr), (*findoc).GetAllocator());
+
+	Value tempvalue;
+	tempvalue.CopyFrom(*((Document*)tempel),(*findoc).GetAllocator());
+	(*findoc)[idx] = tempvalue;
+	return (int*) findoc;
+}
 
 //Create a null in json by creating a json object with json_rep_of_null_ts as key
 int* json_null(){
