@@ -1,4 +1,4 @@
-testVar arg : someType -> someOtherType
+testVar arg : Str -> Str
   variable = "Variables work"
   log variable
 

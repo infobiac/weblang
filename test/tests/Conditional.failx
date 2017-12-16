@@ -1,4 +1,4 @@
-testConditional arg : inType -> outType
+testConditional arg : Bool -> Str
   if arg
     log "Inside if"
   else

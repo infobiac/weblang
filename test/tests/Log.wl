@@ -1,4 +1,4 @@
-testLog arg : someType -> someOtherType
+testLog arg : Str -> Str
   log "Logging works"
 
 

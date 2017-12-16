@@ -1,7 +1,7 @@
-testArg arg : someType -> someOtherType
+testArg arg : Str -> Str
   logThis "Arguments work"
 
-logThis arg : someType -> someOtherType
+logThis arg : Str -> Str
   log arg
 
 
