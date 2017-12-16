@@ -8,6 +8,7 @@ import LLVM
 import Text.PrettyPrint.GenericPretty
 import System.Environment
 import Control.Monad
+import Semantics
 
 main :: IO ()
 main = do
@@ -18,6 +19,7 @@ main = do
   putStrLn ""
   let parsed = parse tokens
       ir = astToProgram parsed
+  when (not (checkProgram ir)) $ putStrLn "Program did not typecheck!"
   putStrLn $ "IR:"
   pp ir
 
