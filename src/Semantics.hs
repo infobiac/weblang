@@ -32,6 +32,9 @@ match a b = case (==) <$> a <*> b of
 
 noMatch a b = not $ match a b
 
+lastOr :: a -> [a] -> a
+lastOr x xs = if null xs then x else last xs
+
 checkProgram :: Program -> Bool
 checkProgram (Program {..}) = and $
                               (map (checkFunction context . snd) fnDeclarations)
@@ -57,7 +60,7 @@ checkType context (Type {..}) = maybe True (\t ->
 checkFunction :: Context -> Function -> Bool
 checkFunction context@(Context {..}) (Function {..}) = Just (baseType outputType) `match` evalState evaluate initialTypes
   where initialTypes = Map.fromList [(arg, Just $ baseType inputType)]
-        evaluate = last <$> mapM (checkExpression context) body
+        evaluate = (lastOr Nothing) <$> mapM (checkExpression context) body
 
 checkExpression :: Context -> Expression -> State (Map String Type') Type'
 checkExpression context@(Context {..}) (Assignment var term) = do
@@ -69,7 +72,7 @@ checkExpression context@(Context {..}) (Unassigned term) = checkTerm context ter
 checkScopedBlock :: Context -> ExpressionBlock -> State (Map String Type') Type'
 checkScopedBlock context expressions = do
   namespace <- get
-  res <- last <$> mapM (checkExpression context) expressions
+  res <- lastOr Nothing <$> mapM (checkExpression context) expressions
   return res
 
 checkTerm :: Context -> Term -> State (Map String Type') Type'
@@ -137,7 +140,7 @@ checkTerm context@(Context {..}) t = do
                 put withVar
                 res <- checkScopedBlock context block
                 put withoutVar
-                return res
+                return (Just ArrType)
 
 checkLiteral :: PrimValue -> Type'
 checkLiteral (StrVal _) = Just StrType
@@ -148,13 +151,19 @@ checkLiteral NullVal = Just NullType
 checkLiteral TrueVal = Just BoolType
 checkLiteral FalseVal = Just BoolType
 
-builtinSignatures = Map.fromList [ ("log", (Nothing, Nothing))]
+builtinSignatures = Map.fromList [ ("log", (Nothing, Nothing))
+                                 , ("isString", (Nothing, Just BoolType))
+                                 , ("isArr", (Nothing, Just BoolType))
+                                 , ("isNum", (Nothing, Just BoolType))
+                                 , ("isObj", (Nothing, Just BoolType))
+                                 ]
 
 operatorSignatures = fmap (\(a, b, c) -> (Just a, Just b, Just c)) operatorSignatures'
 operatorSignatures' = Map.fromList [ (Plus, (NumType, NumType, NumType))
                                    , (Minus, (NumType, NumType, NumType))
                                    , (Multiply, (NumType, NumType, NumType))
                                    , (Divide, (NumType, NumType, NumType))
+                                   , (Modulo, (NumType, NumType, NumType))
                                    , (EQ, (NumType, NumType, BoolType))
                                    , (LEQ, (NumType, NumType, BoolType))
                                    , (GEQ, (NumType, NumType, BoolType))

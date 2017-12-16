@@ -19,9 +19,9 @@ main = do
   putStrLn ""
   let parsed = parse tokens
       ir = astToProgram parsed
-  when (not (checkProgram ir)) $ putStrLn "Program did not typecheck!"
   putStrLn $ "IR:"
   pp ir
+  when (not (checkProgram ir)) $ putStrLn "Program did not typecheck!"
 
   args <- getArgs
   case args of

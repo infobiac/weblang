@@ -28,7 +28,6 @@ import AST as X
        , OperatorName (..)
        , NewType (..)
        )
-
 import GHC.Generics
 import Text.PrettyPrint.GenericPretty
 
@@ -108,7 +107,7 @@ astToProgram ast = Program {
 transFunction :: TypeMap -> AST.Function -> Function
 transFunction types astFunc = Function {
     inputType = transInlineType types $ AST.inputType astFunc
-  , outputType = transInlineType types $ AST.inputType astFunc
+  , outputType = transInlineType types $ AST.outputType astFunc
   , arg = AST.arg astFunc
   , body = transExpressions $ AST.body astFunc
   , helper = AST.helper astFunc
@@ -136,7 +135,7 @@ takeIndented n = transExpressions <$> takeIndented'
           case next of
             Nothing -> return []
             Just expr@(n', _) ->
-              if n == n'
+              if n' >= n
               then do
                 rest <- takeIndented'
                 return $ expr : rest
@@ -162,7 +161,9 @@ transTerm (n, AST.If t) = do
       if elseInc /= n
       then error $ "Found an else expression with indent " ++ show elseInc ++ ", expected indent " ++ show n
       else takeIndented (n + indentIncrement)
-    Just _ -> return []
+    Just x -> do
+      modify (x:)
+      return []
   return $ IfThenElse (transSimpleTerm t) thenBlock elseBlock
 transTerm (n, AST.ForeachIn v t) = do
   doBlock <- takeIndented (n + indentIncrement)
