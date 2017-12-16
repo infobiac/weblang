@@ -66,10 +66,16 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "is_json_array" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                                 , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "push_to_json_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))];
+  external llvmI32Pointer "replace_json_array_element" [(llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
+  external llvmI32Pointer "is_json_bool" [(llvmI32Pointer, AST.Name (fromString "s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -88,17 +94,20 @@ externs = Map.fromList [
       ("isString", "is_json_string"),
       ("isNum", "is_json_double"),
       ("isArr", "is_json_array"),
-      ("jbool", "json_bool")
+      ("jbool", "json_bool"),
+      ("isBool", "is_json_bool")
   ]
 
 extern2args = Map.fromList [
       ("get", "jgets"),
-      ("geta", "get_json_from_array")
+      ("geta", "get_json_from_array"),
+      ("push", "push_to_json_array")
   ]
 
 
 extern3args = Map.fromList [
-      ("addToObj", "add_to_json_object")
+      ("addToObj", "add_to_json_object"),
+      ("update", "replace_json_array_element")
   ]
 
 boolOperators = Map.fromList [

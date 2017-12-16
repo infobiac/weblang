@@ -1,1 +1,5 @@
 .stack-work/
+*.o
+*.ll
+*.s
+*.swp
