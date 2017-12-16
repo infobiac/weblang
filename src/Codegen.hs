@@ -249,6 +249,9 @@ fmul a b = instr $ FMul NoFastMathFlags a b []
 fdiv :: Operand -> Operand -> Codegen Operand
 fdiv a b = instr $ FDiv NoFastMathFlags a b []
 
+fmod :: Operand -> Operand -> Codegen Operand
+fmod a b = instr $ FRem NoFastMathFlags a b []
+
 fcmp :: FP.FloatingPointPredicate -> Operand -> Operand -> Codegen Operand
 fcmp cond a b = instr $ FCmp cond a b []
 

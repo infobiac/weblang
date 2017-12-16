@@ -118,6 +118,7 @@ numOperators = Map.fromList [
   , (Minus, fsub)
   , (Multiply, fmul)
   , (Divide, fdiv)
+  , (Modulus, fmod)
   ]
 
 opFns = Map.empty
