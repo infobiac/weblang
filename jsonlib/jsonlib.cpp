@@ -65,7 +65,7 @@ const char* tostring(int* tempdoc){
 			return ret;
 		}
 	}
-	else{
+	else if((*((Document*) tempdoc)).IsArray()){
 		Document* d = (Document *)tempdoc;
 		std::ostringstream objstr;
 		objstr << "[";
@@ -79,6 +79,9 @@ const char* tostring(int* tempdoc){
 		strcpy(ret, objstr.str().c_str());
 
 		return ret;
+	}
+	else{
+		return (char *) tempdoc;
 	}
 }
 
