@@ -51,8 +51,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "post" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
@@ -362,7 +362,7 @@ functionCallLLVM fn arg = do
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt op func =
-  if func == "puts" || func == "post"
+  if func == "puts"
   then do
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
