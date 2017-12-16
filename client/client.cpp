@@ -14,6 +14,7 @@ extern "C" {
 		if((*d).HasMember("url") && (*d).HasMember("payload")) {
 			const char* url = ((*d)["url"])["prim_val"].GetString();
 			const char* payload = ((*d)["payload"])["prim_val"].GetString();
+			std::cout << payload << std::endl;
 			std::string urlCpp(url);
 			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}});
 			std::cout << r.text << std::endl;
