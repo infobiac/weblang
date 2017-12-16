@@ -120,6 +120,7 @@ numOperators = Map.fromList [
   , (Minus, fsub)
   , (Multiply, fmul)
   , (Divide, fdiv)
+  , (Modulus, fmod)
   ]
 
 opFns = Map.empty
@@ -276,36 +277,27 @@ termLLVM (Accessor tTerm indexTerm) = do
 
   return element
 termLLVM (OperatorTerm opp t1 t2) = do
-  if opp == Modulo
-    then do
+  case Map.lookup opp numOperators of
+    Just ap -> do
       evalt1 <- termLLVM t1
       double1 <- functionCallLLVM "getdoub" evalt1
       evalt2 <- termLLVM t2
       double2 <- functionCallLLVM "getdoub" evalt2
-      result <- call (externf (AST.Name (fromString "fmod"))) [double1, double2]
+      result <- ap double1 double2
       functionCallLLVM "jnum" result
-    else
-    case Map.lookup opp numOperators of
+    Nothing -> case Map.lookup opp eqOperators of
       Just ap -> do
         evalt1 <- termLLVM t1
         double1 <- functionCallLLVM "getdoub" evalt1
         evalt2 <- termLLVM t2
         double2 <- functionCallLLVM "getdoub" evalt2
         result <- ap double1 double2
-        functionCallLLVM "jnum" result
-      Nothing -> case Map.lookup opp eqOperators of
-        Just ap -> do
-          evalt1 <- termLLVM t1
-          double1 <- functionCallLLVM "getdoub" evalt1
-          evalt2 <- termLLVM t2
-          double2 <- functionCallLLVM "getdoub" evalt2
-          result <- ap double1 double2
-          int32 <- instr $ AST.ZExt result llvmI32 []
-          functionCallLLVM "json_bool" int32
-        Nothing -> case Map.lookup opp boolOperators of
-          Just oper -> do
-            error "boolean operators not implemented"
-          Nothing -> error $ "unimplemented operator " ++ show opp
+        int32 <- instr $ AST.ZExt result llvmI32 []
+        functionCallLLVM "json_bool" int32
+      Nothing -> case Map.lookup opp boolOperators of
+        Just oper -> do
+          error "boolean operators not implemented"
+        Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
   iff <- addBlock "iff"

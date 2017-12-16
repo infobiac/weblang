@@ -18,7 +18,7 @@ data LexToken =
   | MinusToken
   | MultiplyToken
   | DivideToken
-  | ModuloToken
+  | ModToken
   | EQToken
   | LEQToken
   | GEQToken
