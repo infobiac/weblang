@@ -16,10 +16,11 @@ extern "C" {
 			const char* payload = ((*d)["payload"])["prim_val"].GetString();
 			std::string urlCpp(url);
 			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}});
-			std::cout << r.text << std::endl;
+			char* ret = (char*) malloc(strlen(r.text.c_str())+1);
+			strcpy(ret, r.text.c_str());
+			return (int *) ret;
 		}
-
-		return json;
+		throw "Please provide a url and payload!";
 	}
 
 	int* get(int* json){
@@ -29,8 +30,10 @@ extern "C" {
 			const char* body = ((*d)["body"])["prim_val"].GetString();
 			std::string urlCpp(url);
 			auto r = cpr::Get(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
-			std::cout << r.text << std::endl;
+			char* ret = (char*) malloc(strlen(r.text.c_str())+1);
+			strcpy(ret, r.text.c_str());
+			return (int *) ret;
 		}
-		return json;
+		throw "Please provide a url";
 	}
 }

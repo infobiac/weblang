@@ -415,6 +415,11 @@ llvmCallExt op func =
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
     return op
+  else if func == "get" || func =="post"
+  then do
+    res <- call (externf (AST.Name (fromString func))) [op]
+    ret <- functionCallLLVM "jn" res
+    return ret
   else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand

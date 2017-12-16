@@ -66,8 +66,8 @@ chapter3/test.o: chapter3/test.cpp
 forloop: forloop.o jsonlib/jsonlib.o 
 	nix-shell -p curl gcc --command "g++ forloop.o jsonlib/jsonlib.o -o forloop"
 
-echo-server: echo.o client/client.o
-	nix-shell -p curl gcc --command "g++ echo.o client/client.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
+echo-server: echo.o client/client.o jsonlib/jsonlib.o
+	nix-shell -p curl gcc --command "g++ echo.o client/client.o jsonlib/jsonlib.o -o echo-server -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl" 
 
 echo.o: echo.s
 	nix-shell -p gcc --command "gcc -c echo.s -o echo.o"
