@@ -44,7 +44,6 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "add_to_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmDouble "fmod" [(llvmDouble, AST.Name (fromString "a")), (llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "exit" [(llvmI32, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
