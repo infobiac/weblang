@@ -70,6 +70,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
+  external llvmI32Pointer "is_json_bool" [(llvmI32Pointer, AST.Name (fromString "s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -88,7 +89,8 @@ externs = Map.fromList [
       ("isString", "is_json_string"),
       ("isNum", "is_json_double"),
       ("isArr", "is_json_array"),
-      ("jbool", "json_bool")
+      ("jbool", "json_bool"),
+      ("isBool", "is_json_bool")
   ]
 
 extern2args = Map.fromList [

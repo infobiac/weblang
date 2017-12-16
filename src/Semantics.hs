@@ -156,6 +156,7 @@ builtinSignatures = Map.fromList [ ("log", (Nothing, Nothing))
                                  , ("isArr", (Nothing, Just BoolType))
                                  , ("isNum", (Nothing, Just BoolType))
                                  , ("isObj", (Nothing, Just BoolType))
+                                 , ("isBool", (Nothing, Just BoolType))
                                  , ("jn", (Just StrType, Just ObjType))
                                  , ("addToObj", (Just ArrType, Just ObjType))
                                  ]

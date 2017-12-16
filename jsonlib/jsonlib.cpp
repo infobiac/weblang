@@ -105,6 +105,17 @@ int* json_bool(int b){
 	return (int*)d;
 }
 
+int* is_json_bool(int* intdoc){
+	Document *d = (Document *) intdoc;
+	if((*d).IsObject() && (*d).HasMember("prim_type")){
+		Value& typ = getp(intdoc, "prim_type");
+		if (typ.GetString() == "bool")
+			return json_bool(1);
+		return json_bool(0);
+	}
+	return json_bool(0);
+}
+
 double get_json_bool(int* intdoc){
 	Value& pt = getp(intdoc, "prim_type");
 	if(pt.GetString() == "bool"){
@@ -183,7 +194,9 @@ int* get_json_from_object(int* intdoc, int* key){
 
 int* is_json_object(int* s){
 	Document *d = (Document *) s;
-	if((*d).IsObject() && !get_json_bool(is_json_double(s)) && !get_json_bool(is_json_string(s)))
+	if((*d).IsObject() && !get_json_bool(is_json_double(s)) 
+			&& !get_json_bool(is_json_string(s)) 
+			&& !get_json_bool(is_json_bool(s)))
 		return json_bool(1);
 	return json_bool(0);
 }

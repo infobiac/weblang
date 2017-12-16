@@ -1,4 +1,4 @@
-f x : a -> b
+f x : Str -> Str
   a = 5
   b = "hi"
   c = ["hi", 5]
@@ -15,6 +15,10 @@ f x : a -> b
   n = isObj k
   o = isObj a
   p = isObj b
+  q = true
+  r = isObj q
+  s = isBool q
+  t = isNum q
   log d
   log e
   log f
@@ -28,3 +32,7 @@ f x : a -> b
   log n
   log o
   log p
+  log q
+  log r
+  log s
+  log t
