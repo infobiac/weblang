@@ -10,6 +10,8 @@ module Program ( module X
                , Import (..)
                , Type (..)
                , PrimType (..)
+               , Endpoint (..)
+               , Method (..)
                ) where
 
 import qualified Data.Map as Map
@@ -115,7 +117,7 @@ transFunction types astFunc = Function {
   }
 
 transImport :: AST.Import -> Import
-transImport (AST.Import t) = Import $ transSimpleTerm t
+transImport (AST.Import t) = parseImportArg $ transSimpleTerm t
 
 transExpressions :: AST.ExpressionBlock -> ExpressionBlock
 transExpressions = evalState (whileJust transExpression return)
@@ -210,7 +212,7 @@ data Function = Function {
   , helper :: Bool
   } deriving (Show, Generic, Out)
 
-data Import = Import Term
+data Import = Import URL [Endpoint]
             deriving (Show, Generic, Out)
 
 type ExpressionBlock = [Expression]
@@ -236,3 +238,39 @@ data PrimValue = StrVal String
                | TrueVal
                | FalseVal
                deriving (Show, Generic, Out)
+
+
+data Method = Post | Get
+            deriving (Eq, Show, Generic, Out)
+type EndpointFnName = String
+type EndpointEndpoint = String
+type URL = String
+data Endpoint = Endpoint EndpointFnName EndpointEndpoint Method
+              deriving (Show, Generic, Out)
+
+parseImportArg :: Term -> Import
+parseImportArg (Literal (ObjVal obj)) = Import url endpoints
+  where getVal objName obj key = fromMaybe (error $ key ++ " missing from " ++ objName) (Map.lookup key obj)
+        getImpVal = getVal "import statement" obj
+        url = case getImpVal "url" of
+          (Literal (StrVal url)) -> url
+          _ -> error "url key in import statement should be a string value"
+        endpoints = case getImpVal "endpoints" of
+          (Literal (ArrVal endpointTerms)) -> flip map endpointTerms $ \t -> case t of
+            (Literal (ObjVal endpointObj)) ->
+              let getEndpVal = getVal "endpoint statement" endpointObj
+                  name = case getEndpVal "name" of
+                    (Literal (StrVal name)) -> name
+                    _ -> error "endpoint name should be a string"
+                  alias = case getEndpVal "alias" of
+                    (Literal (StrVal alias)) -> alias
+                    _ -> error "endpoint alias should be a string"
+                  method = case getEndpVal "is_post" of
+                    (Literal TrueVal) -> Post
+                    (Literal FalseVal) -> Get
+                    _ -> error "endpoint is_post should be true/false"
+              in Endpoint name alias method
+
+            _ -> error "endpoint values in import statement should be object literals"
+          _ -> error "endpoint key in import statement should be an array value"
+parseImportArg _ = error "Import called with non-primitive object argument"

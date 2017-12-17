@@ -42,7 +42,13 @@ checkProgram (Program {..}) = and $
   where signatures = Map.fromList $ map (\(fnName, (Function {inputType = inT, outputType = outT})) ->
                                             (fnName, (Just $ baseType inT, Just $ baseType outT)))
                                     fnDeclarations
-        context = Context (signatures `Map.union` builtinSignatures) (fmap (Just . baseType) types) operatorSignatures
+        importedSignatures = mconcat . map importSignatures $ imports
+        allSignatures = signatures `Map.union` builtinSignatures `Map.union` importedSignatures
+        context = Context allSignatures (fmap (Just . baseType) types) operatorSignatures
+
+importSignatures :: Import -> Map String (Type', Type')
+importSignatures (Import url endpoints) = Map.fromList . flip map endpoints $ \(Endpoint fnname _ _) ->
+  (fnname, (Nothing, Nothing))
 
 checkType :: Context -> Type -> Bool
 checkType context (Type {..}) = maybe True (\t ->
