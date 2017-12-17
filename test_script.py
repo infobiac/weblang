@@ -16,6 +16,7 @@ def compilefile(f,test,logfile,test_files,detailed_logs):
     os.system('echo "\n"[Testing '+ test+ ' at ' +str(datetime.datetime.now()) + '] >> ' +logfile)
     os.system('./weblang '+test_files+'/'+test+'.wl > errors_warnings 2>&1' ) 
     os.system('./'+test+' test'+test+' a'+' > test_output 2>&1')
+    os.system('cat errors_warnings')
     os.system('cat test_output')
     os.system('cat test_output>>'+ logfile)
     os.system('cat errors_warnings>>'+ detailed_logs)
