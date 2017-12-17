@@ -6,7 +6,6 @@ testGet arg : Str -> Str
   js = {}
   args = addToObj[js, "body", ""]
   response = getEtherPrice args
-  log response
   res = jn response
   check = isObj res
   log check
