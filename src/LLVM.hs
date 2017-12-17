@@ -2,7 +2,7 @@
 module LLVM where
 
 import Prelude hiding (EQ, LEQ, GEQ, GT, LT)
-import Program hiding (Type)
+import Program
 import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
@@ -44,6 +44,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "add_to_json_object" [(llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32 "exit" [(llvmI32, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
@@ -51,8 +52,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get" [(llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "post" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
@@ -65,10 +66,16 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "is_json_array" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get_json_from_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                                 , (llvmI32, (fromString "s"))];
+  external llvmI32Pointer "push_to_json_array" [ (llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))];
+  external llvmI32Pointer "replace_json_array_element" [(llvmI32Pointer, AST.Name (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))
+                                                , (llvmI32Pointer, (fromString "s"))];
   external llvmI32Pointer "create_arr_iter" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "arr_next_elem" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
+  external llvmI32Pointer "is_json_bool" [(llvmI32Pointer, AST.Name (fromString "s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -87,17 +94,20 @@ externs = Map.fromList [
       ("isString", "is_json_string"),
       ("isNum", "is_json_double"),
       ("isArr", "is_json_array"),
-      ("jbool", "json_bool")
+      ("jbool", "json_bool"),
+      ("isBool", "is_json_bool")
   ]
 
 extern2args = Map.fromList [
       ("get", "jgets"),
-      ("geta", "get_json_from_array")
+      ("geta", "get_json_from_array"),
+      ("push", "push_to_json_array")
   ]
 
 
 extern3args = Map.fromList [
-      ("addToObj", "add_to_json_object")
+      ("addToObj", "add_to_json_object"),
+      ("update", "replace_json_array_element")
   ]
 
 boolOperators = Map.fromList [
@@ -118,6 +128,7 @@ numOperators = Map.fromList [
   , (Minus, fsub)
   , (Multiply, fmul)
   , (Divide, fdiv)
+  , (Modulus, fmod)
   ]
 
 opFns = Map.empty
@@ -146,10 +157,9 @@ endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname
           let binding = if method == Post then "post" else "get"
 
           pathTerm <- rawStringLLVM path
-          argTerm <- call (externf (AST.Name (fromString "tostring"))) [argptr]
+          --argTerm <- call (externf (AST.Name (fromString "j"))) [argptr]
 
-          --let argPrim = ObjVal (Map.fromList [("url", Literal (StrVal url)), ("payload", argptr)])
-          res <- call (externf (AST.Name (fromString binding))) [argTerm]
+          res <- call (externf (AST.Name (fromString binding))) [argptr]
           ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
@@ -197,7 +207,7 @@ createEndpointCheck fnName cmdRef arg = do
 
   setBlock continue
 
-argvAt:: Integer -> Codegen AST.Operand
+argvAt :: Integer -> Codegen AST.Operand
 argvAt idx = do
   let argv = local (AST.Name (fromString "argv"))
   let ptr = AST.GetElementPtr True argv [cons $ AST.Int 32 idx] []
@@ -206,7 +216,6 @@ argvAt idx = do
   op <- instr $ load
   return op
 
---fix return type
 functionLLVM :: (FnName, Function) -> LLVM ()
 functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
   where llvmRetType = llvmI32Pointer
@@ -215,10 +224,49 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
           entry <- addBlock entryBlockName
           setBlock entry
           let argptr = local (AST.Name (fromString arg))
+
+          typeAssertionLLVM ("Pre-condition not met in function " ++ name) inputType argptr
+
           l <- alloca llvmI32Pointer
           store l argptr
           assign arg l
-          expressionBlockLLVM body >>= ret . Just
+          res <- expressionBlockLLVM body
+
+          typeAssertionLLVM ("Post-condition not met in function " ++ name) outputType res
+
+          ret (Just res)
+
+
+typeAssertionLLVM :: String -> Type -> AST.Operand -> Codegen ()
+typeAssertionLLVM msg (Type {..}) val = forM_ predicates $ \(var, predBlock) -> do
+
+  withoutVar <- symtab <$> get
+  l <- alloca llvmI32Pointer
+  store l val
+  assign var l
+  res <- expressionBlockLLVM predBlock
+  modify $ \state -> state {symtab = withoutVar}
+
+  assertionLLVM msg res
+
+assertionLLVM :: String -> AST.Operand -> Codegen ()
+assertionLLVM message res = do
+  failureBlock <- addBlock "type-assertion-failed"
+  exitBlock <- addBlock "iexit"
+
+  boolasdoub <- functionCallLLVM "getdoub" res
+  branchval <- fcmp Floatypoo.ONE (cons $ AST.Float (Fl.Double 0.0)) boolasdoub
+  cbr branchval exitBlock failureBlock
+
+  setBlock failureBlock
+  messageString <- rawStringLLVM message
+  call (externf (AST.Name (fromString "puts"))) [messageString]
+  call (externf (AST.Name (fromString "exit"))) [cons $ AST.Int 32 1]
+  br exitBlock
+  ielse <- getBlock
+
+  setBlock exitBlock
+  return ()
 
 expressionBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
 expressionBlockLLVM exprs = last <$> mapM expressionLLVM exprs
@@ -386,7 +434,7 @@ functionCallLLVM fn arg = do
 
 llvmCallExt :: AST.Operand -> String -> Codegen AST.Operand
 llvmCallExt op func =
-  if func == "puts" || func == "post"
+  if func == "puts"
   then do
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
