@@ -23,14 +23,14 @@ def compilefile(f,test,logfile,test_files,detailed_logs):
 
 
 ##### START TEST SCRIPT #####
-test_files = "tests"
-expected_files = "expected"
+test_files = "test/tests"
+expected_files = "test/expected"
 tests = os.listdir(test_files)
 expected = os.listdir(expected_files)
 testcount = 0
 passed = 0
-logfile = 'test_log'
-detailed_logs = 'detailed_log'
+logfile = 'test/test_log'
+detailed_logs = 'test/detailed_log'
 os.system('echo "STARTING TEST" > '+logfile)
 for f in tests:
     if('.wl' in f):
@@ -46,6 +46,7 @@ for f in tests:
             print(bcolors.FAIL+"[Failed] "+test+bcolors.ENDC)
 
 os.system('rm  test_output')
+os.system('rm  errors_warnings')
 os.system('echo "----------------------- NEW TEST ------------------------------">>'+ logfile)
 print(bcolors.HEADER+bcolors.BOLD+"Passed "+str(passed)+" out of "+str(testcount)+" tests."+bcolors.ENDC)
 try:
