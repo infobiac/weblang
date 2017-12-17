@@ -52,7 +52,9 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "post" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmI32Pointer, AST.Name (fromString "s"))];
+			//const char* url = ((*d)["url"])["prim_val"].GetString();
   external llvmI32Pointer "get" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
@@ -155,8 +157,9 @@ endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname
           let argptr = local (AST.Name (fromString arg))
           let path = url ++ "/" ++ endpoint
           let binding = if method == Post then "post" else "get"
-
-          res <- call (externf (AST.Name (fromString binding))) [argptr]
+          
+          url <- rawStringLLVM path
+          res <- call (externf (AST.Name (fromString binding))) [url, argptr]
           ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
@@ -436,6 +439,11 @@ llvmCallExt op func =
     st <- functionCallLLVM "tostring" op
     call (externf (AST.Name (fromString func))) [st]
     return op
+  else if func == "get" || func =="post"
+  then do
+    res <- call (externf (AST.Name (fromString func))) [op]
+    ret <- functionCallLLVM "jn" res
+    return ret
   else call (externf (AST.Name (fromString func))) [op]
 
 llvmCallExt2 :: AST.Operand -> AST.Operand -> String -> Codegen AST.Operand
