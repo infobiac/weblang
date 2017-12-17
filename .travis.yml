@@ -22,4 +22,4 @@ addons:
            - ghc-7.10.2
         
 script:
-        - python ./test/test_script.py 
+        - python test_script.py 
