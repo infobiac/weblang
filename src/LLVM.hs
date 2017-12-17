@@ -184,12 +184,7 @@ endpointFnLLVM (Endpoint url endpoint method) = define llvmRetType endpoint fnar
           let argptr = local (AST.Name (fromString arg))
           let path = url ++ "/" ++ endpoint
           let binding = if method == Post then "post" else "get"
-
-          pathTerm <- rawStringLLVM path
-          argTerm <- call (externf (AST.Name (fromString "tostring"))) [argptr]
-
-          --let argPrim = ObjVal (Map.fromList [("url", Literal (StrVal url)), ("payload", argptr)])
-          res <- call (externf (AST.Name (fromString binding))) [argTerm]
+          res <- call (externf (AST.Name (fromString binding))) [argptr]
           ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
