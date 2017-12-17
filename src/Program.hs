@@ -8,6 +8,8 @@ module Program ( module X
                , Function (..)
                , PrimValue (..)
                , Import (..)
+               , Type (..)
+               , PrimType (..)
                ) where
 
 import qualified Data.Map as Map
@@ -15,6 +17,9 @@ import Data.Map (Map)
 import qualified AST as AST
 import Control.Monad.State
 import Control.Monad.Loops
+import Data.Graph
+import Data.Maybe
+import Data.List
 import AST as X
        ( AST
        , Operator (..)
@@ -22,29 +27,88 @@ import AST as X
        , FnName (..)
        , TypeName (..)
        , OperatorName (..)
-       , Type (..)
        , NewType (..)
        )
-
-
--- for pretty printing
 import GHC.Generics
 import Text.PrettyPrint.GenericPretty
+
+data Type = Type {
+    predicates :: [(ValName, ExpressionBlock)]
+  , baseType :: PrimType
+  } deriving (Show, Generic, Out)
+
+type TypeMap = Map TypeName Type
+
+data PrimType = StrType
+              | NumType
+              | ArrType
+              | ObjType
+              | NullType
+              | BoolType
+              deriving (Show, Generic, Out, Eq)
+
+defaultInhabitant = "val"
+
+topologicalOrder :: (Show b, Show a, Ord a) => (b -> [a]) -> [(a, b)] -> [(a, b)]
+topologicalOrder f = map (\(b, a, _) -> (a, b)) . map unSCC . stronglyConnCompR . map (\(a, b) -> (b, a, f b))
+  where unSCC (AcyclicSCC node) = node
+        unSCC (CyclicSCC nodes) =
+          error $ "There is a cycle in the type definitions for the types: " ++ show nodes
+
+transTypes :: [(TypeName, AST.NewType)] -> TypeMap
+transTypes astTypes = foldl' addType initialTypes ordered
+  where ordered = topologicalOrder (\t -> [AST.parentType (AST.shortType t)]) astTypes
+        initialTypes = Map.fromList [ ("Str", Type [] StrType)
+                                    , ("Num", Type [] NumType)
+                                    , ("Arr", Type [] ArrType)
+                                    , ("Obj", Type [] ObjType)
+                                    , ("Null", Type [] NullType)
+                                    , ("Bool", Type [] BoolType)
+                                    ]
+        addType m (name, astType) = Map.insert name (transType m astType) m
+
+transInlineType :: TypeMap -> AST.Type -> Type
+transInlineType m (AST.Type parentName shortPred) =
+  case parentName `Map.lookup` m of
+    Nothing -> error $ "Type " ++ parentName ++ " not found"
+    Just (Type parentPreds baseType) ->
+      Type {
+          baseType = baseType
+        , predicates = parentPreds ++
+                       maybeToList ((\term -> ( defaultInhabitant
+                                              , [Unassigned $ transSimpleTerm term]))
+                                     <$> shortPred)
+        }
+
+transType :: TypeMap -> AST.NewType -> Type
+transType m (AST.NewType (AST.Type parentName shortPred) valName longPred) =
+  case parentName `Map.lookup` m of
+    Nothing -> error $ "Parent type " ++ parentName ++ " not found"
+    Just (Type parentPreds baseType) ->
+      Type {
+          baseType = baseType
+        , predicates = parentPreds ++
+                       [(valName, transExpressions longPred)] ++
+                       maybeToList ((\term -> ( defaultInhabitant
+                                              , [Unassigned $ transSimpleTerm term]))
+                                     <$> shortPred)
+        }
 
 indentIncrement = 2
 
 astToProgram :: AST -> Program
 astToProgram ast = Program {
-    customTypes = AST.customTypes ast
+    types = types
   , constants = map (\(n, v) -> (n, transSimpleTerm v)) $ AST.constants ast
-  , fnDeclarations = map (\(n, f) -> (n, transFunction f)) $ AST.fnDeclarations ast
+  , fnDeclarations = map (\(n, f) -> (n, transFunction types f)) $ AST.fnDeclarations ast
   , imports = map transImport $ AST.imports ast
   }
+  where types = transTypes $ AST.customTypes ast
 
-transFunction :: AST.Function -> Function
-transFunction astFunc = Function {
-    inputType = AST.inputType astFunc
-  , outputType = AST.inputType astFunc
+transFunction :: TypeMap -> AST.Function -> Function
+transFunction types astFunc = Function {
+    inputType = transInlineType types $ AST.inputType astFunc
+  , outputType = transInlineType types $ AST.outputType astFunc
   , arg = AST.arg astFunc
   , body = transExpressions $ AST.body astFunc
   , helper = AST.helper astFunc
@@ -72,7 +136,7 @@ takeIndented n = transExpressions <$> takeIndented'
           case next of
             Nothing -> return []
             Just expr@(n', _) ->
-              if n == n'
+              if n' >= n
               then do
                 rest <- takeIndented'
                 return $ expr : rest
@@ -98,7 +162,9 @@ transTerm (n, AST.If t) = do
       if elseInc /= n
       then error $ "Found an else expression with indent " ++ show elseInc ++ ", expected indent " ++ show n
       else takeIndented (n + indentIncrement)
-    Just _ -> return []
+    Just x -> do
+      modify (x:)
+      return []
   return $ IfThenElse (transSimpleTerm t) thenBlock elseBlock
 transTerm (n, AST.ForeachIn v t) = do
   doBlock <- takeIndented (n + indentIncrement)
@@ -130,7 +196,7 @@ transPrim AST.TrueVal = TrueVal
 transPrim AST.FalseVal = FalseVal
 
 data Program = Program {
-    customTypes :: [(TypeName, NewType)]
+    types :: TypeMap
   , constants :: [(ValName, Term)]
   , fnDeclarations :: [(FnName, Function)]
   , imports :: [Import]

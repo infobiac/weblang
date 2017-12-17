@@ -70,6 +70,7 @@ data Operator = Plus
               | Minus
               | Multiply
               | Divide
+              | Modulus
               | EQ
               | LEQ
               | GEQ

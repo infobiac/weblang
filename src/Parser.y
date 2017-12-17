@@ -20,6 +20,7 @@ import AST
   '-'       { Pos _ _ (MinusToken) }
   '*'       { Pos _ _ (MultiplyToken) }
   '/'       { Pos _ _ (DivideToken) }
+  '%'       { Pos _ _ (ModToken) }
   '=='      { Pos _ _ (EQToken) }
   '<='      { Pos _ _ (LEQToken) }
   '>='      { Pos _ _ (GEQToken) }
@@ -129,6 +130,7 @@ Term4
 Term5
   : Term5 '*' Term6       { OperatorTerm Multiply $1 $3  }
   | Term5 '/' Term6       { OperatorTerm Divide $1 $3  }
+  | Term5 '%' Term6       { OperatorTerm Modulus $1 $3  }
   | Term6                 { $1 }
 
 Term6

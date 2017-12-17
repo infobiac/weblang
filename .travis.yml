@@ -1,0 +1,27 @@
+language: nix
+
+sudo: false
+
+cache:
+    directories:
+            - $HOME/.stack
+
+before_install:
+        # Download and unpack the stack executable
+        - mkdir -p ~/.local/bin
+        - export PATH=$HOME/.local/bin:$PATH
+        - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+        - stack config set system-ghc --global true
+        - export PATH=/opt/ghc/7.10.2/bin:$PATH
+        
+addons:
+   apt:
+     sources:
+           - hvr-ghc
+     packages:
+           - ghc-7.10.2
+        
+script:
+        - stack build --nix :weblang
+        - nix-shell -p rapidjson gcc --command "g++ $NIX_CFLAGS_COMPILE -c jsonlib/jsonlib.cpp -o jsonlib/jsonlib.o"
+        - python test_script.py 

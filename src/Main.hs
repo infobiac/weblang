@@ -8,6 +8,7 @@ import LLVM
 import Text.PrettyPrint.GenericPretty
 import System.Environment
 import Control.Monad
+import Semantics
 
 main :: IO ()
 main = do
@@ -20,6 +21,7 @@ main = do
       ir = astToProgram parsed
   putStrLn $ "IR:"
   pp ir
+  when (not (checkProgram ir)) $ putStrLn "Program did not typecheck!"
 
   args <- getArgs
   case args of
