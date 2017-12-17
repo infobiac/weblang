@@ -54,8 +54,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmI32Pointer, AST.Name (fromString "s"))];
-			//const char* url = ((*d)["url"])["prim_val"].GetString();
-  external llvmI32Pointer "get" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get"[(llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];

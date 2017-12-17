@@ -22,10 +22,9 @@ extern "C" {
 		throw "Please provide a payload!";
 	}
 
-	int* get(int* json){
+	int* get(const char* url, int* json){
 		Document* d = (Document*)json;
-		if((*d).HasMember("url")) {
-			const char* url = ((*d)["url"])["prim_val"].GetString();
+		if((*d).HasMember("body")) {
 			const char* body = ((*d)["body"])["prim_val"].GetString();
 			std::string urlCpp(url);
 			auto r = cpr::Get(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
@@ -33,6 +32,6 @@ extern "C" {
 			strcpy(ret, r.text.c_str());
 			return (int *) ret;
 		}
-		throw "Please provide a url";
+		throw "Please provide a body";
 	}
 }
