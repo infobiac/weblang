@@ -163,6 +163,9 @@ builtinSignatures = Map.fromList [ ("log", (Nothing, Nothing))
                                  , ("update", (Just ArrType, Just ArrType))
                                  , ("clientPost", (Nothing, Nothing))
                                  , ("clientGet", (Nothing, Nothing))
+                                 , ("toNum", (Just StrType, Just NumType))
+                                 , ("get", (Nothing, Nothing))
+                                 , ("geta", (Just ArrType, Nothing))
                                  ]
 
 operatorSignatures = fmap (\(a, b, c) -> (Just a, Just b, Just c)) operatorSignatures'
