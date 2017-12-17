@@ -12,35 +12,36 @@ class bcolors:
      BOLD = '\033[1m'
      UNDERLINE = '\033[4m'
 
-def compilefile(f,test,logfile,test_files):
+def compilefile(f,test,logfile,test_files,detailed_logs):
     os.system('echo "\n"[Testing '+ test+ ' at ' +str(datetime.datetime.now()) + '] >> ' +logfile)
-    os.system('./build '+test_files+'/'+test+' > errors_warnings 2>&1' ) 
-    os.system(test_files+'/'+test+' test'+test+' a'+' > test_output 2>&1')
+    os.system('./weblang '+test_files+'/'+test+'.wl > errors_warnings 2>&1' ) 
+    os.system('./'+test+' test'+test+' a'+' > test_output 2>&1')
     os.system('cat test_output>>'+ logfile)
-    os.system('cat errors_warnings>>'+ logfile)
+    os.system('cat errors_warnings>>'+ detailed_logs)
     output = 'test_output'
     return output
 
 
 ##### START TEST SCRIPT #####
-test_files = "test/tests"
-expected_files = "test/expected"
+test_files = "tests"
+expected_files = "expected"
 tests = os.listdir(test_files)
 expected = os.listdir(expected_files)
 testcount = 0
 passed = 0
-logfile = 'test/test_log'
+logfile = 'test_log'
+detailed_logs = 'detailed_log'
 os.system('echo "STARTING TEST" > '+logfile)
 for f in tests:
     if('.wl' in f):
         testcount+=1
         test = f.split('.')[0]
-        output = compilefile(f,test,logfile,test_files)
+        output = compilefile(f,test,logfile,test_files,detailed_logs)
         equal = filecmp.cmp((expected_files+'/'+test),output)
         if(equal):
             print(bcolors.OKGREEN+"[Passed] "+test+bcolors.ENDC)
             passed+=1
-            os.system('rm '+test_files+'/'+ test+'.ll '+test_files+'/'+ test)
+            os.system('rm '+test)
         else:
             print(bcolors.FAIL+"[Failed] "+test+bcolors.ENDC)
 
