@@ -156,9 +156,6 @@ endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname
           let path = url ++ "/" ++ endpoint
           let binding = if method == Post then "post" else "get"
 
-          pathTerm <- rawStringLLVM path
-          --argTerm <- call (externf (AST.Name (fromString "j"))) [argptr]
-
           res <- call (externf (AST.Name (fromString binding))) [argptr]
           ret (Just res)
 
