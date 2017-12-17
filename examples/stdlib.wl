@@ -30,17 +30,28 @@ arrconcat arg : Str -> Obj
    array of two numbers. Not implemented yet.*/
 
 gcd arg : Str -> Num
-  j = 1
-  k = 2
+  array = jn arg
+  j = array.[0]
+  k = array.[1]
   max = 0
-
+  final = 0
   if (j < k)
-    max = k
+    max = (k + 1)
   else
-    max = j
+    max = (j + 1)
   
-  log max
+  arr = createFixedArr max
+  foreach i in arr
+    if (k%i == 0)
+      if (j%i == 0)
+        final = i
+      else
+        final = final
+    else
+      final = final
 
+  log final
+  final
 
 /* This function is used to create an array of
    a particular size. Most practical use case is
