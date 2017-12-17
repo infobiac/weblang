@@ -47,7 +47,7 @@
  * Name of our cookie.
  */
 #define COOKIE_NAME "session"
-
+static char arg[100];
 
 /**
  * State we keep for each user/session/browser.
@@ -346,9 +346,15 @@ post_iterator (void *cls,
             memcpy (&session->value_1[off],
                     data,
                     size);
+  	    memcpy (arg,
+                    data,
+                    strlen(data));
+	    arg[strlen(data)] = 0;
             if (size + off < sizeof (session->value_1))
                     session->value_1[size+off] = '\0';
-            printf("body: %s\n", data);
+	   
+            printf("data: %s\n", data);
+            printf("body 1: %s\n", arg);
             return MHD_YES;
         }
         fprintf (stderr, "Unsupported form value `%s'\n", key);
@@ -461,7 +467,7 @@ create_response (void *cls,
                 
                 /* Run weblang command */
 
-		char *arg = session->value_1;
+		//char *arg = session->value_1;
 
                 printf("%s at %s\n", "arg ", arg);
 		printf("%s at %s\n", "url", url);
