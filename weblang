@@ -34,7 +34,7 @@ else
 fi
 
 if [ ! -f client/client.o ] || [ client/client.cpp -nt client/client.o ]; then
-	nix-shell -p rapidjson gcc --command "gcc -Wall \$NIX_CFLAGS_COMPILE -c client/client.cpp -I/home/jordanvega/plt/client/cpr-example/opt/cpr/include -Iclient/cpr-example/opt/json/src -Lclient/cpr-example/build/lib -lcpr -lcurl -o client/client.o"
+	nix-shell -p rapidjson gcc --command "gcc -Wall \$NIX_CFLAGS_COMPILE -c client/client.cpp -Iclient/cpr-example/opt/cpr/include -Iclient/cpr-example/opt/json/src -Lclient/cpr-example/build/lib -lcpr -lcurl -o client/client.o"
 	echo "client/client.o built"
 	updated=true
 else
@@ -42,7 +42,7 @@ else
 fi
 
 if [ ! -f $filename ] || [ $updated ]; then
-        nix-shell -p curl gcc --command "g++ intermediary/$filename.o client/client.o jsonlib/jsonlib.o -o $filename -L/home/jordanvega/plt/client/cpr-example/build/lib -lcpr -lcurl"
+        nix-shell -p curl gcc --command "g++ intermediary/$filename.o client/client.o jsonlib/jsonlib.o -o $filename -Lclient/cpr-example/build/lib -lcpr -lcurl"
 
 	echo "Executable has been built: $filename"
 else

@@ -1,6 +1,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/allocators.h"
 #include <iostream>
 #include <cmath>
 #include <sstream>
@@ -11,6 +12,7 @@ int* is_json_double(int*);
 int* is_json_string(int*);
 int* json_double(double);
 int* json_string(const char*);
+void unflatten(int*,Document::AllocatorType& allo);
 
 
 Value& getp(int* intdoc, const char* key){
@@ -134,38 +136,74 @@ int* json_from_string(int* s){
 	const char* str = tostring(s);
 	Document* init = new Document();
 	(*init).Parse(str);
-	if ((*init).IsObject()){
+        
+	unflatten((int*) init, (*init).GetAllocator());
+	return (int*) init;
+}
+
+void unflatten(int* temp, Document::AllocatorType& allo){
+	Document* init = (Document *) temp;
+	StringBuffer buffer;
+	if((*init).IsObject()){
 		for (Value::ConstMemberIterator itr = (*init).MemberBegin(); itr != (*init).MemberEnd(); ++itr){
 			if(itr->value.IsNumber()){
 				int* tempjdubs = json_double(itr->value.GetDouble());
 				Document* jdubs = (Document *) tempjdubs;
-			 	(*init)[itr->name].CopyFrom(*jdubs,(*init).GetAllocator());
+			 	(*init)[itr->name].CopyFrom(*jdubs,allo);
 			}
 			else if(itr->value.IsString()){
 				int* tempjstr = json_string(itr->value.GetString());
 				Document* jstr = (Document *) tempjstr;
-				(*init)[itr->name].CopyFrom(*jstr,(*init).GetAllocator());
+				(*init)[itr->name].CopyFrom(*jstr,allo);
 			}
-		}	
+			else if(itr->value.IsBool()){
+				int* tempjbool;
+				if (itr->value.GetBool()){
+					tempjbool = json_bool(1);
+				}
+				else {
+					tempjbool = json_bool(0);
+				}
+				Document* jbool = (Document*) tempjbool;
+				(*init)[itr->name].CopyFrom(*jbool,allo);
+			}
+			else{
+				unflatten((int *)(&(itr->value)), allo);
+			}
+		}
 	}
 	else if ((*init).IsArray()){
 		int count = 0;
 		for (Value::ConstValueIterator itr = (*init).Begin(); itr != (*init).End(); ++itr){
+
 			if(itr->IsNumber()){
 				int* tempjdubs = json_double(itr->GetDouble());
 				Document* jdubs = (Document *) tempjdubs;
-			 	(*init)[count].CopyFrom(*jdubs,(*init).GetAllocator());
+			 	(*init)[count].CopyFrom(*jdubs,allo);
 			}
 			else if(itr->IsString()){
 				int* tempjstr = json_string(itr->GetString());
 				Document* jstr = (Document *) tempjstr;
-				(*init)[count].CopyFrom(*jstr,(*init).GetAllocator());
+				(*init)[count].CopyFrom(*jstr,allo);
+			}
+			else if(itr->IsBool()){
+				int* tempjbool;
+				if (itr->GetBool()){
+					tempjbool = json_bool(1);
+				}
+				else {
+					tempjbool = json_bool(0);
+				}
+				Document* jbool = (Document*) tempjbool;
+				(*init)[count].CopyFrom(*jbool,allo);
+			}
+			else{
+				unflatten((int*) itr, allo);
 			}
 			count++;
 		}
 	}
 
-	return (int*) init;
 }
 
 int* json_object(int* a[], int num){
