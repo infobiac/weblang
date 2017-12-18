@@ -9,10 +9,9 @@
 using namespace rapidjson;
 
 extern "C" {
-	int* post(int* json){
+	int* post(const char* url, int* json){
 		Document* d = (Document*)json;
-		if((*d).HasMember("url") && (*d).HasMember("payload")) {
-			const char* url = ((*d)["url"])["prim_val"].GetString();
+		if((*d).HasMember("payload")) {
 			const char* payload = ((*d)["payload"])["prim_val"].GetString();
 			std::string urlCpp(url);
 			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}});
@@ -20,13 +19,12 @@ extern "C" {
 			strcpy(ret, r.text.c_str());
 			return (int *) ret;
 		}
-		throw "Please provide a url and payload!";
+		throw "Please provide a payload!";
 	}
 
-	int* get(int* json){
+	int* get(const char* url, int* json){
 		Document* d = (Document*)json;
-		if((*d).HasMember("url")) {
-			const char* url = ((*d)["url"])["prim_val"].GetString();
+		if((*d).HasMember("body")) {
 			const char* body = ((*d)["body"])["prim_val"].GetString();
 			std::string urlCpp(url);
 			auto r = cpr::Get(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
@@ -34,6 +32,6 @@ extern "C" {
 			strcpy(ret, r.text.c_str());
 			return (int *) ret;
 		}
-		throw "Please provide a url";
+		throw "Please provide a body";
 	}
 }
