@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include "jsonlib.h"
 using namespace rapidjson;
 extern "C"{
 

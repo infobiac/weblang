@@ -1,4 +1,3 @@
-
-a arg : inType -> outType
+a arg : Str -> Obj
   testjson = {hi:"what", yo:"hey"}
-  log testjson
+  log testjson.["hi"]
