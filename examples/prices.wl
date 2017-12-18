@@ -7,35 +7,30 @@ import {url: "https://api.gdax.com/products/", key:"", secret:"",
 {fnName:"getLitecoinPrice", endpoint:"ltc-usd/ticker", is_post:false}] }
 
 getAllPrices arg : Str -> Str
-  bitcoin arg
-  ether arg
-  litecoin arg
+  b= bitcoin arg
+  e = ether arg
+  l =litecoin arg
+  a = jn "{}"
+  a = addToObj [a,"bitcoin",b]
+  a = addToObj [a,"ethereum",e]
+  a = addToObj [a,"litecoin",l]
+  log a
 
 bitcoin arg : Str -> Str
   x = getBitcoinPrice arg
   res = jn x
   precio = (get [res, "price"])
-  sendMsg "Latest Price of Bitcoin in USD: "
-  sendMsg precio
+  precio
 
 ether arg : Str -> Str
   x = getEtherPrice arg
   res = jn x
   precio = (get [res, "price"])
-  sendMsg "Latest Price of Ethereum in USD: "
-  sendMsg precio
+  precio
 
 litecoin arg : Str -> Str
   x = getLitecoinPrice arg
   res = jn x
   precio = (get [res, "price"])
-  sendMsg "Latest Price of Litecoin in USD: "
-  sendMsg precio
+  precio
 
-sendMsg arg : Str -> Obj
-  empty = jn "{}"
-  channel = addToObj [empty, "channel", "#crypto"]
-  user = addToObj [channel, "username", "CryptoEdwards"]
-  emoji = addToObj [user, "icon_emoji",":edwards:"]
-  text = addToObj [emoji, "text",arg]
-  sendSlackMsg text
