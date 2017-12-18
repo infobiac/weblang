@@ -471,7 +471,6 @@ create_response (void *cls,
                 /* Run weblang command */
 
 		//char *arg = session->value_1;
-                printf("hi");
                 printf("%s at %s\n", "arg ", arg);
 		printf("%s at %s\n", "url", url);
 		char *buffer;
@@ -511,8 +510,6 @@ create_response (void *cls,
 
 			fseek( fp , 0L , SEEK_END);
 			lSize = ftell( fp );
-		        printf("%d\n", lSize);
-			fflush(stdout);
 			rewind( fp );
 			if( lSize > 0) {
 
