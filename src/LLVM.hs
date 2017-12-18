@@ -52,8 +52,10 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "post" [(llvmI32Pointer, AST.Name (fromString "s"))];
-  external llvmI32Pointer "get" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "get"[(llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
@@ -135,10 +137,30 @@ opFns = Map.empty
 
 buildLLVM :: Program -> LLVM ()
 buildLLVM p = do
+  mapM_ importLLVM (imports p)
   mapM_ constantLLVM (constants p)
   let fns = fnDeclarations p
   mapM_ functionLLVM fns
   functionLLVMMain fns
+
+importLLVM :: Import -> LLVM [String]
+importLLVM (Import url endpoints) = mapM (endpointFnLLVM url) endpoints
+
+endpointFnLLVM :: String -> Endpoint -> LLVM String
+endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname fnargs llvmBody >> return fnname
+  where arg = "arg"
+        fnargs = toSig arg
+        llvmRetType = llvmI32Pointer
+        llvmBody = createBlocks . execCodegen $ do
+          entry <- addBlock entryBlockName
+          setBlock entry
+          let argptr = local (AST.Name (fromString arg))
+          let path = url ++ "/" ++ endpoint
+          let binding = if method == Post then "post" else "get"
+          
+          url <- rawStringLLVM path
+          res <- call (externf (AST.Name (fromString binding))) [url, argptr]
+          ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
 constantLLVM (name, term) = do
@@ -165,6 +187,7 @@ functionLLVMMain fns = do
           argv2 <- argvAt 2
           mapM_ (\f -> createEndpointCheck f argv1 argv2) fnNames
           ret $ Just (cons $ AST.Int 32 0)
+
 
 createEndpointCheck :: String -> AST.Operand -> AST.Operand -> Codegen AST.Name
 createEndpointCheck fnName cmdRef arg = do
@@ -212,6 +235,7 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
           typeAssertionLLVM ("Post-condition not met in function " ++ name) outputType res
 
           ret (Just res)
+
 
 typeAssertionLLVM :: String -> Type -> AST.Operand -> Codegen ()
 typeAssertionLLVM msg (Type {..}) val = forM_ predicates $ \(var, predBlock) -> do

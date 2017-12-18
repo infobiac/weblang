@@ -1,5 +1,6 @@
-testConditional arg : Bool -> Str
-  if arg
+testConditional arg : Str -> Str
+  x = true
+  if x
     log "Inside if"
   else
     log "Inside else"
