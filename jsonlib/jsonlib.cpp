@@ -438,6 +438,13 @@ int* is_json_string(int* intdoc){
 	return json_bool(0);
 }
 
+int* concat(int* st1, int* st2){
+	const char* str1 = tostring(st1);
+	const char* str2 = tostring(st2);
+	std::ostringstream retcharst;
+	retcharst << str1 << str2;
+	return json_string(retcharst.str().c_str());
+}
 
 //Create an array in json from json values/docs (by coyping each value/doc into a new value and adding that to our new doc
 int* json_array(int* a[], int numElements){
