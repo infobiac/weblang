@@ -1,4 +1,4 @@
-import {url: "https://api.gdax.com/products/",
+import {url: "https://api.gdax.com/products/", key : "", secret: "",
 	endpoints:[{fnName:"getEtherPrice", endpoint:"eth-usd/ticker", is_post:false}] }
 
 
