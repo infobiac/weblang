@@ -92,6 +92,14 @@ createArrRec arg : Arr -> Arr
 
 
 
+test arg : Str -> Str
+  a = [1, 2, 3, 4]
+  b = [1, 2, "hey", 3, 4]
+  c = contains [a, "hey"]
+  d = contains [b, "hey"]
+  e = contains [b, "ho"]
+
+
 /* Checks if an array contains a string or number. Takes
    in an array with two elements: the array to search and
    the string/number to search for. Returns a bool. */
@@ -101,11 +109,23 @@ contains arg : Arr -> Bool
   focus = arg.[1]
   final = 0
   arr = sort arr
-  foreach i in arr
-    if (i == focus)
-      final = 1
-    else
-      final = final
+  if (isNum focus)
+    foreach i in arr
+      if (i == focus)
+        final = 1
+      else
+        final = final
+  else
+    final = final
+
+  if (isString focus)
+    foreach i in arr
+      if (equals [i, focus])
+        final = 1
+      else
+        final = final
+  else 
+    final = final
   log final
   final
 
