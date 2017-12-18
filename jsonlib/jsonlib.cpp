@@ -134,6 +134,9 @@ double get_json_bool(int* intdoc){
 
 
 int* json_from_string(int* s){
+	if(get_json_bool(is_json_object(s))){
+		return s;
+	}
 	const char* str = tostring(s);
 	Document* init = new Document();
 	(*init).Parse(str);
