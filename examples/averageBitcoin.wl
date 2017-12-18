@@ -28,41 +28,59 @@ getAvgPrice arg : Str -> Str
   arr = push [arr, bitstampprice]  
   geminiprice = gemini arg
   arr = push [arr, geminiprice]
-  log arr
   average = avg arr
-  log average
   sendMsg "Average Bitcoin price between GDAX, CEX, BITFINEX, GEMINI, and BITSTAMP:"
   x = cat ["",average]
   sendMsg x
 
-gdax arg : Str -> Str
+gdax arg : Str -> Num
   x = getBitcoinPrice arg
   res = jn x
   precio = (get [res, "price"])
+  if isString precio
+    precio = toNum precio
+  else
+    0
   precio
 
-cex arg : Str -> Str
+cex arg : Str -> Num
   x = cexBitcoinPrice arg
   res = jn x
   precio = get [res, "ask"]
+  if isString precio
+    precio = toNum precio
+  else
+    0
   precio
 
-bitfinex arg : Str -> Str
+bitfinex arg : Str -> Num
   x = bitfinexBitcoinPrice arg
   res = jn x
   precio = res.[0]
+  if isString precio
+    precio = toNum precio
+  else
+    0
   precio
 
-gemini arg : Str -> Str
+gemini arg : Str -> Num
   x = geminiBitcoinPrice arg
   res = jn x
   precio = get [res, "ask"]
+  if isString precio
+    precio = toNum precio
+  else
+    0
   precio
 
-bitstamp arg : Str -> Str
+bitstamp arg : Str -> Num
   x = bitstampBitcoinPrice arg
   res = jn x
   precio = get [res, "ask"]
+  if isString precio
+    precio = toNum precio
+  else
+    0
   precio
 
 sendMsg arg : Str -> Obj
