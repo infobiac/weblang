@@ -110,14 +110,6 @@ contains arg : Arr -> Bool
   final
 
 
-blah i : Str -> Arr
-  x = sort [1]
-  sort [2, 1]
-  sort []
-  sort [9, 8, 7, 6, 5, 4, -3, 2, 1]
-  x
-
-
 /* Sorts an array of numbers. Takes in an array of two arrays, both being 
    all integers, and returns a sorted version of the array */
 
