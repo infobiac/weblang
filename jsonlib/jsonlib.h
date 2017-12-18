@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 const char* tostring(int*);
+const char* body_tostring(int*);
 int* json_bool(int);
 int* is_json_bool(int*);
 double get_json_bool(int*);
