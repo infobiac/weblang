@@ -78,6 +78,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
                                           , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_bool" [(llvmI32, AST.Name (fromString"s"))];
   external llvmI32Pointer "is_json_bool" [(llvmI32Pointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "parse_function_arg" [(llvmI32Pointer, AST.Name (fromString "s"))];
 
 externs = Map.fromList [
       ("log", "puts"),
@@ -200,7 +201,8 @@ createEndpointCheck fnName cmdRef arg = do
   cbr refEq iff continue
 
   setBlock iff
-  args <- functionCallLLVM "json_string" arg
+  strargs <- functionCallLLVM "json_string" arg
+  args <- functionCallLLVM "parse_function_arg" strargs
   functionCallLLVM fnName args
   br continue
   iff <- getBlock
