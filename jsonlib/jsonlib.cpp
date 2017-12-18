@@ -208,8 +208,7 @@ void unflatten(int* temp, Document::AllocatorType& allo){
 		}
 	}
 	else{
-		std::cout << "jn was passed a string that did not contain an object or array. Terminating." << std::endl;
-		throw std::runtime_error("jn parse error");
+		throw std::runtime_error("Attempting to parse a string that did not contain an object or array. Terminating.");
 	}
 
 }
@@ -228,6 +227,7 @@ int* parse_function_arg(int* st){
 		return json_from_string(st);
 	}
 	catch(std::runtime_error){
+
 		//Not an arr or obj either
 	}
 
@@ -263,7 +263,6 @@ int* get_json_from_object(int* intdoc, int* key){
 		return (int*)(&(getp((int*)d, skey)));
 	}
 	else{
-		std::cout << "Attempted to access json object with nonexistant key" << std::endl;
 		throw std::runtime_error("Json object did not contain key");
 	}
 }
@@ -324,8 +323,7 @@ int* to_json_double(int* intdoc){
 			return json_double(temp);
 		}
 	}
-	std::cout << "String was not passed to toNum" <<std::endl;
-	std::runtime_error("TypeMismatch");
+	std::runtime_error("TypeMismatch: toNum passed non string");
 	return NULL;
 }
 
