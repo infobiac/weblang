@@ -56,6 +56,7 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
                                   (llvmI32Pointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s"))];
+  external llvmI32Pointer "exposed_post" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get"[(llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmI32Pointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s")),
@@ -88,7 +89,7 @@ externs = Map.fromList [
       ("log", "puts"),
       ("jn", "json_from_string"),
       ("isObj", "is_json_object"),
-      ("clientPost", "post"),
+      ("clientPost", "exposed_post"),
       ("clientGet", "get"),
       ("jnum", "json_double"),
       ("toNum", "to_json_double"),
