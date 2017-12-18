@@ -341,6 +341,7 @@ post_iterator (void *cls,
         struct Session *session = request->session;
 
         if (0 == strcmp ("arg", key)) {
+ 	    if(strlen(data) > 0) {
             if (size + off > sizeof(session->value_1))
                     size = sizeof (session->value_1) - off;
             memcpy (&session->value_1[off],
@@ -355,6 +356,8 @@ post_iterator (void *cls,
 	   
             printf("data: %s\n", data);
             printf("body 1: %s\n", arg);
+
+	    }
             return MHD_YES;
         }
         fprintf (stderr, "Unsupported form value `%s'\n", key);
@@ -468,7 +471,7 @@ create_response (void *cls,
                 /* Run weblang command */
 
 		//char *arg = session->value_1;
-
+                printf("hi");
                 printf("%s at %s\n", "arg ", arg);
 		printf("%s at %s\n", "url", url);
 		char *buffer;
@@ -508,7 +511,10 @@ create_response (void *cls,
 
 			fseek( fp , 0L , SEEK_END);
 			lSize = ftell( fp );
+		        printf("%d\n", lSize);
+			fflush(stdout);
 			rewind( fp );
+			if( lSize > 0) {
 
 			/* allocate memory for entire content */
 			buffer = calloc( 1, lSize+1 );
@@ -516,11 +522,16 @@ create_response (void *cls,
 
 			/* copy the file into the buffer */
 			if( 1!=fread( buffer , lSize, 1 , fp) )
-				  fclose(fp),free(buffer),fputs("entire read fails",stderr),exit(1);
+				  fclose(fp),free(buffer),fputs("entire read fails\n",stderr),exit(1);
 			fclose(fp);
 			ret = create_json(buffer, "application/json", session, connection);
-			system("rm test.txt");
 			free(buffer);
+			}
+			else {
+			  ret = create_json("", "application/json", session, connection);
+			}
+			system("rm test.txt");
+			
 
 
 		}
