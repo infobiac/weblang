@@ -21,6 +21,71 @@ Value& getp(int* intdoc, const char* key){
 	return (*d)[key];
 }
 
+const char* body_tostring(int* tempdoc){
+	std::cout.flush();
+	if((*((Document*) tempdoc)).IsObject()){
+		Value* str = (Value*)tempdoc;
+		if(str->IsString())
+			return str->GetString();
+		if((*((Document*) tempdoc)).HasMember("prim_type")){
+			Value& typ = getp(tempdoc, "prim_type");
+			if(typ.GetString() == "num"){
+				std::ostringstream strdoub;
+				strdoub << getp(tempdoc, "prim_val").GetDouble() << '\0';
+				char* ret = (char*) malloc(strlen(strdoub.str().c_str())+1);
+				strcpy(ret, strdoub.str().c_str());
+				return ret;
+			}
+			else if(typ.GetString() == "str"){
+				std::ostringstream strstr;
+				Value& pt = getp(tempdoc, "prim_val");
+				strstr << "\'" << pt.GetString() << "\'" << '\0';
+				char* ret = (char*) malloc(strlen(strstr.str().c_str())+1);
+				strcpy(ret, strstr.str().c_str());
+				return ret;
+			}
+			else if(typ.GetString() == "bool"){	
+				Value& pt = getp(tempdoc, "prim_val");
+				if(pt.GetBool())
+					return "true";
+				else
+					return "false";
+			}
+		}
+		else {
+			Document* d = (Document *)tempdoc;
+			std::ostringstream objstr;
+			objstr<<"{";
+			for (Value::ConstMemberIterator itr = (*d).MemberBegin(); itr != (*d).MemberEnd(); ++itr){
+				objstr << "\'" << itr->name.GetString() << "\':" << body_tostring((int*)&(itr->value));
+				if (itr+1 != (*d).MemberEnd())
+					objstr << ",";
+			}
+			objstr << "}" <<'\0';
+			char* ret = (char*) malloc(strlen(objstr.str().c_str())+1);
+			strcpy(ret, objstr.str().c_str());
+			return ret;
+		}
+	}
+	else if((*((Document*) tempdoc)).IsArray()){
+		Document* d = (Document *)tempdoc;
+		std::ostringstream objstr;
+		objstr << "[";
+		for (Value::ConstValueIterator itr = (*d).Begin(); itr != (*d).End(); ++itr){
+			objstr << body_tostring((int *) itr);
+			if (itr+1 !=(*d).End())
+				objstr << ",";
+		}
+		objstr << "]" << '\0';
+		char* ret = (char*) malloc(strlen(objstr.str().c_str())+1);
+		strcpy(ret, objstr.str().c_str());
+
+		return ret;
+	}
+	else{
+		return (char *) tempdoc;
+	}
+}
 
 const char* tostring(int* tempdoc){
 	std::cout.flush();

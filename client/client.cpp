@@ -13,7 +13,7 @@ extern "C" {
 	int* post(const char* url, int* json, const char* key, const char* secret){
 
 		try{
-			const char* payload = tostring(json);
+			const char* payload = body_tostring(json);
 			std::string urlCpp(url);
 			char* ret;
 			if(strlen(key) > 0 && strlen(secret) > 0){
@@ -71,7 +71,7 @@ extern "C" {
 
 	int* get(const char* url, int* json, const char* key, const char* secret) {
 		try{
-			const char* body = tostring(json);
+			const char* body = body_tostring(json);
 			std::string urlCpp(url);
 			auto r = cpr::Get(cpr::Url{urlCpp}, cpr::Payload{{"arg", body}});
 			char* ret = (char*) malloc(strlen(r.text.c_str())+1);
