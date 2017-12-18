@@ -53,9 +53,13 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
                                      , (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32 "test" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s")),
-                                  (llvmI32Pointer, AST.Name (fromString "s"))];
+                                  (llvmI32Pointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get"[(llvmStringPointer, AST.Name (fromString "s")),
-                                  (llvmI32Pointer, AST.Name (fromString "s"))];
+                                  (llvmI32Pointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "is_json_string" [ (llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmStringPointer "tostring" [(llvmI32Pointer, AST.Name (fromString "s"))];
@@ -144,10 +148,10 @@ buildLLVM p = do
   functionLLVMMain fns
 
 importLLVM :: Import -> LLVM [String]
-importLLVM (Import url endpoints) = mapM (endpointFnLLVM url) endpoints
+importLLVM (Import url key secret endpoints) = mapM (endpointFnLLVM url key secret) endpoints
 
-endpointFnLLVM :: String -> Endpoint -> LLVM String
-endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname fnargs llvmBody >> return fnname
+endpointFnLLVM :: String -> String -> String -> Endpoint -> LLVM String
+endpointFnLLVM url key secret (Endpoint fnname endpoint method) = define llvmRetType fnname fnargs llvmBody >> return fnname
   where arg = "arg"
         fnargs = toSig arg
         llvmRetType = llvmI32Pointer
@@ -159,7 +163,9 @@ endpointFnLLVM url (Endpoint fnname endpoint method) = define llvmRetType fnname
           let binding = if method == Post then "post" else "get"
           
           url <- rawStringLLVM path
-          res <- call (externf (AST.Name (fromString binding))) [url, argptr]
+          key <- rawStringLLVM key
+          secret <- rawStringLLVM secret
+          res <- call (externf (AST.Name (fromString binding))) [url, argptr, key, secret]
           ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
