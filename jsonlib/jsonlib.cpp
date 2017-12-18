@@ -204,7 +204,37 @@ void unflatten(int* temp, Document::AllocatorType& allo){
 			count++;
 		}
 	}
+	else{
+		std::cout << "jn was passed a string that did not contain an object or array. Terminating." << std::endl;
+		throw std::runtime_error("jn parse error");
+	}
 
+}
+
+int* parse_function_arg(int* st){
+	const char* str = tostring(st);
+	try{
+		double dub = std::stod(str);
+		return json_double(dub);
+	}
+	catch(std::invalid_argument){
+		//I guess its not a double
+	}
+
+	try{
+		return json_from_string(st);
+	}
+	catch(std::runtime_error){
+		//Not an arr or obj either
+	}
+
+	if(str=="true")
+		return json_bool(1);
+	else if(str=="false")
+		return json_bool(0);
+
+	//Not a bool either? Guess it must be a string!
+	return st;
 }
 
 int* json_object(int* a[], int num){
@@ -230,7 +260,8 @@ int* get_json_from_object(int* intdoc, int* key){
 		return (int*)(&(getp((int*)d, skey)));
 	}
 	else{
-		return 0;
+		std::cout << "Attempted to access json object with nonexistant key" << std::endl;
+		throw std::runtime_error("Json object did not contain key");
 	}
 }
 
@@ -290,6 +321,8 @@ int* to_json_double(int* intdoc){
 			return json_double(temp);
 		}
 	}
+	std::cout << "String was not passed to toNum" <<std::endl;
+	std::runtime_error("TypeMismatch");
 	return NULL;
 }
 
@@ -449,6 +482,7 @@ int* create_obj_iter(int* jsonthingie){
 	Value::ConstMemberIterator itr = (*d).MemberBegin();
 	return (int *) &(*itr);
 }
+
 /*
 // Test function
 int main(){
