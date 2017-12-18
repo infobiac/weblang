@@ -1,12 +1,11 @@
 /* Get the average of all numbers in an array.
    Input an array of numbers. */
 
-avg arg : Str -> Num
-  g = jn arg
+avg arg : Arr -> Num
   count = 0
   total = 0
-  foreach x in g
-    total = total + g.[count]
+  foreach x in arg
+    total = total + arg.[count]
     count = count + 1
   result = (total/count)
 
@@ -14,10 +13,9 @@ avg arg : Str -> Num
 /* Concatenate two arrays. Input an array of 
    two arrays. */
 
-arrconcat arg : Str -> Obj
-  r = jn arg
-  g = r.[0]
-  q = r.[1]
+arrconcat arg : Arr -> Obj
+  g = arg.[0]
+  q = arg.[1]
   combo = []
   foreach x in g
     combo = push [combo, x]
@@ -29,10 +27,9 @@ arrconcat arg : Str -> Obj
 /* Get the gcd of two numbers. Input is an
    array of two numbers. Not implemented yet.*/
 
-gcd arg : Str -> Num
-  array = jn arg
-  j = array.[0]
-  k = array.[1]
+gcd arg : Arr -> Num
+  j = arg.[0]
+  k = arg.[1]
   max = 0
   final = 0
   if (j < k)
@@ -40,7 +37,7 @@ gcd arg : Str -> Num
   else
     max = (j + 1)
   
-  arr = createFixedArr max
+  arr = fixedArr max
   foreach i in arr
     if (k%i == 0)
       if (j%i == 0)
@@ -53,13 +50,14 @@ gcd arg : Str -> Num
   log final
   final
 
+
 /* This function is used to create an array of
    a particular size. Most practical use case is
    for turning foreach into more of the python
    "for i in range x" by creating a dummy array of
    size x.
 */
-createFixedArr arg : Num -> Arr
+fixedArr arg : Num -> Arr
   num = arg
   arr = []
   pass = []
@@ -91,4 +89,57 @@ createArrRec arg : Arr -> Arr
     ret = createArrRec [arr, num, count]
 
   ret
-  
+
+
+
+/* Checks if an array contains a string or number. Takes
+   in an array with two elements: the array to search and
+   the string/number to search for. Returns a bool. */
+
+contains arg : Arr -> Bool
+  arr = arg.[0]
+  focus = arg.[1]
+  final = 0
+  arr = sort arr
+  foreach i in arr
+    if (i == focus)
+      final = 1
+    else
+      final = final
+  log final
+  final
+
+
+blah i : Str -> Arr
+  x = sort [1]
+  sort [2, 1]
+  sort []
+  sort [9, 8, 7, 6, 5, 4, -3, 2, 1]
+  x
+
+
+/* Sorts an array of numbers. Takes in an array of two arrays, both being 
+   all integers, and returns a sorted version of the array */
+
+sort arr : Arr -> Arr
+  length = 0
+  temp = 0
+  foreach i in arr
+    length = (length + 1)
+  ref = fixedArr length
+
+  foreach i in ref
+    inner = fixedArr (length - i - 1)
+    foreach j in inner
+      if (arr.[j] > arr.[j+1])
+        temp = arr.[j]
+        arr = update [arr, arr.[j + 1], j]
+        arr = update [arr, temp, j + 1]
+      else
+        arr = arr
+  arr 
+
+
+
+
+
