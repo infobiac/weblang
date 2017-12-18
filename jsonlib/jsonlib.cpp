@@ -438,6 +438,15 @@ int* is_json_string(int* intdoc){
 	return json_bool(0);
 }
 
+int* is_string_equal(int* st1, int* st2){
+	const char* str1 = body_tostring(st1);
+	const char* str2 = body_tostring(st2);
+	if(!strcmp(str1, str2)){
+		return json_bool(1);
+	}
+	return json_bool(0);
+}
+
 int* concat(int* st1, int* st2){
 	const char* str1 = tostring(st1);
 	const char* str2 = tostring(st2);
