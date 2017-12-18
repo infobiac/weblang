@@ -3,9 +3,7 @@ import {url: "https://api.gdax.com/products/",
 
 
 testGet arg : Str -> Str
-  js = {}
-  args = addToObj[js, "body", ""]
-  response = getEtherPrice args
+  response = getEtherPrice arg
   res = jn response
   check = isObj res
   log check
