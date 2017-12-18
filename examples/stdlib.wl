@@ -100,17 +100,46 @@ contains arg : Arr -> Bool
   arr = arg.[0]
   focus = arg.[1]
   final = 0
+  arr = sort arr
   foreach i in arr
-    if (isNum i)
-      if (i == focus)
-        final = 1
-      else
-        final = final
+    if (i == focus)
+      final = 1
+    else
+      final = final
   log final
   final
 
 
-/* Sorts an array of numbers. Takes in an array of two arrays, both being 
-   all integers */
+blah i : Str -> Arr
+  x = sort [1]
+  sort [2, 1]
+  sort []
+  sort [9, 8, 7, 6, 5, 4, -3, 2, 1]
+  x
 
-//sort arr : Arr -> Arr
+
+/* Sorts an array of numbers. Takes in an array of two arrays, both being 
+   all integers, and returns a sorted version of the array */
+
+sort arr : Arr -> Arr
+  length = 0
+  temp = 0
+  foreach i in arr
+    length = (length + 1)
+  ref = fixedArr length
+
+  foreach i in ref
+    inner = fixedArr (length - i - 1)
+    foreach j in inner
+      if (arr.[j] > arr.[j+1])
+        temp = arr.[j]
+        arr = update [arr, arr.[j + 1], j]
+        arr = update [arr, temp, j + 1]
+      else
+        arr = arr
+  arr 
+
+
+
+
+
