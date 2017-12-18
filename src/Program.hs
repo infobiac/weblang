@@ -212,7 +212,7 @@ data Function = Function {
   , helper :: Bool
   } deriving (Show, Generic, Out)
 
-data Import = Import URL [Endpoint]
+data Import = Import URL Key Secret [Endpoint]
             deriving (Show, Generic, Out)
 
 type ExpressionBlock = [Expression]
@@ -245,16 +245,24 @@ data Method = Post | Get
 type EndpointFnName = String
 type EndpointEndpoint = String
 type URL = String
+type Key = String
+type Secret = String
 data Endpoint = Endpoint EndpointFnName EndpointEndpoint Method
               deriving (Show, Generic, Out)
 
 parseImportArg :: Term -> Import
-parseImportArg (Literal (ObjVal obj)) = Import url endpoints
+parseImportArg (Literal (ObjVal obj)) = Import url key secret endpoints
   where getVal objName obj key = fromMaybe (error $ key ++ " missing from " ++ objName) (Map.lookup key obj)
         getImpVal = getVal "import statement" obj
         url = case getImpVal "url" of
           (Literal (StrVal url)) -> url
           _ -> error "url key in import statement should be a string value"
+        key = case getImpVal "key" of
+          (Literal (StrVal key)) -> key
+          _ -> error "auth key in import statement missing. If no key is required, use emtpy string"
+        secret = case getImpVal "secret" of
+          (Literal (StrVal secret)) -> secret
+          _ -> error "auth secret in import statement missing. If no secret is required, use emtpy string"
         endpoints = case getImpVal "endpoints" of
           (Literal (ArrVal endpointTerms)) -> flip map endpointTerms $ \t -> case t of
             (Literal (ObjVal endpointObj)) ->
