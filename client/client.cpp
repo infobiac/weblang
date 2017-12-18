@@ -15,9 +15,17 @@ extern "C" {
 		try{
 			const char* payload = tostring(json);
 			std::string urlCpp(url);
-			auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}}, cpr::Authentication{"73e6c7dd-776b-4ec2-9b4b-965e1a1dcebe","sCatHtlfB0yih7l/lhGpAA=="});
-			char* ret = (char*) malloc(strlen(r.text.c_str())+1);
-			strcpy(ret, r.text.c_str());
+			char* ret;
+			if(strlen(key) > 0 && strlen(secret) > 0){
+				auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}}, cpr::Authentication{key, secret});
+				ret = (char*) malloc(strlen(r.text.c_str())+1);
+				strcpy(ret, r.text.c_str());
+			}
+			else{
+				auto r = cpr::Post(cpr::Url{urlCpp}, cpr::Body{payload},cpr::Header{{"Content-Type","application/json"}});
+				ret = (char*) malloc(strlen(r.text.c_str())+1);
+				strcpy(ret, r.text.c_str());
+			}
 			return (int *) ret;
 		}
 		catch(...){
@@ -30,13 +38,33 @@ extern "C" {
 		if ((*d).HasMember("url")){
 			const char* url = tostring((int*)(&((*d)["url"])));
 			int* body;
-		       	if((*d).HasMember("body"))
+		       	if((*d).HasMember("body")){
 				body = (int*) (&((*d)["body"]));
-			else if((*d).HasMember("payload"))
+			}
+			else if((*d).HasMember("payload")){
 				body = (int*) (&((*d)["payload"]));
-			else
+			}
+			else{
 				body = (int*) new Document();
-			return post(url, body);
+			}
+
+			const char* key;
+			if((*d).HasMember("key")){
+				key = tostring((int*)(&((*d)["key"])));
+			}
+			else{
+				key = "";
+			}
+
+			const char* secret;
+			if((*d).HasMember("secret")){
+				secret = tostring((int*)(&((*d)["secret"])));
+			}
+			else{
+				secret = "";
+			}
+
+			return post(url, body, key, secret);
 		}
 		throw std::runtime_error("Post did not contain URL!");
 	}
