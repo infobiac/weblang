@@ -7,3 +7,4 @@ testStrEquality arg : Str -> Str
   log (equals [x,y])
   log (equals [x,z])
   log (equals [x,w])
+  "bye"

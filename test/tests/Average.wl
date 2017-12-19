@@ -6,3 +6,4 @@ testAverage arg : Str -> Str
   log (avg x)
   z = avg y
   log z
+  "bye"
