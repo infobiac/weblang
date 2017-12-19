@@ -1,4 +1,5 @@
 include "examples/coin_helpers.wl"
+include "examples/stdlib.wl"
 
 helper getAvgPrice arg : Str -> Str
   arr = []
@@ -67,10 +68,3 @@ helper bitstamp arg : Str -> Num
   precio
 
 
-avg arg : Arr -> Num
-  count = 0
-  total = 0
-  foreach x in arg
-    total = total + arg.[count]
-    count = count + 1
-  result = (total/count)

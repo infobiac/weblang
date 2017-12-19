@@ -8,12 +8,13 @@ avg arg : Arr -> Num
     total = total + arg.[count]
     count = count + 1
   result = (total/count)
+  result
 
 
 /* Concatenate two arrays. Input an array of 
    two arrays. */
 
-arrconcat arg : Arr -> Obj
+arrconcat arg : Arr -> Arr
   g = arg.[0]
   q = arg.[1]
   combo = []
@@ -21,7 +22,7 @@ arrconcat arg : Arr -> Obj
     combo = push [combo, x]
   foreach y in q
     combo = push [combo, y]
-  log combo
+  combo
 
 
 /* Get the gcd of two numbers. Input is an
@@ -98,14 +99,14 @@ createArrRec arg : Arr -> Arr
 contains arg : Arr -> Bool
   arr = arg.[0]
   focus = arg.[1]
-  final = 0
+  final = false
   arr = sort arr
 
   foreach i in arr
     if (isNum focus)
       if (isNum i)
         if (i == focus)
-          final = 1
+          final = true
         else
           final = final
       else
@@ -116,7 +117,7 @@ contains arg : Arr -> Bool
     if (isString focus)
       if (isString i)
         if (equals [i, focus])
-          final = 1
+          final = true
         else
           final = final
       else
