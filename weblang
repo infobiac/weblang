@@ -14,7 +14,7 @@ if [ ! -d intermediary ]; then
 fi
 
 if [ ! -f intermediary/$filename.ll ] || [ $wlfile -nt intermediary/$filename.ll ]; then
-	stack --nix exec weblang intermediary/$filename.ll < $wlfile
+	stack exec weblang $wlfile intermediary/$filename.ll
 	echo "intermediary/$filename.ll written"
 	nix-shell -p llvm --command "llc intermediary/$filename.ll"
 	echo "intermediary/$filename.s written"
