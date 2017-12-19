@@ -1,7 +1,7 @@
-import {url: "https://hooks.slack.com/services/T74RW7J0N/B891X5YNN/", key:"", secret:"",
+import {url: "https://hooks.slack.com/services/T74RW7J0N/B891X5YNN/", key:"", secret:"", headers:"",
 	endpoints:[{fnName:"sendSlackMsg", endpoint:"BaQHlflLTmQQNKHH3EE6PrR1", is_post:true}] }
 
-import {url: "https://api.gdax.com/products/", key:"", secret:"",
+import {url: "https://api.gdax.com/products/", key:"", secret:"", headers:"", 
 	endpoints:[{fnName:"getBitcoinPrice", endpoint:"btc-usd/ticker", is_post:false},
 {fnName:"getEtherPrice", endpoint:"eth-usd/ticker", is_post:false},
 {fnName:"getLitecoinPrice", endpoint:"ltc-usd/ticker", is_post:false}] }

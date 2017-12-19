@@ -1,19 +1,20 @@
-import {url: "https://hooks.slack.com/services/T74RW7J0N/B891X5YNN/", key:"", secret:"",
-	endpoints:[{fnName:"sendSlackMsg", endpoint:"BaQHlflLTmQQNKHH3EE6PrR1", is_post:true}] }
+include "examples/stdlib.wl"
 
-import {url: "https://cex.io/api",key:"", secret:"",
+import {url: "https://hooks.slack.com/services/T74RW7J0N/B891X5YNN/", key:"", secret:"", header:"", endpoints:[{fnName:"sendSlackMsg", endpoint:"BaQHlflLTmQQNKHH3EE6PrR1", is_post:true}] }
+
+import {url: "https://cex.io/api",key:"", secret:"", header:"",
 	endpoints:[{fnName:"cexBitcoinPrice", endpoint:"ticker/BTC/USD", is_post:false}] }
 
-import {url: "https://www.bitstamp.net/api", key:"", secret:"",
+import {url: "https://www.bitstamp.net/api", key:"", secret:"", header:"",
 	endpoints:[{fnName:"bitstampBitcoinPrice", endpoint:"ticker/", is_post:false}] }
 
-import {url: "https://api.bitfinex.com/v2/", key:"", secret:"",
+import {url: "https://api.bitfinex.com/v2/", key:"", secret:"", header:"",
 	endpoints:[{fnName:"bitfinexBitcoinPrice", endpoint:"ticker/tBTCUSD", is_post:false}] }
 
-import {url: "https://api.gemini.com/v1", key:"", secret:"",
+import {url: "https://api.gemini.com/v1", key:"", secret:"", header:"",
 	endpoints:[{fnName:"geminiBitcoinPrice", endpoint:"pubticker/BTCUSD", is_post:false}] }
 
-import {url: "https://api.gdax.com/products/", key:"", secret:"",
+import {url: "https://api.gdax.com/products/", key:"", secret:"", header:"", 
 	endpoints:[{fnName:"getBitcoinPrice", endpoint:"btc-usd/ticker", is_post:false}]}
 
 getAvgPrice arg : Str -> Str
@@ -92,13 +93,3 @@ sendMsg arg : Str -> Obj
   log text
   x = sendSlackMsg text
 
-/* Get the average of all numbers in an array.
-   Input an array of numbers. */
-
-avg arg : Arr -> Num
-  count = 0
-  total = 0
-  foreach x in arg
-    total = total + arg.[count]
-    count = count + 1
-  result = (total/count)
