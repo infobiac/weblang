@@ -10,7 +10,7 @@
 using namespace rapidjson;
 
 extern "C" {
-	int* post(const char* url, int* json, const char* key, const char* secret){
+	int* post(const char* url, int* json, const char* key, const char* secret, const char* header){
 
 		try{
 			const char* payload = body_tostring(json);
@@ -63,13 +63,21 @@ extern "C" {
 			else{
 				secret = "";
 			}
+	                const char* header;
+			if((*d).HasMember("header")){
+				header = tostring((int*)(&((*d)["header"])));
+			}
+			else{
+				header = "";
+			}
 
-			return post(url, body, key, secret);
+
+			return post(url, body, key, secret, header);
 		}
 		throw std::runtime_error("Post did not contain URL!");
 	}
 
-	int* get(const char* url, int* json, const char* key, const char* secret) {
+	int* get(const char* url, int* json, const char* key, const char* secret, const char* header) {
 		try{
 			const char* body = body_tostring(json);
 			std::string urlCpp(url);

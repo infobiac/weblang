@@ -55,10 +55,12 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32Pointer "post" [(llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmI32Pointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "exposed_post" [(llvmI32Pointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "get"[(llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmI32Pointer, AST.Name (fromString "s")),
+                                  (llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s")),
                                   (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "json_string" [(llvmStringPointer, AST.Name (fromString "s"))];
@@ -156,10 +158,10 @@ buildLLVM p = do
   functionLLVMMain fns
 
 importLLVM :: Import -> LLVM [String]
-importLLVM (Import url key secret endpoints) = mapM (endpointFnLLVM url key secret) endpoints
+importLLVM (Import url key secret header endpoints) = mapM (endpointFnLLVM url key secret header) endpoints
 
-endpointFnLLVM :: String -> String -> String -> Endpoint -> LLVM String
-endpointFnLLVM url key secret (Endpoint fnname endpoint method) = define llvmRetType fnname fnargs llvmBody >> return fnname
+endpointFnLLVM :: String -> String -> String -> String -> Endpoint -> LLVM String
+endpointFnLLVM url key secret header (Endpoint fnname endpoint method) = define llvmRetType fnname fnargs llvmBody >> return fnname
   where arg = "arg"
         fnargs = toSig arg
         llvmRetType = llvmI32Pointer
@@ -173,7 +175,8 @@ endpointFnLLVM url key secret (Endpoint fnname endpoint method) = define llvmRet
           url <- rawStringLLVM path
           key <- rawStringLLVM key
           secret <- rawStringLLVM secret
-          res <- call (externf (AST.Name (fromString binding))) [url, argptr, key, secret]
+          header <- rawStringLLVM header
+          res <- call (externf (AST.Name (fromString binding))) [url, argptr, key, secret, header]
           ret (Just res)
 
 constantLLVM :: (ValName, Term) -> LLVM ()
