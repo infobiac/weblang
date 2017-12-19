@@ -31,9 +31,10 @@ tokens :-
   "else"                                                      { \pos s -> withPos pos $ ElseToken }
   "foreach"                                                   { \pos s -> withPos pos $ ForeachToken }
   "in"                                                        { \pos s -> withPos pos $ InToken }
-  "do"							                                          { \pos s -> withPos pos $ DoToken }
+  "do"                                                        { \pos s -> withPos pos $ DoToken }
   "type"                                                      { \pos s -> withPos pos $ TypeToken }
   "helper"                                                    { \pos s -> withPos pos $ HelperToken }
+  "assert"                                                    { \pos s -> withPos pos $ AssertToken }
   "include"                                                   { \pos s -> withPos pos $ IncludesToken }
   "import"                                                    { \pos s -> withPos pos $ ImportToken }
   "null"                                                      { \pos s -> withPos pos $ NullToken }
@@ -46,6 +47,8 @@ tokens :-
   \{                                                          { \pos s -> withPos pos $ LeftCurlyBracketToken }
   \}                                                          { \pos s -> withPos pos $ RightCurlyBracketToken }
   \,                                                          { \pos s -> withPos pos $ CommaToken }
+  \:\?                                                        { \pos s -> withPos pos $ ColonQueToken }
+  \:\!                                                        { \pos s -> withPos pos $ ColonExcToken }
   \:                                                          { \pos s -> withPos pos $ ColonToken }
   "->"                                                        { \pos s -> withPos pos $ ArrowToken }
   $alpha [$alpha $digit \_ \']*                               { \pos s -> withPos pos $ VarToken s }

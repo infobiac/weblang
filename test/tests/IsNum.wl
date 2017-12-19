@@ -1,4 +1,4 @@
-testIsNum arg: Str -> Str
+testIsNum arg: Str -> Bool
   a = 5
   b = "hi"
   c = jn "{\"one\": 6}"

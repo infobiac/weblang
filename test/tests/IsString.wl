@@ -1,4 +1,4 @@
-testIsString arg : Str -> Str
+testIsString arg : Str -> Bool
   a = "yes"
   b = 9
   c = ["yes again",9]

@@ -39,11 +39,14 @@ data LexToken =
   | HelperToken
 
   | IncludesToken
+  | AssertToken
   | ImportToken
 
   -- syntax symbols
   | EqualsToken
   | ColonToken
+  | ColonQueToken
+  | ColonExcToken
   | ArrowToken
   | LeftParenToken
   | RightParenToken

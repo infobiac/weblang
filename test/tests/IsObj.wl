@@ -1,4 +1,4 @@
-testIsObj arg : Str -> Str
+testIsObj arg : Str -> Bool
   a = 5
   b = "hi"
   c = ["hi", 5]

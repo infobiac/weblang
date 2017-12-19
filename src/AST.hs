@@ -51,6 +51,7 @@ data Function = Function {
 
 data Expression = Assignment ValName Term
                 | Unassigned Term
+                | Assert Term
                 deriving (Show, Generic, Out)
 
 data Term = Variable ValName
@@ -64,6 +65,8 @@ data Term = Variable ValName
           | ForeachInDo ValName Term Term
           | ForeachIn ValName Term
           | Do
+          | TypeCheck Term Type
+          | TypeAssert Term Type
           deriving (Show, Generic, Out)
 
 data Operator = Plus
