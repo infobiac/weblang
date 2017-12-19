@@ -13,3 +13,4 @@ array arg : Arr -> Str
   log a
   log 5
   log arg.[0]
+  "bye"

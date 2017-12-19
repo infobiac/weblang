@@ -1,4 +1,4 @@
-testIsBool arg : Str -> Str
+testIsBool arg : Str -> Bool
   a = 5
   b = true
   c = "true"

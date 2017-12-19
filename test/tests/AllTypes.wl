@@ -1,4 +1,4 @@
-testAllTypes arg : Str -> Str
+testAllTypes arg : Str -> Bool
   a = 5
   b = "hi"
   c = ["hi", 5]
