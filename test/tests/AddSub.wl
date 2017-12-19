@@ -1,4 +1,4 @@
-testAddSub arg : Str -> Str
+testAddSub arg : Str -> Num
   x = 5
   y = 7
   z = y - x
