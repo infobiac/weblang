@@ -47,7 +47,7 @@ checkProgram (Program {..}) = and $
         context = Context allSignatures (fmap (Just . baseType) types) operatorSignatures
 
 importSignatures :: Import -> Map String (Type', Type')
-importSignatures (Import url key secret endpoints) = Map.fromList . flip map endpoints $ \(Endpoint fnname _ _) ->
+importSignatures (Import url key secret header endpoints) = Map.fromList . flip map endpoints $ \(Endpoint fnname _ _) ->
   (fnname, (Nothing, Nothing))
 
 checkType :: Context -> Type -> Bool
