@@ -64,9 +64,13 @@ checkType context (Type {..}) = maybe True (\t ->
         initialTypes var = Map.fromList [(var, Just baseType)]
 
 checkFunction :: Context -> Function -> Bool
-checkFunction context@(Context {..}) (Function {..}) = Just (baseType outputType) `match` evalState evaluate initialTypes
+checkFunction context@(Context {..}) (Function {..}) =
+  if Just (baseType outputType) `match` foundType
+  then True
+  else error $ "Function's return type does not match the final value (expecting " ++ show (baseType outputType) ++ " but found " ++ show (evalState evaluate initialTypes) ++ ")"
   where initialTypes = Map.fromList [(arg, Just $ baseType inputType)]
         evaluate = (lastOr Nothing) <$> mapM (checkExpression context) body
+        foundType = evalState evaluate initialTypes
 
 checkExpression :: Context -> Expression -> State (Map String Type') Type'
 checkExpression context@(Context {..}) (Assignment var term) = do
