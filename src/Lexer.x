@@ -31,11 +31,11 @@ tokens :-
   "else"                                                      { \pos s -> withPos pos $ ElseToken }
   "foreach"                                                   { \pos s -> withPos pos $ ForeachToken }
   "in"                                                        { \pos s -> withPos pos $ InToken }
-  "do"							                                          { \pos s -> withPos pos $ DoToken }
+  "do"                                                        { \pos s -> withPos pos $ DoToken }
   "type"                                                      { \pos s -> withPos pos $ TypeToken }
   "helper"                                                    { \pos s -> withPos pos $ HelperToken }
-  "includes"                                                  { \pos s -> withPos pos $ IncludesToken }
   "assert"                                                    { \pos s -> withPos pos $ AssertToken }
+  "include"                                                   { \pos s -> withPos pos $ IncludesToken }
   "import"                                                    { \pos s -> withPos pos $ ImportToken }
   "null"                                                      { \pos s -> withPos pos $ NullToken }
   "true"                                                      { \pos s -> withPos pos $ TrueToken }
