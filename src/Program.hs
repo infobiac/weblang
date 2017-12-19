@@ -60,13 +60,14 @@ topologicalOrder f = map (\(b, a, _) -> (a, b)) . map unSCC . stronglyConnCompR 
 transTypes :: [(TypeName, AST.NewType)] -> TypeMap
 transTypes astTypes = foldl' addType initialTypes ordered
   where ordered = topologicalOrder (\t -> [AST.parentType (AST.shortType t)]) astTypes
-        initialTypes = Map.fromList [ ("Str", Type [] StrType)
-                                    , ("Num", Type [] NumType)
-                                    , ("Arr", Type [] ArrType)
-                                    , ("Obj", Type [] ObjType)
-                                    , ("Null", Type [] NullType)
-                                    , ("Bool", Type [] BoolType)
-                                    ]
+        initialTypes = let fnCheck f = ("val", [Unassigned $ FunctionCall f (Variable "val")])
+                       in Map.fromList [ ("Str", Type [fnCheck "isString"] StrType)
+                                       , ("Num", Type [fnCheck "isNum"] NumType)
+                                       , ("Arr", Type [fnCheck "isArr"] ArrType)
+                                       , ("Obj", Type [fnCheck "isObj"] ObjType)
+                                       , ("Null", Type [] NullType)
+                                       , ("Bool", Type [fnCheck "isBool"] BoolType)
+                                       ]
         addType m (name, astType) = Map.insert name (transType m astType) m
 
 transInlineType :: TypeMap -> AST.Type -> Type

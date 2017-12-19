@@ -7,7 +7,7 @@ import qualified LLVM.AST as AST
 import qualified LLVM.AST.AddrSpace as AST
 import qualified LLVM.Module as Module
 import qualified LLVM.Internal.Context as Context
-import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI, ZExt)
+import qualified LLVM.AST.Constant as AST hiding (GetElementPtr, FCmp, ICmp, PtrToInt, FPToUI, ZExt, And, Or)
 import qualified LLVM.AST.FloatingPointPredicate as Floatypoo
 import qualified LLVM.AST.IntegerPredicate as Intypoo
 import qualified LLVM.AST.Float as Fl
@@ -47,6 +47,8 @@ moduleHeader = runLLVM (emptyModule "WebLang") $ do
   external llvmI32 "exit" [(llvmI32, AST.Name (fromString "s"))];
   external llvmI32 "puts" [(llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32 "floor" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmI32 "round" [(llvmDouble, AST.Name (fromString "s"))];
+  external llvmI32 "ceil" [(llvmDouble, AST.Name (fromString "s"))];
   external llvmI32 "strcmp" [(llvmStringPointer, AST.Name (fromString "s")),
                                          (llvmStringPointer, AST.Name (fromString "s"))];
   external llvmI32Pointer "jgets" [ (llvmI32Pointer, AST.Name (fromString "s"))
@@ -125,8 +127,8 @@ extern3args = Map.fromList [
   ]
 
 boolOperators = Map.fromList [
-    (Or, error "unimplemented operator")
-  , (And, error "unimplemented operator")
+    (Or, AST.Or)
+  , (And, AST.And)
   ]
 
 eqOperators = Map.fromList [
@@ -169,7 +171,7 @@ endpointFnLLVM url key secret (Endpoint fnname endpoint method) = define llvmRet
           let argptr = local (AST.Name (fromString arg))
           let path = url ++ "/" ++ endpoint
           let binding = if method == Post then "post" else "get"
-          
+
           url <- rawStringLLVM path
           key <- rawStringLLVM key
           secret <- rawStringLLVM secret
@@ -326,26 +328,25 @@ termLLVM (Accessor tTerm indexTerm) = do
 
   return element
 termLLVM (OperatorTerm opp t1 t2) = do
+  val1 <- termLLVM t1
+  val2 <- termLLVM t2
+  double1 <- functionCallLLVM "getdoub" val1
+  double2 <- functionCallLLVM "getdoub" val2
   case Map.lookup opp numOperators of
     Just ap -> do
-      evalt1 <- termLLVM t1
-      double1 <- functionCallLLVM "getdoub" evalt1
-      evalt2 <- termLLVM t2
-      double2 <- functionCallLLVM "getdoub" evalt2
       result <- ap double1 double2
       functionCallLLVM "jnum" result
     Nothing -> case Map.lookup opp eqOperators of
       Just ap -> do
-        evalt1 <- termLLVM t1
-        double1 <- functionCallLLVM "getdoub" evalt1
-        evalt2 <- termLLVM t2
-        double2 <- functionCallLLVM "getdoub" evalt2
         result <- ap double1 double2
         int32 <- instr $ AST.ZExt result llvmI32 []
         functionCallLLVM "json_bool" int32
       Nothing -> case Map.lookup opp boolOperators of
         Just oper -> do
-          error "boolean operators not implemented"
+          int1 <- call (externf (AST.Name (fromString "round"))) [double1]
+          int2 <- call (externf (AST.Name (fromString "round"))) [double2]
+          res <- instr $ oper int1 int2 []
+          call (externf (AST.Name (fromString "json_bool"))) [res]
         Nothing -> error $ "unimplemented operator " ++ show opp
 
 termLLVM (IfThenElse bool tr fal) = do
@@ -405,6 +406,22 @@ termLLVM (TypeAssert term t) = do
   val <- termLLVM term
   typeAssertionLLVM "Type assertion failed!" t val
   return val
+termLLVM (TypeCheck term t) = do
+  val <- termLLVM term
+  (first:rest) <- typeCheckLLVM t val
+  foldM (boolOp AST.And) first rest
+
+boolOp :: (AST.Operand -> AST.Operand -> AST.InstructionMetadata -> AST.Instruction)
+       -> AST.Operand
+       -> AST.Operand
+       -> Codegen AST.Operand
+boolOp oper val1 val2 = do
+  double1 <- functionCallLLVM "getdoub" val1
+  double2 <- functionCallLLVM "getdoub" val2
+  int1 <- call (externf (AST.Name (fromString "round"))) [double1]
+  int2 <- call (externf (AST.Name (fromString "round"))) [double2]
+  res <- instr $ oper int1 int2 []
+  call (externf (AST.Name (fromString "json_bool"))) [res]
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do

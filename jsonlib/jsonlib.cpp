@@ -165,13 +165,13 @@ const char* internaltostring(int* tempdoc){
 int* json_bool(int b){
 	Document *d = new Document();
 	(*d).SetObject();
-	if(b==1){
+	if(b==0){
 		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
-		(*d).AddMember("prim_val", true, (*d).GetAllocator());
+		(*d).AddMember("prim_val", false, (*d).GetAllocator());
 	}
 	else{
 		(*d).AddMember("prim_type", "bool", (*d).GetAllocator());
-		(*d).AddMember("prim_val", false, (*d).GetAllocator());
+		(*d).AddMember("prim_val", true, (*d).GetAllocator());
 	}
 	return (int*)d;
 }
