@@ -87,9 +87,8 @@ createArrRec arg : Arr -> Arr
     num = (num - 1)
     count = (count + 1)
     ret = createArrRec [arr, num, count]
-
+  
   ret
-
 
 
 /* Checks if an array contains a string or number. Takes
@@ -101,10 +100,28 @@ contains arg : Arr -> Bool
   focus = arg.[1]
   final = 0
   arr = sort arr
+
   foreach i in arr
-    if (i == focus)
-      final = 1
+    if (isNum focus)
+      if (isNum i)
+        if (i == focus)
+          final = 1
+        else
+          final = final
+      else
+        final = final
     else
+      final = final
+
+    if (isString focus)
+      if (isString i)
+        if (equals [i, focus])
+          final = 1
+        else
+          final = final
+      else
+        final = final
+    else 
       final = final
   log final
   final
@@ -129,9 +146,4 @@ sort arr : Arr -> Arr
         arr = update [arr, temp, j + 1]
       else
         arr = arr
-  arr 
-
-
-
-
-
+  arr
