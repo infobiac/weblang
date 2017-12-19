@@ -38,6 +38,8 @@ import AST
   '.'		    { Pos _ _ (DotToken) }
   '='		    { Pos _ _ (EqualsToken) }
   ':'		    { Pos _ _ (ColonToken) }
+  ':?'		  { Pos _ _ (ColonQueToken) }
+  ':!'		  { Pos _ _ (ColonExcToken) }
   arrow	    { Pos _ _ (ArrowToken) }
   var		    { Pos _ _ (VarToken $$) }
   line		  { Pos _ _ (NewlineToken) }
@@ -54,6 +56,7 @@ import AST
   in        { Pos _ _ (InToken) }
   do        { Pos _ _ (DoToken) }
   type      { Pos _ _ (TypeToken) }
+  assert    { Pos _ _ (AssertToken) }
   includes  { Pos _ _ (IncludesToken) }
   import    { Pos _ _ (ImportToken) }
 
@@ -98,6 +101,7 @@ Expressions
 Expression
   : var '=' Term  { Assignment $1 $3 }
   | Term          { Unassigned $1 }
+  | assert Term1  { Assert $2 }
 
 Term
   : ForeachInDo           { $1 }
@@ -131,6 +135,8 @@ Term5
   : Term5 '*' Term6       { OperatorTerm Multiply $1 $3  }
   | Term5 '/' Term6       { OperatorTerm Divide $1 $3  }
   | Term5 '%' Term6       { OperatorTerm Modulus $1 $3  }
+  | Term5 ':!' Type       { TypeAssert $1 $3  }
+  | Term5 ':?' Type       { TypeCheck $1 $3  }
   | Term6                 { $1 }
 
 Term6

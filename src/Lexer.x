@@ -35,6 +35,7 @@ tokens :-
   "type"                                                      { \pos s -> withPos pos $ TypeToken }
   "helper"                                                    { \pos s -> withPos pos $ HelperToken }
   "includes"                                                  { \pos s -> withPos pos $ IncludesToken }
+  "assert"                                                    { \pos s -> withPos pos $ AssertToken }
   "import"                                                    { \pos s -> withPos pos $ ImportToken }
   "null"                                                      { \pos s -> withPos pos $ NullToken }
   "true"                                                      { \pos s -> withPos pos $ TrueToken }
@@ -46,6 +47,8 @@ tokens :-
   \{                                                          { \pos s -> withPos pos $ LeftCurlyBracketToken }
   \}                                                          { \pos s -> withPos pos $ RightCurlyBracketToken }
   \,                                                          { \pos s -> withPos pos $ CommaToken }
+  \:\?                                                        { \pos s -> withPos pos $ ColonQueToken }
+  \:\!                                                        { \pos s -> withPos pos $ ColonExcToken }
   \:                                                          { \pos s -> withPos pos $ ColonToken }
   "->"                                                        { \pos s -> withPos pos $ ArrowToken }
   $alpha [$alpha $digit \_ \']*                               { \pos s -> withPos pos $ VarToken s }

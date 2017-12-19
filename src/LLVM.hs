@@ -251,9 +251,8 @@ functionLLVM (name, (Function {..})) = define llvmRetType name fnargs llvmBody
 
           ret (Just res)
 
-
-typeAssertionLLVM :: String -> Type -> AST.Operand -> Codegen ()
-typeAssertionLLVM msg (Type {..}) val = forM_ predicates $ \(var, predBlock) -> do
+typeCheckLLVM :: Type -> AST.Operand -> Codegen [AST.Operand]
+typeCheckLLVM (Type {..}) val = forM predicates $ \(var, predBlock) -> do
 
   withoutVar <- symtab <$> get
   l <- alloca llvmI32Pointer
@@ -262,7 +261,10 @@ typeAssertionLLVM msg (Type {..}) val = forM_ predicates $ \(var, predBlock) -> 
   res <- expressionBlockLLVM predBlock
   modify $ \state -> state {symtab = withoutVar}
 
-  assertionLLVM msg res
+  return res
+
+typeAssertionLLVM :: String -> Type -> AST.Operand -> Codegen ()
+typeAssertionLLVM msg t val = typeCheckLLVM t val >>= mapM_ (assertionLLVM msg)
 
 assertionLLVM :: String -> AST.Operand -> Codegen ()
 assertionLLVM message res = do
@@ -299,6 +301,10 @@ expressionLLVM (Assignment name term) = do
     Just val -> return val
   store l ptr
   return ptr
+expressionLLVM (Assert term) = do
+  ptr <- termLLVM term
+  assertionLLVM "Assertion failed!" ptr
+  return ptr
 
 scopedBlockLLVM :: ExpressionBlock -> Codegen AST.Operand
 scopedBlockLLVM exprs = do
@@ -314,10 +320,6 @@ termLLVM (FunctionCall fname arg) = do
 termLLVM (Accessor tTerm indexTerm) = do
   t <- termLLVM tTerm
   index <- termLLVM indexTerm
-
-   -- TODO check if t is array
-   -- TODO check if index is num (or int?)
-
   element <- call
                (externf (AST.Name (fromString "jgets")))
                [t, index]
@@ -399,6 +401,10 @@ termLLVM (Variable var) = do
   case maybeVal of
     Nothing -> error $ "Local variable not in scope: " ++ show var
     Just val -> load val
+termLLVM (TypeAssert term t) = do
+  val <- termLLVM term
+  typeAssertionLLVM "Type assertion failed!" t val
+  return val
 
 primLLVM :: PrimValue -> Codegen AST.Operand
 primLLVM (ArrVal arr) = do

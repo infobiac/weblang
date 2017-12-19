@@ -1,4 +1,4 @@
-#!/bin/bash
+# #!/bin/bash
 wlfile=$1
 length=${#wlfile}
 pathwoextension=${wlfile:0:length-3}
