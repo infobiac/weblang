@@ -34,7 +34,7 @@ tokens :-
   "do"							                                          { \pos s -> withPos pos $ DoToken }
   "type"                                                      { \pos s -> withPos pos $ TypeToken }
   "helper"                                                    { \pos s -> withPos pos $ HelperToken }
-  "includes"                                                  { \pos s -> withPos pos $ IncludesToken }
+  "include"                                                   { \pos s -> withPos pos $ IncludesToken }
   "import"                                                    { \pos s -> withPos pos $ ImportToken }
   "null"                                                      { \pos s -> withPos pos $ NullToken }
   "true"                                                      { \pos s -> withPos pos $ TrueToken }
