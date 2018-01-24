@@ -47,7 +47,7 @@
  * Name of our cookie.
  */
 #define COOKIE_NAME "session"
-
+static char arg[100];
 
 /**
  * State we keep for each user/session/browser.
@@ -341,14 +341,23 @@ post_iterator (void *cls,
         struct Session *session = request->session;
 
         if (0 == strcmp ("arg", key)) {
+ 	    if(strlen(data) > 0) {
             if (size + off > sizeof(session->value_1))
                     size = sizeof (session->value_1) - off;
             memcpy (&session->value_1[off],
                     data,
                     size);
+  	    memcpy (arg,
+                    data,
+                    strlen(data));
+	    arg[strlen(data)] = 0;
             if (size + off < sizeof (session->value_1))
                     session->value_1[size+off] = '\0';
-            printf("body: %s\n", data);
+	   
+            printf("data: %s\n", data);
+            printf("body 1: %s\n", arg);
+
+	    }
             return MHD_YES;
         }
         fprintf (stderr, "Unsupported form value `%s'\n", key);
@@ -461,7 +470,8 @@ create_response (void *cls,
                 
                 /* Run weblang command */
 
-                printf("%s at %s\n", "body", session->value_1);
+		//char *arg = session->value_1;
+                printf("%s at %s\n", "arg ", arg);
 		printf("%s at %s\n", "url", url);
 		char *buffer;
 		char urlFile[100];
@@ -483,7 +493,9 @@ create_response (void *cls,
 	                printf("%s executable\n", cmd);
 			char* func = strtok(NULL, delimiter);
 			strcat(cmd, " ");
-		        strcat(cmd, func);	
+		        strcat(cmd, func);
+			strcat(cmd, " ");
+			strcat(cmd, arg);	
 		        strcat(cmd, " > test.txt");
 
 	                printf("cmd: %s\n", cmd);
@@ -499,6 +511,7 @@ create_response (void *cls,
 			fseek( fp , 0L , SEEK_END);
 			lSize = ftell( fp );
 			rewind( fp );
+			if( lSize > 0) {
 
 			/* allocate memory for entire content */
 			buffer = calloc( 1, lSize+1 );
@@ -506,11 +519,16 @@ create_response (void *cls,
 
 			/* copy the file into the buffer */
 			if( 1!=fread( buffer , lSize, 1 , fp) )
-				  fclose(fp),free(buffer),fputs("entire read fails",stderr),exit(1);
+				  fclose(fp),free(buffer),fputs("entire read fails\n",stderr),exit(1);
 			fclose(fp);
 			ret = create_json(buffer, "application/json", session, connection);
-			system("rm test.txt");
 			free(buffer);
+			}
+			else {
+			  ret = create_json("", "application/json", session, connection);
+			}
+			system("rm test.txt");
+			
 
 
 		}

@@ -1,0 +1,12 @@
+/home/jordanvega/plt/client/cpr-example/build/CMakeFiles/rebuild_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/CMakeFiles/edit_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/CMakeFiles/example.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/CMakeFiles/rebuild_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/CMakeFiles/edit_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/CMakeFiles/rebuild_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/CMakeFiles/edit_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/opt/CMakeFiles/rebuild_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/opt/CMakeFiles/edit_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/cpr/CMakeFiles/edit_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/cpr/CMakeFiles/rebuild_cache.dir
+/home/jordanvega/plt/client/cpr-example/build/opt/cpr/cpr/CMakeFiles/cpr.dir

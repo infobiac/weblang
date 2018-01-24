@@ -4,6 +4,7 @@ module Parser (parse) where
 import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Monoid
+import Prelude hiding (EQ, LEQ, GEQ, GT, LT)
 
 import Lexer.Types
 import AST
@@ -15,7 +16,18 @@ import AST
 
 %token
   quoted    { Pos _ _ (QuoteToken $$) }
-  oper      { Pos _ _ (OperatorToken $$) }
+  '+'       { Pos _ _ (PlusToken) }
+  '-'       { Pos _ _ (MinusToken) }
+  '*'       { Pos _ _ (MultiplyToken) }
+  '/'       { Pos _ _ (DivideToken) }
+  '%'       { Pos _ _ (ModToken) }
+  '=='      { Pos _ _ (EQToken) }
+  '<='      { Pos _ _ (LEQToken) }
+  '>='      { Pos _ _ (GEQToken) }
+  '<'       { Pos _ _ (LTToken) }
+  '>'       { Pos _ _ (GTToken) }
+  '||'      { Pos _ _ (OrToken) }
+  '&&'      { Pos _ _ (AndToken) }
   '['		    { Pos _ _ (LeftSquareBracketToken) }
   ']'		    { Pos _ _ (RightSquareBracketToken) }
   '{'		    { Pos _ _ (LeftCurlyBracketToken) }
@@ -23,8 +35,11 @@ import AST
   '('		    { Pos _ _ (LeftParenToken) }
   ')'		    { Pos _ _ (RightParenToken) }
   ','		    { Pos _ _ (CommaToken) }
+  '.'		    { Pos _ _ (DotToken) }
   '='		    { Pos _ _ (EqualsToken) }
   ':'		    { Pos _ _ (ColonToken) }
+  ':?'		  { Pos _ _ (ColonQueToken) }
+  ':!'		  { Pos _ _ (ColonExcToken) }
   arrow	    { Pos _ _ (ArrowToken) }
   var		    { Pos _ _ (VarToken $$) }
   line		  { Pos _ _ (NewlineToken) }
@@ -32,6 +47,8 @@ import AST
   num		    { Pos _ _ (NumberToken $$) }
   helper    { Pos _ _ (HelperToken) }
   null		  { Pos _ _ (NullToken) }
+  true		  { Pos _ _ (TrueToken) }
+  false		  { Pos _ _ (FalseToken) }
   if        { Pos _ _ (IfToken) }
   then      { Pos _ _ (ThenToken) }
   else      { Pos _ _ (ElseToken) }
@@ -39,7 +56,9 @@ import AST
   in        { Pos _ _ (InToken) }
   do        { Pos _ _ (DoToken) }
   type      { Pos _ _ (TypeToken) }
+  assert    { Pos _ _ (AssertToken) }
   includes  { Pos _ _ (IncludesToken) }
+  import    { Pos _ _ (ImportToken) }
 
 %%
 
@@ -48,10 +67,14 @@ Program
   | line TopLevel               { $2 }
 
 TopLevel
-  : FunctionDeclaration        { AST [] [] [] [$1] }
-  | Constant                   { AST [] [] [$1] [] }
-  | CustomType                 { AST [] [$1] [] [] }
-  | Includes                   { AST [$1] [] [] [] }
+  : FunctionDeclaration        { AST [] [] [] [$1] [] }
+  | Constant                   { AST [] [] [$1] [] [] }
+  | CustomType                 { AST [] [$1] [] [] [] }
+  | Includes                   { AST [$1] [] [] [] [] }
+  | Import                     { AST [] [] [] [] [$1] }
+
+Import
+  : import Term                { Import $2 }
 
 Includes
   : includes quoted            { Includes $2 }
@@ -68,7 +91,7 @@ FunctionDeclaration
   | helper var var ':' Type arrow Type Expressions    { ($2, Function $5 $7 $3 $8 True) }
 
 Type
-  : var '[' Term ']'  { Type $1 (Just $3) }
+  : var '{' Term '}'  { Type $1 (Just $3) }
   | var               { Type $1 Nothing }
 
 Expressions
@@ -78,31 +101,61 @@ Expressions
 Expression
   : var '=' Term  { Assignment $1 $3 }
   | Term          { Unassigned $1 }
+  | assert Term1  { Assert $2 }
 
 Term
-  : Term1                 { $1 }
-  | foreach var in Term1  { ForeachIn $2 $4 }
+  : ForeachInDo           { $1 }
+  | foreach var in Term6  { ForeachIn $2 $4 }
   | if Term1              { If $2 }
   | IfThenElse            { $1 }
-  | ForeachInDo           { $1 }
+  | Term1                 { $1 }
 
 Term1
-  : var Term0             { FunctionCall $1 $2 }
-  | Term1 oper Term0      { Operator $2 $1 $3  }
-  | else                  { Else }
-  | do                    { Do }
-  | Term0                 { $1 }
+  : Term1 '||' Term2      { OperatorTerm Or $1 $3 }
+  | Term2                 { $1 }
 
-Term0
+Term2
+  : Term2 '&&' Term3      { OperatorTerm And $1 $3 }
+  | Term3                 { $1 }
+
+Term3
+  : Term4 '==' Term4       { OperatorTerm EQ $1 $3  }
+  | Term4 '>=' Term4       { OperatorTerm GEQ $1 $3  }
+  | Term4 '<=' Term4       { OperatorTerm LEQ $1 $3  }
+  | Term4 '>' Term4        { OperatorTerm GT $1 $3  }
+  | Term4 '<' Term4        { OperatorTerm LT $1 $3  }
+  | Term4                  { $1 }
+
+Term4
+  : Term4 '+' Term5       { OperatorTerm Plus $1 $3  }
+  | Term4 '-' Term5       { OperatorTerm Minus $1 $3  }
+  | Term5                 { $1 }
+
+Term5
+  : Term5 '*' Term6       { OperatorTerm Multiply $1 $3  }
+  | Term5 '/' Term6       { OperatorTerm Divide $1 $3  }
+  | Term5 '%' Term6       { OperatorTerm Modulus $1 $3  }
+  | Term5 ':!' Type       { TypeAssert $1 $3  }
+  | Term5 ':?' Type       { TypeCheck $1 $3  }
+  | Term6                 { $1 }
+
+Term6
+  : var Term7                 { FunctionCall $1 $2 }
+  | else                      { Else }
+  | do                        { Do }
+  | Term7                     { $1 }
+
+Term7
   : '(' Term ')'          { $2 }
   | var                   { Variable $1 }
   | Literal               { Literal $1 }
+  | Term7 '.' '[' Term ']'   { Accessor $1 $4 }
 
 IfThenElse
-  : if Term0 then Term else Term1 { IfThenElse $2 $4 $6 }
+  : if Term1 then Term else Term1  { IfThenElse $2 $4 $6 }
 
 ForeachInDo
-  : foreach var in Term0 do Term1  { ForeachInDo $2 $4 $6 }
+  : foreach var in Term1 do Term1  { ForeachInDo $2 $4 $6 }
 
 Literal
   : quoted                            { (StrVal $1) }
@@ -120,6 +173,8 @@ Literal
   | '{' indent ObjectTerms indent '}' { (ObjVal $3) }
   | '{' ObjectTerms '}'               { (ObjVal $2) }
   | null                              { NullVal }
+  | true                              { TrueVal }
+  | false                             { FalseVal }
 
 ArrayTerms
   : Term ',' ArrayTerms           { $1 : $3 }

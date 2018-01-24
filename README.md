@@ -1,5 +1,7 @@
 ## Programming Languages and Translators
 
+[![Build Status](https://travis-ci.com/rybern/plt.svg?token=sRzNkHmfihnYzw5FapSy&branch=master)](https://travis-ci.com/rybern/plt)
+
 [Alex](https://www.haskell.org/alex/) for lexing,
 [Happy](https://www.haskell.org/happy/) for parsing,
 [hs-llvm](https://hackage.haskell.org/package/llvm-hs) and [hs-llvm-pure](https://hackage.haskell.org/package/llvm-hs-pure) for the LLVM interface.

@@ -14,7 +14,18 @@ data LexToken =
     VarToken String
   | NewlineToken
   | IndentToken Int
-  | OperatorToken String
+  | PlusToken
+  | MinusToken
+  | MultiplyToken
+  | DivideToken
+  | ModToken
+  | EQToken
+  | LEQToken
+  | GEQToken
+  | LTToken
+  | GTToken
+  | OrToken
+  | AndToken
 
   | IfToken
   | ThenToken
@@ -28,10 +39,14 @@ data LexToken =
   | HelperToken
 
   | IncludesToken
+  | AssertToken
+  | ImportToken
 
   -- syntax symbols
   | EqualsToken
   | ColonToken
+  | ColonQueToken
+  | ColonExcToken
   | ArrowToken
   | LeftParenToken
   | RightParenToken
@@ -39,8 +54,11 @@ data LexToken =
   -- primitives
   | NumberToken Double
   | NullToken
+  | TrueToken
+  | FalseToken
   | QuoteToken String
   | CommaToken
+  | DotToken
   | LeftSquareBracketToken
   | RightSquareBracketToken
   | LeftCurlyBracketToken
